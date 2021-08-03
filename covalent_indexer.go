@@ -3,14 +3,9 @@ package covalent
 import (
 	"fmt"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
-	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
-
-type ArgsCovalentDataIndexer struct {
-	pubKeyConverter core.PubkeyConverter
-}
 
 type covalentIndexer struct {
 	processor *process.DataProcessor
@@ -22,7 +17,7 @@ func NewCovalentDataIndexer(proc *process.DataProcessor) (*covalentIndexer, erro
 	}, nil
 }
 
-func (c covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
+func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 	blockResult, err := c.processor.ProcessData(args)
 	if err != nil {
 		fmt.Println(err.Error())

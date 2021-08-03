@@ -16,10 +16,10 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 		PubKeyConvertor: args.PubKeyConverter,
 	}
 
-	dp, err := factory.CreateDataProcessor(argsDataProcessor)
+	dataProcessor, err := factory.CreateDataProcessor(argsDataProcessor)
 	if err != nil {
 		return nil, err
 	}
 
-	return covalent.NewCovalentDataIndexer(dp)
+	return covalent.NewCovalentDataIndexer(dataProcessor)
 }

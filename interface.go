@@ -15,25 +15,3 @@ type Driver interface {
 	Close() error
 	IsInterfaceNil() bool
 }
-
-//
-//type TransactionHandler interface {
-//	ProcessTransactions () ([]schema.Transaction, error)
-//}
-//
-//type SCHandler interface {
-//	ProcessSCs ()
-//}
-//
-//SCResults    []*SCResult
-//Receipts     []*Receipt
-//Logs         []*Log
-//StateChanges []*AccountBalanceUpdate
-//
-//type LogsAndEventsHandler interface {
-//	ProcessLogsAndEvents() ([]schema.Log, error)
-//}
-//
-//type AccountsHandler interface {
-//	ProcessAccounts() ([]schema., error)
-//}
