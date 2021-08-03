@@ -17,6 +17,10 @@ type SCHandler interface {
 	ProcessSCs() ([]*schema.SCResult, error)
 }
 
+type ReceiptHandler interface {
+	ProcessReceipts(transactions *map[string]data.TransactionHandler) ([]*schema.Receipt, error)
+}
+
 //type SCHandler interface {
 //	ProcessSCs ()
 //}
