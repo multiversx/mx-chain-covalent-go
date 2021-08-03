@@ -14,19 +14,13 @@ type TransactionHandler interface {
 }
 
 type SCHandler interface {
-	ProcessSCs() ([]*schema.SCResult, error)
+	ProcessSCs(transactions *map[string]data.TransactionHandler) ([]*schema.SCResult, error)
 }
 
 type ReceiptHandler interface {
 	ProcessReceipts(transactions *map[string]data.TransactionHandler) ([]*schema.Receipt, error)
 }
 
-//type SCHandler interface {
-//	ProcessSCs ()
-//}
-//
-//SCResults    []*SCResult
-//Receipts     []*Receipt
 //Logs         []*Log
 //StateChanges []*AccountBalanceUpdate
 //

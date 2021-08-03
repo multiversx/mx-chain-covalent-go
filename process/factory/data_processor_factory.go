@@ -16,8 +16,11 @@ func CreateDataProcessor(args *ArgsDataProcessor) (*process.DataProcessor, error
 	blockHandler, _ := blockCovalent.NewBlockProcessor()
 	transactionsHandler, _ := transactions.NewTransactionProcessor()
 	receiptsHandler, _ := receipts.NewReceiptsProcessor()
+	scHandler, _ := transactions.NewSCProcessor()
 
-	return process.NewDataProcessor(blockHandler,
+	return process.NewDataProcessor(
+		blockHandler,
 		transactionsHandler,
+		scHandler,
 		receiptsHandler)
 }
