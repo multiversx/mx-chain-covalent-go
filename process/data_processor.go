@@ -10,18 +10,21 @@ type DataProcessor struct {
 	transactionHandler TransactionHandler
 	receiptHandler     ReceiptHandler
 	scHandler          SCHandler
+	logHandler         LogHandler
 }
 
 func NewDataProcessor(
 	blockHandler BlockHandler,
 	transactionHandler TransactionHandler,
 	scHandler SCHandler,
-	receiptHandler ReceiptHandler) (*DataProcessor, error) {
+	receiptHandler ReceiptHandler,
+	logHandler LogHandler) (*DataProcessor, error) {
 	return &DataProcessor{
 		blockHandler:       blockHandler,
 		transactionHandler: transactionHandler,
 		scHandler:          scHandler,
 		receiptHandler:     receiptHandler,
+		logHandler:         logHandler,
 	}, nil
 }
 
@@ -31,11 +34,13 @@ func (d *DataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.Bl
 	transactions, _ := d.transactionHandler.ProcessTransactions(&args.TransactionsPool.Txs)
 	smartContracts, _ := d.scHandler.ProcessSCs(&args.TransactionsPool.Scrs)
 	receipts, _ := d.receiptHandler.ProcessReceipts(&args.TransactionsPool.Receipts)
+	logs, _ := d.logHandler.ProcessLogs(&args.TransactionsPool.Logs)
 
 	return &schema.BlockResult{
 		Block:        block,
 		Transactions: transactions,
 		Receipts:     receipts,
 		SCResults:    smartContracts,
+		Logs:         logs,
 	}, nil
 }

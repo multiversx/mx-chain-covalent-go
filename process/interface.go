@@ -21,13 +21,12 @@ type ReceiptHandler interface {
 	ProcessReceipts(transactions *map[string]data.TransactionHandler) ([]*schema.Receipt, error)
 }
 
-//Logs         []*Log
+type LogHandler interface {
+	ProcessLogs(logs *map[string]data.LogHandler) ([]*schema.Log, error)
+}
+
 //StateChanges []*AccountBalanceUpdate
-//
-//type LogsAndEventsHandler interface {
-//	ProcessLogsAndEvents() ([]schema.Log, error)
-//}
-//
+
 //type AccountsHandler interface {
 //	ProcessAccounts() ([]schema., error)
 //}
