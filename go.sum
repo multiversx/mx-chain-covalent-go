@@ -1,0 +1,6 @@
+github.com/elodina/go-avro v0.0.0-20150904081821-bc650d5fd58f h1:xDci7eiIQe66xPEBHy+ljOBrMb3b4PmheOKjFyimguI=
+github.com/elodina/go-avro v0.0.0-20150904081821-bc650d5fd58f/go.mod h1:3A7SOsr8WBIpkWUsqzMpR3tIQbanKqxZcis2GSl12Nk=
+github.com/elodina/go-avro v0.0.0-20160406082632-0c8185d9a3ba h1:QkK2L3uvEaZJ40iFZbiMKz/yQF/MI2uaNO2iyV/ve6w=
+github.com/elodina/go-avro v0.0.0-20160406082632-0c8185d9a3ba/go.mod h1:3A7SOsr8WBIpkWUsqzMpR3tIQbanKqxZcis2GSl12Nk=
+github.com/stealthly/go-avro v0.0.0-20160406082632-0c8185d9a3ba h1:P+SbK86iGBcJpTN8cC8CXo7Fx6OopZbZ3fpIUWhg6V8=
+github.com/stealthly/go-avro v0.0.0-20160406082632-0c8185d9a3ba/go.mod h1:5sEAbO8D3npKVVbLSgsGTfhVPolAZJy6VSTZYUnyfKI=
