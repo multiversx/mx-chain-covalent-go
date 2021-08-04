@@ -5,7 +5,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
 
-type DataProcessor struct {
+type dataProcessor struct {
 	blockHandler       BlockHandler
 	transactionHandler TransactionHandler
 	receiptHandler     ReceiptHandler
@@ -21,9 +21,9 @@ func NewDataProcessor(
 	receiptHandler ReceiptHandler,
 	logHandler LogHandler,
 	accountsHandler AccountsHandler,
-) (*DataProcessor, error) {
+) (*dataProcessor, error) {
 
-	return &DataProcessor{
+	return &dataProcessor{
 		blockHandler:       blockHandler,
 		transactionHandler: transactionHandler,
 		scHandler:          scHandler,
@@ -33,7 +33,7 @@ func NewDataProcessor(
 	}, nil
 }
 
-func (dp *DataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
 
 	block, err := dp.blockHandler.ProcessBlock(&args.Body)
 	if err != nil {

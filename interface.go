@@ -1,10 +1,15 @@
 package covalent
 
 import (
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 )
+
+type DataHandler interface {
+	ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error)
+}
 
 type Driver interface {
 	SaveBlock(args *indexer.ArgsSaveBlockData)

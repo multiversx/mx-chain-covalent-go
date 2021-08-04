@@ -16,7 +16,7 @@ type ArgsDataProcessor struct {
 	Accounts        covalent.AccountsAdapter
 }
 
-func CreateDataProcessor(args *ArgsDataProcessor) (*process.DataProcessor, error) {
+func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) {
 	blockHandler, err := blockCovalent.NewBlockProcessor()
 	if err != nil {
 		return nil, err
