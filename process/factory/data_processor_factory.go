@@ -11,11 +11,14 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 )
 
+// ArgsDataProcessor holds all input dependencies required by data processor factory
+// in order to create a new data handler instance of type data processor
 type ArgsDataProcessor struct {
 	PubKeyConvertor core.PubkeyConverter
 	Accounts        covalent.AccountsAdapter
 }
 
+// CreateDataProcessor creates a new data handler instance of type data processor
 func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) {
 	blockHandler, err := blockCovalent.NewBlockProcessor()
 	if err != nil {

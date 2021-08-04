@@ -11,6 +11,7 @@ type accountsProcessor struct {
 	accounts        *covalent.AccountsAdapter
 }
 
+// NewAccountsProcessor creates a new instance of accounts processor
 func NewAccountsProcessor(accounts *covalent.AccountsAdapter, pubKeyConverter *core.PubkeyConverter) (*accountsProcessor, error) {
 	return &accountsProcessor{
 		accounts:        accounts,
@@ -18,6 +19,7 @@ func NewAccountsProcessor(accounts *covalent.AccountsAdapter, pubKeyConverter *c
 	}, nil
 }
 
+// ProcessAccounts converts accounts data to a specific structure defined by avro schema
 func (ap *accountsProcessor) ProcessAccounts() ([]*schema.AccountBalanceUpdate, error) {
 	return nil, nil
 }

@@ -14,6 +14,7 @@ type dataProcessor struct {
 	accountsHandler    AccountsHandler
 }
 
+// NewDataProcessor creates a new instance of data processor, which handles all sub-processes
 func NewDataProcessor(
 	blockHandler BlockHandler,
 	transactionHandler TransactionHandler,
@@ -33,6 +34,7 @@ func NewDataProcessor(
 	}, nil
 }
 
+// ProcessData converts all covalent necessary data to a specific structure defined by avro schema
 func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
 
 	block, err := dp.blockHandler.ProcessBlock(&args.Body)
