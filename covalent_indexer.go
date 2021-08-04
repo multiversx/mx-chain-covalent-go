@@ -1,7 +1,6 @@
 package covalent
 
 import (
-	"fmt"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
@@ -18,29 +17,16 @@ func NewCovalentDataIndexer(proc *process.DataProcessor) (*covalentIndexer, erro
 }
 
 func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
+	// TODO this function
+	// 1. Process data from args, format it according to avro schema
 	blockResult, err := c.processor.ProcessData(args)
 	if err != nil {
-		fmt.Println(err.Error())
-	}
 
+	}
 	_ = blockResult
 
-	// send to COVALENT
-
-	//body, ok := args.Body.(*block.Body)
-	//senderBytes :=args.TransactionsPool.Receipts["sadd"].GetSndAddr()
-
-	//for txHash, tx := range args.TransactionsPool.Txs {
-
-	//	convertedTransactionFromProtocolToMyTx()
-	//}
-
-	//c.pubKeyConverter.Encode(senderBytes)
-
-	//	panic("implement me")
-
-	//ConvetData()
-	//SendDataToCovalent
+	// 2. Prepare blockResult data to be sent in binary format
+	// 3. Send blockResult binary data to covalent
 }
 
 func (c covalentIndexer) RevertIndexedBlock(header data.HeaderHandler, body data.BodyHandler) {

@@ -17,12 +17,35 @@ type ArgsDataProcessor struct {
 }
 
 func CreateDataProcessor(args *ArgsDataProcessor) (*process.DataProcessor, error) {
-	blockHandler, _ := blockCovalent.NewBlockProcessor()
-	transactionsHandler, _ := transactions.NewTransactionProcessor()
-	receiptsHandler, _ := receipts.NewReceiptsProcessor()
-	scHandler, _ := transactions.NewSCProcessor()
-	logHandler, _ := logs.NewLogsProcessor()
-	accountsHandler, _ := accounts.NewAccountsProcessor(&args.Accounts, &args.PubKeyConvertor)
+	blockHandler, err := blockCovalent.NewBlockProcessor()
+	if err != nil {
+		return nil, err
+	}
+
+	transactionsHandler, err := transactions.NewTransactionProcessor()
+	if err != nil {
+		return nil, err
+	}
+
+	receiptsHandler, err := receipts.NewReceiptsProcessor()
+	if err != nil {
+		return nil, err
+	}
+
+	scHandler, err := transactions.NewSCProcessor()
+	if err != nil {
+		return nil, err
+	}
+
+	logHandler, err := logs.NewLogsProcessor()
+	if err != nil {
+		return nil, err
+	}
+
+	accountsHandler, err := accounts.NewAccountsProcessor(&args.Accounts, &args.PubKeyConvertor)
+	if err != nil {
+		return nil, err
+	}
 
 	return process.NewDataProcessor(
 		blockHandler,

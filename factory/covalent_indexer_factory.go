@@ -4,6 +4,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/factory"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 )
 
 type ArgsCovalentIndexerFactory struct {
@@ -12,6 +13,12 @@ type ArgsCovalentIndexerFactory struct {
 }
 
 func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, error) {
+	if check.IfNil(args.PubKeyConverter) {
+		return nil, covalent.ErrNilPubKeyConverter
+	}
+	if check.IfNil(args.Accounts) {
+		return nil, covalent.ErrNilAccountsAdapter
+	}
 
 	argsDataProcessor := &factory.ArgsDataProcessor{
 		PubKeyConvertor: args.PubKeyConverter,

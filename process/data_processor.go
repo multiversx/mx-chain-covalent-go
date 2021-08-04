@@ -22,6 +22,7 @@ func NewDataProcessor(
 	logHandler LogHandler,
 	accountsHandler AccountsHandler,
 ) (*DataProcessor, error) {
+
 	return &DataProcessor{
 		blockHandler:       blockHandler,
 		transactionHandler: transactionHandler,
@@ -34,12 +35,35 @@ func NewDataProcessor(
 
 func (d *DataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
 
-	block, _ := d.blockHandler.ProcessBlock(&args.Body)
-	transactions, _ := d.transactionHandler.ProcessTransactions(&args.TransactionsPool.Txs)
-	smartContracts, _ := d.scHandler.ProcessSCs(&args.TransactionsPool.Scrs)
-	receipts, _ := d.receiptHandler.ProcessReceipts(&args.TransactionsPool.Receipts)
-	logs, _ := d.logHandler.ProcessLogs(&args.TransactionsPool.Logs)
-	accountUpdates, _ := d.accountsHandler.ProcessAccounts()
+	block, err := d.blockHandler.ProcessBlock(&args.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions, err := d.transactionHandler.ProcessTransactions(&args.TransactionsPool.Txs)
+	if err != nil {
+		return nil, err
+	}
+
+	smartContracts, err := d.scHandler.ProcessSCs(&args.TransactionsPool.Scrs)
+	if err != nil {
+		return nil, err
+	}
+
+	receipts, err := d.receiptHandler.ProcessReceipts(&args.TransactionsPool.Receipts)
+	if err != nil {
+		return nil, err
+	}
+
+	logs, err := d.logHandler.ProcessLogs(&args.TransactionsPool.Logs)
+	if err != nil {
+		return nil, err
+	}
+
+	accountUpdates, err := d.accountsHandler.ProcessAccounts()
+	if err != nil {
+		return nil, err
+	}
 
 	return &schema.BlockResult{
 		Block:        block,
