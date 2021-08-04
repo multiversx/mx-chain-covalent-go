@@ -8,12 +8,14 @@ import (
 
 type ArgsCovalentIndexerFactory struct {
 	PubKeyConverter core.PubkeyConverter
+	Accounts        covalent.AccountsAdapter
 }
 
 func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, error) {
 
 	argsDataProcessor := &factory.ArgsDataProcessor{
 		PubKeyConvertor: args.PubKeyConverter,
+		Accounts:        args.Accounts,
 	}
 
 	dataProcessor, err := factory.CreateDataProcessor(argsDataProcessor)

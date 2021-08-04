@@ -25,8 +25,6 @@ type LogHandler interface {
 	ProcessLogs(logs *map[string]data.LogHandler) ([]*schema.Log, error)
 }
 
-//StateChanges []*AccountBalanceUpdate
-
-//type AccountsHandler interface {
-//	ProcessAccounts() ([]schema., error)
-//}
+type AccountsHandler interface {
+	ProcessAccounts() ([]*schema.AccountBalanceUpdate, error)
+}
