@@ -11,6 +11,6 @@ func NewSCProcessor() (*scProcessor, error) {
 	return &scProcessor{}, nil
 }
 
-func (b *scProcessor) ProcessSCs(transactions *map[string]data.TransactionHandler) ([]*schema.SCResult, error) {
+func (scp *scProcessor) ProcessSCs(transactions *map[string]data.TransactionHandler) ([]*schema.SCResult, error) {
 	return nil, nil
 }

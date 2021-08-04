@@ -11,6 +11,6 @@ func NewReceiptsProcessor() (*receiptsProcessor, error) {
 	return &receiptsProcessor{}, nil
 }
 
-func (b *receiptsProcessor) ProcessReceipts(transactions *map[string]data.TransactionHandler) ([]*schema.Receipt, error) {
+func (rp *receiptsProcessor) ProcessReceipts(transactions *map[string]data.TransactionHandler) ([]*schema.Receipt, error) {
 	return nil, nil
 }

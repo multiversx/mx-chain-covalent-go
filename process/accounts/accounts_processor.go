@@ -18,6 +18,6 @@ func NewAccountsProcessor(accounts *covalent.AccountsAdapter, pubKeyConverter *c
 	}, nil
 }
 
-func (b *accountsProcessor) ProcessAccounts() ([]*schema.AccountBalanceUpdate, error) {
+func (ap *accountsProcessor) ProcessAccounts() ([]*schema.AccountBalanceUpdate, error) {
 	return nil, nil
 }

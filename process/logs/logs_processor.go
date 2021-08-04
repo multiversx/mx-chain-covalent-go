@@ -11,6 +11,6 @@ func NewLogsProcessor() (*logsProcessor, error) {
 	return &logsProcessor{}, nil
 }
 
-func (b *logsProcessor) ProcessLogs(logs *map[string]data.LogHandler) ([]*schema.Log, error) {
+func (lp *logsProcessor) ProcessLogs(logs *map[string]data.LogHandler) ([]*schema.Log, error) {
 	return nil, nil
 }

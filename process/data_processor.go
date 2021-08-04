@@ -33,34 +33,34 @@ func NewDataProcessor(
 	}, nil
 }
 
-func (d *DataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+func (dp *DataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
 
-	block, err := d.blockHandler.ProcessBlock(&args.Body)
+	block, err := dp.blockHandler.ProcessBlock(&args.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	transactions, err := d.transactionHandler.ProcessTransactions(&args.TransactionsPool.Txs)
+	transactions, err := dp.transactionHandler.ProcessTransactions(&args.TransactionsPool.Txs)
 	if err != nil {
 		return nil, err
 	}
 
-	smartContracts, err := d.scHandler.ProcessSCs(&args.TransactionsPool.Scrs)
+	smartContracts, err := dp.scHandler.ProcessSCs(&args.TransactionsPool.Scrs)
 	if err != nil {
 		return nil, err
 	}
 
-	receipts, err := d.receiptHandler.ProcessReceipts(&args.TransactionsPool.Receipts)
+	receipts, err := dp.receiptHandler.ProcessReceipts(&args.TransactionsPool.Receipts)
 	if err != nil {
 		return nil, err
 	}
 
-	logs, err := d.logHandler.ProcessLogs(&args.TransactionsPool.Logs)
+	logs, err := dp.logHandler.ProcessLogs(&args.TransactionsPool.Logs)
 	if err != nil {
 		return nil, err
 	}
 
-	accountUpdates, err := d.accountsHandler.ProcessAccounts()
+	accountUpdates, err := dp.accountsHandler.ProcessAccounts()
 	if err != nil {
 		return nil, err
 	}

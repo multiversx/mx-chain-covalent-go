@@ -11,6 +11,6 @@ func NewTransactionProcessor() (*transactionProcessor, error) {
 	return &transactionProcessor{}, nil
 }
 
-func (b *transactionProcessor) ProcessTransactions(transactions *map[string]data.TransactionHandler) ([]*schema.Transaction, error) {
+func (txp *transactionProcessor) ProcessTransactions(transactions *map[string]data.TransactionHandler) ([]*schema.Transaction, error) {
 	return nil, nil
 }

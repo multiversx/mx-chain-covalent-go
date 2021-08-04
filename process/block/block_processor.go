@@ -11,6 +11,6 @@ func NewBlockProcessor() (*blockProcessor, error) {
 	return &blockProcessor{}, nil
 }
 
-func (b *blockProcessor) ProcessBlock(block *data.BodyHandler) (*schema.Block, error) {
+func (bp *blockProcessor) ProcessBlock(block *data.BodyHandler) (*schema.Block, error) {
 	return nil, nil
 }
