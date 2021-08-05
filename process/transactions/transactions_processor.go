@@ -13,6 +13,6 @@ func NewTransactionProcessor() (*transactionProcessor, error) {
 }
 
 // ProcessTransactions converts transactions data to a specific structure defined by avro schema
-func (txp *transactionProcessor) ProcessTransactions(transactions *map[string]data.TransactionHandler) ([]*schema.Transaction, error) {
+func (txp *transactionProcessor) ProcessTransactions(transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error) {
 	return nil, nil
 }

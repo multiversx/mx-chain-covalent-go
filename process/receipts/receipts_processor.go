@@ -13,6 +13,6 @@ func NewReceiptsProcessor() (*receiptsProcessor, error) {
 }
 
 // ProcessReceipts converts receipts data to a specific structure defined by avro schema
-func (rp *receiptsProcessor) ProcessReceipts(transactions *map[string]data.TransactionHandler) ([]*schema.Receipt, error) {
+func (rp *receiptsProcessor) ProcessReceipts(transactions map[string]data.TransactionHandler) ([]*schema.Receipt, error) {
 	return nil, nil
 }

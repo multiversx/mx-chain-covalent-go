@@ -45,7 +45,7 @@ func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) 
 		return nil, err
 	}
 
-	accountsHandler, err := accounts.NewAccountsProcessor(&args.Accounts, &args.PubKeyConvertor)
+	accountsHandler, err := accounts.NewAccountsProcessor(args.Accounts, args.PubKeyConvertor)
 	if err != nil {
 		return nil, err
 	}

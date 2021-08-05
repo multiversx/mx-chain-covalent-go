@@ -13,6 +13,6 @@ func NewLogsProcessor() (*logsProcessor, error) {
 }
 
 // ProcessLogs converts logs data to a specific structure defined by avro schema
-func (lp *logsProcessor) ProcessLogs(logs *map[string]data.LogHandler) ([]*schema.Log, error) {
+func (lp *logsProcessor) ProcessLogs(logs map[string]data.LogHandler) ([]*schema.Log, error) {
 	return nil, nil
 }

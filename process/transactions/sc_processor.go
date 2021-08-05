@@ -13,6 +13,6 @@ func NewSCProcessor() (*scProcessor, error) {
 }
 
 // ProcessSCs converts smart contracts data to a specific structure defined by avro schema
-func (scp *scProcessor) ProcessSCs(transactions *map[string]data.TransactionHandler) ([]*schema.SCResult, error) {
+func (scp *scProcessor) ProcessSCs(transactions map[string]data.TransactionHandler) ([]*schema.SCResult, error) {
 	return nil, nil
 }

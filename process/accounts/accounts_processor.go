@@ -7,12 +7,12 @@ import (
 )
 
 type accountsProcessor struct {
-	pubKeyConverter *core.PubkeyConverter
-	accounts        *covalent.AccountsAdapter
+	pubKeyConverter core.PubkeyConverter
+	accounts        covalent.AccountsAdapter
 }
 
 // NewAccountsProcessor creates a new instance of accounts processor
-func NewAccountsProcessor(accounts *covalent.AccountsAdapter, pubKeyConverter *core.PubkeyConverter) (*accountsProcessor, error) {
+func NewAccountsProcessor(accounts covalent.AccountsAdapter, pubKeyConverter core.PubkeyConverter) (*accountsProcessor, error) {
 	return &accountsProcessor{
 		accounts:        accounts,
 		pubKeyConverter: pubKeyConverter,

@@ -13,6 +13,6 @@ func NewBlockProcessor() (*blockProcessor, error) {
 }
 
 // ProcessBlock converts block data to a specific structure defined by avro schema
-func (bp *blockProcessor) ProcessBlock(block *data.BodyHandler) (*schema.Block, error) {
+func (bp *blockProcessor) ProcessBlock(block data.BodyHandler) (*schema.Block, error) {
 	return nil, nil
 }
