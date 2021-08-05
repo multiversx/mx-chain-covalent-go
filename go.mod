@@ -1,6 +1,6 @@
 module github.com/ElrondNetwork/covalent-indexer-go
 
-go 1.17
+go 1.16
 
 require (
 	github.com/ElrondNetwork/elrond-go-core v1.0.1-0.20210729155735-1b1ca818764e
