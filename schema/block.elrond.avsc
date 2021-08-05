@@ -10,46 +10,47 @@
        {"name": "Nonce", "type": "long"},
        {"name": "Round", "type": "long"},
        {"name": "Epoch", "type": "int"},
-       {"name": "Hash", "type": "string"},
+       {"name": "Hash", "type": {
+         "name": "hash", "type": "fixed", "size": 32}},
        {"name": "MiniBlocks", "type": {"type":"array", "items": {
          "name": "MiniBlock",
          "type": "record",
          "fields": [
-           {"name": "Hash", "type": "string"},
+           {"name": "Hash", "type": "hash"},
            {"name": "SenderShardID", "type": "int"},
            {"name": "ReceiverShardID", "type": "int"},
-           {"name": "SenderBlockHash", "type": "string"},
-           {"name": "ReceiverBlockHash", "type": "string"},
-           {"name": "Type", "type": "string"},
+           {"name": "SenderBlockHash", "type": "hash"},
+           {"name": "ReceiverBlockHash", "type": "hash"},
+           {"name": "Type", "type": "bytes"},
            {"name": "Timestamp", "type": "long"}
          ]
        }}},
-       {"name": "NotarizedBlocksHashes", "type": {"type": "array", "items": "string"}},
+       {"name": "NotarizedBlocksHashes", "type": {"type": "array", "items": "hash"}},
        {"name": "Proposer", "type": "long"},
        {"name": "Validators", "type": {"type": "array", "items": "long"}},
        {"name": "PubKeysBitmap", "type": "bytes"},
        {"name": "Size", "type": "long"},
        {"name": "SizeTxs", "type": "long"},
        {"name": "Timestamp", "type": "long"},
-       {"name": "StateRootHash", "type": "string"},
-       {"name": "PrevHash", "type": "string"},
+       {"name": "StateRootHash", "type": "hash"},
+       {"name": "PrevHash", "type": "hash"},
        {"name": "ShardID", "type": "int"},
        {"name": "TxCount", "type": "int"},
-       {"name": "AccumulatedFees", "type": "string"},
-       {"name": "DeveloperFees", "type": "string"},
+       {"name": "AccumulatedFees", "type": "bytes"},
+       {"name": "DeveloperFees", "type": "bytes"},
        {"name": "EpochStartBlock", "type": "boolean"},
        {"name": "EpochStartInfo", "type":
        {"name": "EpochStartInfo",
          "type": "record",
          "fields": [
-           {"name": "TotalSupply", "type": "string"},
-           {"name": "TotalToDistribute", "type": "string"},
-           {"name": "TotalNewlyMinted", "type": "string"},
-           {"name": "RewardsPerBlock", "type": "string"},
-           {"name": "RewardsForProtocolSustainability", "type": "string"},
-           {"name": "NodePrice", "type": "string"},
+           {"name": "TotalSupply", "type": "bytes"},
+           {"name": "TotalToDistribute", "type": "bytes"},
+           {"name": "TotalNewlyMinted", "type": "bytes"},
+           {"name": "RewardsPerBlock", "type": "bytes"},
+           {"name": "RewardsForProtocolSustainability", "type": "bytes"},
+           {"name": "NodePrice", "type": "bytes"},
            {"name": "PrevEpochStartRound", "type": "int"},
-           {"name": "PrevEpochStartHash", "type": "string"}
+           {"name": "PrevEpochStartHash", "type": "hash"}
          ]
        }}
    ]}},
@@ -58,19 +59,21 @@
      "name": "Transaction",
      "type": "record",
      "fields": [
-       {"name": "Hash", "type": "string"},
-       {"name": "MiniBlockHash", "type": "string"},
-       {"name": "BlockHash", "type": "string"},
+       {"name": "Hash", "type": "hash"},
+       {"name": "MiniBlockHash", "type": "hash"},
+       {"name": "BlockHash", "type": "hash"},
        {"name": "Nonce", "type": "long"},
        {"name": "Round", "type": "long"},
-       {"name": "Value", "type": "string"},
-       {"name": "Receiver", "type": "string"},
-       {"name": "Sender", "type": "string"},
+       {"name": "Value", "type": "bytes"},
+       {"name": "Receiver", "type": {
+         "name": "address", "type": "fixed", "size": 62}},
+       {"name": "Sender", "type": "address"},
        {"name": "ReceiverShard", "type": "int"},
        {"name": "SenderShard", "type": "int"},
        {"name": "GasPrice", "type": "long"},
        {"name": "GasLimit", "type": "long"},
-       {"name": "Signature", "type": "string"},
+       {"name": "Signature", "type": {
+         "name": "signature", "type": "fixed", "size": 64}},
        {"name": "Timestamp", "type": "long"},
        {"name": "SenderUserName", "type": "bytes"},
        {"name": "ReceiverUserName", "type": "bytes"}
@@ -81,22 +84,22 @@
      "name": "SCResult",
      "type": "record",
      "fields": [
-       {"name": "Hash", "type": "string"},
+       {"name": "Hash", "type": "hash"},
        {"name": "Nonce", "type": "long"},
        {"name": "GasLimit", "type": "long"},
        {"name": "GasPrice", "type": "long"},
-       {"name": "Value", "type": "string"},
-       {"name": "Sender", "type": "string"},
-       {"name": "Receiver", "type": "string"},
-       {"name": "RelayerAddr", "type": "string"},
-       {"name": "RelayedValue", "type": "string"},
-       {"name": "Code", "type": "string"},
+       {"name": "Value", "type": "bytes"},
+       {"name": "Sender", "type": "address"},
+       {"name": "Receiver", "type": "address"},
+       {"name": "RelayerAddr", "type": "address"},
+       {"name": "RelayedValue", "type": "bytes"},
+       {"name": "Code", "type": "bytes"},
        {"name": "Data", "type": "bytes"},
-       {"name": "PrevTxHash", "type": "string"},
-       {"name": "OriginalTxHash", "type": "string"},
-       {"name": "CallType", "type": "string"},
+       {"name": "PrevTxHash", "type": "hash"},
+       {"name": "OriginalTxHash", "type": "hash"},
+       {"name": "CallType", "type": "bytes"},
        {"name": "CodeMetadata", "type": "bytes"},
-       {"name": "ReturnMessage", "type": "string"},
+       {"name": "ReturnMessage", "type": "bytes"},
        {"name": "Timestamp", "type": "long"}
      ]
    }}},
@@ -105,11 +108,11 @@
      "name": "Receipt",
      "type": "record",
      "fields": [
-       {"name": "Hash", "type": "string"},
-       {"name": "Value", "type": "string"},
-       {"name": "Sender", "type": "string"},
-       {"name": "Data", "type": "string"},
-       {"name": "TxHash", "type": "string"},
+       {"name": "Hash", "type": "hash"},
+       {"name": "Value", "type": "bytes"},
+       {"name": "Sender", "type": "address"},
+       {"name": "Data", "type": "bytes"},
+       {"name": "TxHash", "type": "hash"},
        {"name": "Timestamp", "type": "long"}
      ]
    }}},
@@ -118,14 +121,14 @@
      "name": "Log",
      "type": "record",
      "fields": [
-       {"name": "ID", "type": "string"},
-       {"name": "Address", "type": "string"},
+       {"name": "ID", "type": "hash"},
+       {"name": "Address", "type": "address"},
        {"name": "Events", "type": {"type":"array", "items": {
          "name": "Event",
          "type": "record",
          "fields": [
-           {"name": "Address", "type": "string"},
-           {"name": "Identifier", "type": "string"},
+           {"name": "Address", "type": "address"},
+           {"name": "Identifier", "type": "bytes"},
            {"name": "Topics", "type": {"type": "array", "items": "bytes"}},
            {"name": "Data", "type": "bytes"}
          ]
@@ -137,8 +140,8 @@
      "name": "AccountBalanceUpdate",
      "type": "record",
      "fields": [
-       {"name": "Address", "type": "string"},
-       {"name": "Balance", "type": "string"},
+       {"name": "Address", "type": "address"},
+       {"name": "Balance", "type": "bytes"},
        {"name": "Nonce", "type": "long"}
      ]
      }}}

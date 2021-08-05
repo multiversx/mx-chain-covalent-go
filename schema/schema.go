@@ -33,31 +33,36 @@ type Block struct {
 	Nonce                 int64
 	Round                 int64
 	Epoch                 int32
-	Hash                  string
+	Hash                  []byte
 	MiniBlocks            []*MiniBlock
-	NotarizedBlocksHashes []string
+	NotarizedBlocksHashes [][]byte
 	Proposer              int64
 	Validators            []int64
 	PubKeysBitmap         []byte
 	Size                  int64
 	SizeTxs               int64
 	Timestamp             int64
-	StateRootHash         string
-	PrevHash              string
+	StateRootHash         []byte
+	PrevHash              []byte
 	ShardID               int32
 	TxCount               int32
-	AccumulatedFees       string
-	DeveloperFees         string
+	AccumulatedFees       []byte
+	DeveloperFees         []byte
 	EpochStartBlock       bool
 	EpochStartInfo        *EpochStartInfo
 }
 
 func NewBlock() *Block {
 	return &Block{
+		Hash:                  make([]byte, 32),
 		MiniBlocks:            make([]*MiniBlock, 0),
-		NotarizedBlocksHashes: make([]string, 0),
+		NotarizedBlocksHashes: make([][]byte, 0),
 		Validators:            make([]int64, 0),
 		PubKeysBitmap:         []byte{},
+		StateRootHash:         make([]byte, 32),
+		PrevHash:              make([]byte, 32),
+		AccumulatedFees:       []byte{},
+		DeveloperFees:         []byte{},
 		EpochStartInfo:        NewEpochStartInfo(),
 	}
 }
@@ -70,17 +75,22 @@ func (o *Block) Schema() avro.Schema {
 }
 
 type MiniBlock struct {
-	Hash              string
+	Hash              []byte
 	SenderShardID     int32
 	ReceiverShardID   int32
-	SenderBlockHash   string
-	ReceiverBlockHash string
-	Type              string
+	SenderBlockHash   []byte
+	ReceiverBlockHash []byte
+	Type              []byte
 	Timestamp         int64
 }
 
 func NewMiniBlock() *MiniBlock {
-	return &MiniBlock{}
+	return &MiniBlock{
+		Hash:              make([]byte, 32),
+		SenderBlockHash:   make([]byte, 32),
+		ReceiverBlockHash: make([]byte, 32),
+		Type:              []byte{},
+	}
 }
 
 func (o *MiniBlock) Schema() avro.Schema {
@@ -91,18 +101,26 @@ func (o *MiniBlock) Schema() avro.Schema {
 }
 
 type EpochStartInfo struct {
-	TotalSupply                      string
-	TotalToDistribute                string
-	TotalNewlyMinted                 string
-	RewardsPerBlock                  string
-	RewardsForProtocolSustainability string
-	NodePrice                        string
+	TotalSupply                      []byte
+	TotalToDistribute                []byte
+	TotalNewlyMinted                 []byte
+	RewardsPerBlock                  []byte
+	RewardsForProtocolSustainability []byte
+	NodePrice                        []byte
 	PrevEpochStartRound              int32
-	PrevEpochStartHash               string
+	PrevEpochStartHash               []byte
 }
 
 func NewEpochStartInfo() *EpochStartInfo {
-	return &EpochStartInfo{}
+	return &EpochStartInfo{
+		TotalSupply:                      []byte{},
+		TotalToDistribute:                []byte{},
+		TotalNewlyMinted:                 []byte{},
+		RewardsPerBlock:                  []byte{},
+		RewardsForProtocolSustainability: []byte{},
+		NodePrice:                        []byte{},
+		PrevEpochStartHash:               make([]byte, 32),
+	}
 }
 
 func (o *EpochStartInfo) Schema() avro.Schema {
@@ -113,19 +131,19 @@ func (o *EpochStartInfo) Schema() avro.Schema {
 }
 
 type Transaction struct {
-	Hash             string
-	MiniBlockHash    string
-	BlockHash        string
+	Hash             []byte
+	MiniBlockHash    []byte
+	BlockHash        []byte
 	Nonce            int64
 	Round            int64
-	Value            string
-	Receiver         string
-	Sender           string
+	Value            []byte
+	Receiver         []byte
+	Sender           []byte
 	ReceiverShard    int32
 	SenderShard      int32
 	GasPrice         int64
 	GasLimit         int64
-	Signature        string
+	Signature        []byte
 	Timestamp        int64
 	SenderUserName   []byte
 	ReceiverUserName []byte
@@ -133,6 +151,13 @@ type Transaction struct {
 
 func NewTransaction() *Transaction {
 	return &Transaction{
+		Hash:             make([]byte, 32),
+		MiniBlockHash:    make([]byte, 32),
+		BlockHash:        make([]byte, 32),
+		Value:            []byte{},
+		Receiver:         make([]byte, 62),
+		Sender:           make([]byte, 62),
+		Signature:        make([]byte, 64),
 		SenderUserName:   []byte{},
 		ReceiverUserName: []byte{},
 	}
@@ -146,29 +171,40 @@ func (o *Transaction) Schema() avro.Schema {
 }
 
 type SCResult struct {
-	Hash           string
+	Hash           []byte
 	Nonce          int64
 	GasLimit       int64
 	GasPrice       int64
-	Value          string
-	Sender         string
-	Receiver       string
-	RelayerAddr    string
-	RelayedValue   string
-	Code           string
+	Value          []byte
+	Sender         []byte
+	Receiver       []byte
+	RelayerAddr    []byte
+	RelayedValue   []byte
+	Code           []byte
 	Data           []byte
-	PrevTxHash     string
-	OriginalTxHash string
-	CallType       string
+	PrevTxHash     []byte
+	OriginalTxHash []byte
+	CallType       []byte
 	CodeMetadata   []byte
-	ReturnMessage  string
+	ReturnMessage  []byte
 	Timestamp      int64
 }
 
 func NewSCResult() *SCResult {
 	return &SCResult{
-		Data:         []byte{},
-		CodeMetadata: []byte{},
+		Hash:           make([]byte, 32),
+		Value:          []byte{},
+		Sender:         make([]byte, 62),
+		Receiver:       make([]byte, 62),
+		RelayerAddr:    make([]byte, 62),
+		RelayedValue:   []byte{},
+		Code:           []byte{},
+		Data:           []byte{},
+		PrevTxHash:     make([]byte, 32),
+		OriginalTxHash: make([]byte, 32),
+		CallType:       []byte{},
+		CodeMetadata:   []byte{},
+		ReturnMessage:  []byte{},
 	}
 }
 
@@ -180,16 +216,22 @@ func (o *SCResult) Schema() avro.Schema {
 }
 
 type Receipt struct {
-	Hash      string
-	Value     string
-	Sender    string
-	Data      string
-	TxHash    string
+	Hash      []byte
+	Value     []byte
+	Sender    []byte
+	Data      []byte
+	TxHash    []byte
 	Timestamp int64
 }
 
 func NewReceipt() *Receipt {
-	return &Receipt{}
+	return &Receipt{
+		Hash:   make([]byte, 32),
+		Value:  []byte{},
+		Sender: make([]byte, 62),
+		Data:   []byte{},
+		TxHash: make([]byte, 32),
+	}
 }
 
 func (o *Receipt) Schema() avro.Schema {
@@ -200,14 +242,16 @@ func (o *Receipt) Schema() avro.Schema {
 }
 
 type Log struct {
-	ID      string
-	Address string
+	ID      []byte
+	Address []byte
 	Events  []*Event
 }
 
 func NewLog() *Log {
 	return &Log{
-		Events: make([]*Event, 0),
+		ID:      make([]byte, 32),
+		Address: make([]byte, 62),
+		Events:  make([]*Event, 0),
 	}
 }
 
@@ -219,16 +263,18 @@ func (o *Log) Schema() avro.Schema {
 }
 
 type Event struct {
-	Address    string
-	Identifier string
+	Address    []byte
+	Identifier []byte
 	Topics     [][]byte
 	Data       []byte
 }
 
 func NewEvent() *Event {
 	return &Event{
-		Topics: make([][]byte, 0),
-		Data:   []byte{},
+		Address:    make([]byte, 62),
+		Identifier: []byte{},
+		Topics:     make([][]byte, 0),
+		Data:       []byte{},
 	}
 }
 
@@ -240,13 +286,16 @@ func (o *Event) Schema() avro.Schema {
 }
 
 type AccountBalanceUpdate struct {
-	Address string
-	Balance string
+	Address []byte
+	Balance []byte
 	Nonce   int64
 }
 
 func NewAccountBalanceUpdate() *AccountBalanceUpdate {
-	return &AccountBalanceUpdate{}
+	return &AccountBalanceUpdate{
+		Address: make([]byte, 62),
+		Balance: []byte{},
+	}
 }
 
 func (o *AccountBalanceUpdate) Schema() avro.Schema {
@@ -282,7 +331,11 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "Hash",
-                        "type": "string"
+                        "type": {
+                            "type": "fixed",
+                            "size": 32,
+                            "name": "hash"
+                        }
                     },
                     {
                         "name": "MiniBlocks",
@@ -294,7 +347,11 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                 "fields": [
                                     {
                                         "name": "Hash",
-                                        "type": "string"
+                                        "type": {
+                                            "type": "fixed",
+                                            "size": 32,
+                                            "name": "hash"
+                                        }
                                     },
                                     {
                                         "name": "SenderShardID",
@@ -306,15 +363,23 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                     },
                                     {
                                         "name": "SenderBlockHash",
-                                        "type": "string"
+                                        "type": {
+                                            "type": "fixed",
+                                            "size": 32,
+                                            "name": "hash"
+                                        }
                                     },
                                     {
                                         "name": "ReceiverBlockHash",
-                                        "type": "string"
+                                        "type": {
+                                            "type": "fixed",
+                                            "size": 32,
+                                            "name": "hash"
+                                        }
                                     },
                                     {
                                         "name": "Type",
-                                        "type": "string"
+                                        "type": "bytes"
                                     },
                                     {
                                         "name": "Timestamp",
@@ -328,7 +393,11 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         "name": "NotarizedBlocksHashes",
                         "type": {
                             "type": "array",
-                            "items": "string"
+                            "items": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         }
                     },
                     {
@@ -360,11 +429,19 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "StateRootHash",
-                        "type": "string"
+                        "type": {
+                            "type": "fixed",
+                            "size": 32,
+                            "name": "hash"
+                        }
                     },
                     {
                         "name": "PrevHash",
-                        "type": "string"
+                        "type": {
+                            "type": "fixed",
+                            "size": 32,
+                            "name": "hash"
+                        }
                     },
                     {
                         "name": "ShardID",
@@ -376,11 +453,11 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "AccumulatedFees",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "DeveloperFees",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "EpochStartBlock",
@@ -394,27 +471,27 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                             "fields": [
                                 {
                                     "name": "TotalSupply",
-                                    "type": "string"
+                                    "type": "bytes"
                                 },
                                 {
                                     "name": "TotalToDistribute",
-                                    "type": "string"
+                                    "type": "bytes"
                                 },
                                 {
                                     "name": "TotalNewlyMinted",
-                                    "type": "string"
+                                    "type": "bytes"
                                 },
                                 {
                                     "name": "RewardsPerBlock",
-                                    "type": "string"
+                                    "type": "bytes"
                                 },
                                 {
                                     "name": "RewardsForProtocolSustainability",
-                                    "type": "string"
+                                    "type": "bytes"
                                 },
                                 {
                                     "name": "NodePrice",
-                                    "type": "string"
+                                    "type": "bytes"
                                 },
                                 {
                                     "name": "PrevEpochStartRound",
@@ -422,7 +499,11 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                 },
                                 {
                                     "name": "PrevEpochStartHash",
-                                    "type": "string"
+                                    "type": {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
                                 }
                             ]
                         }
@@ -440,15 +521,27 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     "fields": [
                         {
                             "name": "Hash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "MiniBlockHash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "BlockHash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "Nonce",
@@ -460,15 +553,23 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "Value",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Receiver",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "Sender",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "ReceiverShard",
@@ -488,7 +589,11 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "Signature",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 64,
+                                "name": "signature"
+                            }
                         },
                         {
                             "name": "Timestamp",
@@ -516,7 +621,11 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     "fields": [
                         {
                             "name": "Hash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "Nonce",
@@ -532,27 +641,39 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "Value",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Sender",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "Receiver",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "RelayerAddr",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "RelayedValue",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Code",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Data",
@@ -560,15 +681,23 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "PrevTxHash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "OriginalTxHash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "CallType",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "CodeMetadata",
@@ -576,7 +705,7 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "ReturnMessage",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Timestamp",
@@ -596,23 +725,35 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     "fields": [
                         {
                             "name": "Hash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "Value",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Sender",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "Data",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "TxHash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "Timestamp",
@@ -632,11 +773,19 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     "fields": [
                         {
                             "name": "ID",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "Address",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "Events",
@@ -648,11 +797,15 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                     "fields": [
                                         {
                                             "name": "Address",
-                                            "type": "string"
+                                            "type": {
+                                                "type": "fixed",
+                                                "size": 62,
+                                                "name": "address"
+                                            }
                                         },
                                         {
                                             "name": "Identifier",
-                                            "type": "string"
+                                            "type": "bytes"
                                         },
                                         {
                                             "name": "Topics",
@@ -683,11 +836,15 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     "fields": [
                         {
                             "name": "Address",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "Balance",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Nonce",
@@ -719,7 +876,11 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Hash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "MiniBlocks",
@@ -731,7 +892,11 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                     "fields": [
                         {
                             "name": "Hash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "SenderShardID",
@@ -743,15 +908,23 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "SenderBlockHash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "ReceiverBlockHash",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
                         },
                         {
                             "name": "Type",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Timestamp",
@@ -765,7 +938,11 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
             "name": "NotarizedBlocksHashes",
             "type": {
                 "type": "array",
-                "items": "string"
+                "items": {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
             }
         },
         {
@@ -797,11 +974,19 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "StateRootHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "PrevHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "ShardID",
@@ -813,11 +998,11 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "AccumulatedFees",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "DeveloperFees",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "EpochStartBlock",
@@ -831,27 +1016,27 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                 "fields": [
                     {
                         "name": "TotalSupply",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "TotalToDistribute",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "TotalNewlyMinted",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "RewardsPerBlock",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "RewardsForProtocolSustainability",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "NodePrice",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "PrevEpochStartRound",
@@ -859,7 +1044,11 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "PrevEpochStartHash",
-                        "type": "string"
+                        "type": {
+                            "type": "fixed",
+                            "size": 32,
+                            "name": "hash"
+                        }
                     }
                 ]
             }
@@ -874,7 +1063,11 @@ var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
     "fields": [
         {
             "name": "Hash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "SenderShardID",
@@ -886,15 +1079,23 @@ var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "SenderBlockHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "ReceiverBlockHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "Type",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Timestamp",
@@ -910,27 +1111,27 @@ var _EpochStartInfo_schema, _EpochStartInfo_schema_err = avro.ParseSchema(`{
     "fields": [
         {
             "name": "TotalSupply",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "TotalToDistribute",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "TotalNewlyMinted",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "RewardsPerBlock",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "RewardsForProtocolSustainability",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "NodePrice",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "PrevEpochStartRound",
@@ -938,7 +1139,11 @@ var _EpochStartInfo_schema, _EpochStartInfo_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "PrevEpochStartHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         }
     ]
 }`)
@@ -950,15 +1155,27 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
     "fields": [
         {
             "name": "Hash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "MiniBlockHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "BlockHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "Nonce",
@@ -970,15 +1187,23 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Value",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Receiver",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "Sender",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "ReceiverShard",
@@ -998,7 +1223,11 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Signature",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 64,
+                "name": "signature"
+            }
         },
         {
             "name": "Timestamp",
@@ -1022,7 +1251,11 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
     "fields": [
         {
             "name": "Hash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "Nonce",
@@ -1038,27 +1271,39 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Value",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Sender",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "Receiver",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "RelayerAddr",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "RelayedValue",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Code",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Data",
@@ -1066,15 +1311,23 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "PrevTxHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "OriginalTxHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "CallType",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "CodeMetadata",
@@ -1082,7 +1335,7 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "ReturnMessage",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Timestamp",
@@ -1098,23 +1351,35 @@ var _Receipt_schema, _Receipt_schema_err = avro.ParseSchema(`{
     "fields": [
         {
             "name": "Hash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "Value",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Sender",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "Data",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "TxHash",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "Timestamp",
@@ -1130,11 +1395,19 @@ var _Log_schema, _Log_schema_err = avro.ParseSchema(`{
     "fields": [
         {
             "name": "ID",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
         },
         {
             "name": "Address",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "Events",
@@ -1146,11 +1419,15 @@ var _Log_schema, _Log_schema_err = avro.ParseSchema(`{
                     "fields": [
                         {
                             "name": "Address",
-                            "type": "string"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "Identifier",
-                            "type": "string"
+                            "type": "bytes"
                         },
                         {
                             "name": "Topics",
@@ -1177,11 +1454,15 @@ var _Event_schema, _Event_schema_err = avro.ParseSchema(`{
     "fields": [
         {
             "name": "Address",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "Identifier",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Topics",
@@ -1204,11 +1485,15 @@ var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseS
     "fields": [
         {
             "name": "Address",
-            "type": "string"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "Balance",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "Nonce",
