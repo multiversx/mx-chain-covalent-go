@@ -49,7 +49,7 @@
            {"name": "RewardsPerBlock", "type": "bytes"},
            {"name": "RewardsForProtocolSustainability", "type": "bytes"},
            {"name": "NodePrice", "type": "bytes"},
-           {"name": "PrevEpochStartRound", "type": "int"},
+           {"name": "PrevEpochStartRound", "type": "long"},
            {"name": "PrevEpochStartHash", "type": "hash"}
          ]
        }}

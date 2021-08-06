@@ -7,7 +7,7 @@ import (
 
 // BlockHandler defines what a block processor shall do
 type BlockHandler interface {
-	ProcessBlock(block data.BodyHandler) (*schema.Block, error)
+	ProcessBlock(signersIndexes []uint64, hash []byte, header data.HeaderHandler, block data.BodyHandler) (*schema.Block, error)
 }
 
 // TransactionHandler defines what a transaction processor shall do

@@ -107,7 +107,7 @@ type EpochStartInfo struct {
 	RewardsPerBlock                  []byte
 	RewardsForProtocolSustainability []byte
 	NodePrice                        []byte
-	PrevEpochStartRound              int32
+	PrevEpochStartRound              int64
 	PrevEpochStartHash               []byte
 }
 
@@ -495,7 +495,7 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                 },
                                 {
                                     "name": "PrevEpochStartRound",
-                                    "type": "int"
+                                    "type": "long"
                                 },
                                 {
                                     "name": "PrevEpochStartHash",
@@ -1040,7 +1040,7 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "PrevEpochStartRound",
-                        "type": "int"
+                        "type": "long"
                     },
                     {
                         "name": "PrevEpochStartHash",
@@ -1135,7 +1135,7 @@ var _EpochStartInfo_schema, _EpochStartInfo_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "PrevEpochStartRound",
-            "type": "int"
+            "type": "long"
         },
         {
             "name": "PrevEpochStartHash",

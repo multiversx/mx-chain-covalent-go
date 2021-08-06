@@ -37,7 +37,7 @@ func NewDataProcessor(
 // ProcessData converts all covalent necessary data to a specific structure defined by avro schema
 func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
 
-	block, err := dp.blockHandler.ProcessBlock(args.Body)
+	block, err := dp.blockHandler.ProcessBlock(args.SignersIndexes, args.HeaderHash, args.Header, args.Body)
 	if err != nil {
 		return nil, err
 	}
