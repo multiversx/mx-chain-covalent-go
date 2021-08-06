@@ -2,6 +2,7 @@ package block
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -48,15 +49,15 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		return nil, err
 	}
 
-	txsSizeInBytes := ComputeSizeOfTxs(bp.marshalizer, args.TransactionsPool)
+	txsSizeInBytes := bp.computeSizeOfTxs(args.TransactionsPool)
 
 	nonce := int64(args.Header.GetNonce())
 	round := int64(args.Header.GetRound())
 	epoch := int32(args.Header.GetEpoch())
 	hash := args.HeaderHash
-	notarizedBlocksHashes := strSliceToBytesSlice(args.NotarizedHeadersHashes)
+	notarizedBlocksHashes := utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes)
 	proposer := getProposerIndex(args.SignersIndexes)
-	validators := uIntSliceToIntSlice(args.SignersIndexes)
+	validators := utility.UIntSliceToIntSlice(args.SignersIndexes)
 	pubKeysBitmap := args.Header.GetPubKeysBitmap()
 	timeStamp := int64(args.Header.GetTimeStamp())
 	rootHash := args.Header.GetRootHash()
@@ -98,28 +99,6 @@ func getBlockField(val *big.Int) []byte {
 	}
 
 	return nil
-}
-
-func strSliceToBytesSlice(in []string) [][]byte {
-	out := make([][]byte, len(in))
-
-	for i := range in {
-		out[i] = make([]byte, len(in[i]))
-		tmp := []byte(in[i])
-		out = append(out, tmp)
-	}
-
-	return out
-}
-
-func uIntSliceToIntSlice(in []uint64) []int64 {
-	out := make([]int64, len(in))
-
-	for i := range in {
-		out[i] = int64(in[i])
-	}
-
-	return out
 }
 
 func getProposerIndex(signersIndexes []uint64) int64 {
@@ -173,18 +152,17 @@ func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdB
 	return int64(blockSize), nil
 }
 
-// ComputeSizeOfTxs will compute size of transactions in bytes
-func ComputeSizeOfTxs(marshalizer marshal.Marshalizer, pool *indexer.Pool) int64 {
+func (bp *blockProcessor) computeSizeOfTxs(pool *indexer.Pool) int64 {
 	if pool == nil {
 		return 0
 	}
 
 	sizeTxs := 0
-	sizeTxs += computeSizeOfMap(marshalizer, pool.Txs)
-	sizeTxs += computeSizeOfMap(marshalizer, pool.Receipts)
-	sizeTxs += computeSizeOfMap(marshalizer, pool.Invalid)
-	sizeTxs += computeSizeOfMap(marshalizer, pool.Rewards)
-	sizeTxs += computeSizeOfMap(marshalizer, pool.Scrs)
+	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Txs)
+	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Receipts)
+	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Invalid)
+	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Rewards)
+	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Scrs)
 
 	return int64(sizeTxs)
 }
@@ -194,7 +172,7 @@ func computeSizeOfMap(marshalizer marshal.Marshalizer, mapTxs map[string]data.Tr
 	for _, tx := range mapTxs {
 		txBytes, err := marshalizer.Marshal(tx)
 		if err != nil {
-			log.Debug("itemBlock.computeSizeOfMap", "error", err)
+			log.Debug("block processor, computeSizeOfMap", "error", err)
 			continue
 		}
 
