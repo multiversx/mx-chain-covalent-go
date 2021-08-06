@@ -2,6 +2,7 @@ package block
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
+	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/core"
@@ -18,12 +19,13 @@ import (
 var log = logger.GetOrCreate("indexer/workItems")
 
 type blockProcessor struct {
-	hasher      hashing.Hasher
-	marshalizer marshal.Marshalizer
+	hasher            hashing.Hasher
+	marshalizer       marshal.Marshalizer
+	miniBlocksHandler process.MiniBlockHandler
 }
 
 // NewBlockProcessor creates a new instance of block processor
-func NewBlockProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer) (*blockProcessor, error) {
+func NewBlockProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer, mbHandler process.MiniBlockHandler) (*blockProcessor, error) {
 	if check.IfNil(hasher) {
 		return nil, covalent.ErrNilHasher
 	}
@@ -32,8 +34,9 @@ func NewBlockProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer) (
 	}
 
 	return &blockProcessor{
-		hasher:      hasher,
-		marshalizer: marshalizer,
+		hasher:            hasher,
+		marshalizer:       marshalizer,
+		miniBlocksHandler: mbHandler,
 	}, nil
 }
 
@@ -49,7 +52,10 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		return nil, err
 	}
 
-	txsSizeInBytes := bp.computeSizeOfTxs(args.TransactionsPool)
+	miniBlocks, err := bp.miniBlocksHandler.ProcessMiniBlocks()
+	if err != nil {
+		return nil, err
+	}
 
 	nonce := int64(args.Header.GetNonce())
 	round := int64(args.Header.GetRound())
@@ -59,13 +65,14 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 	proposer := getProposerIndex(args.SignersIndexes)
 	validators := utility.UIntSliceToIntSlice(args.SignersIndexes)
 	pubKeysBitmap := args.Header.GetPubKeysBitmap()
+	txsSizeInBytes := bp.computeSizeOfTxs(args.TransactionsPool)
 	timeStamp := int64(args.Header.GetTimeStamp())
 	rootHash := args.Header.GetRootHash()
 	prevHash := args.Header.GetPrevHash()
 	shardID := int32(args.Header.GetShardID())
 	txCount := int32(args.Header.GetTxCount())
-	accumulatedFees := getBlockField(args.Header.GetAccumulatedFees())
-	developerFees := getBlockField(args.Header.GetDeveloperFees())
+	accumulatedFees := getBytes(args.Header.GetAccumulatedFees())
+	developerFees := getBytes(args.Header.GetDeveloperFees())
 	isStartOfEpochBlock := args.Header.IsStartOfEpochBlock()
 	epochStartInfo := getEpochStartInfo(args.Header)
 
@@ -74,7 +81,7 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		Round:                 round,
 		Epoch:                 epoch,
 		Hash:                  hash,
-		MiniBlocks:            nil, /*TODO*/
+		MiniBlocks:            miniBlocks,
 		NotarizedBlocksHashes: notarizedBlocksHashes,
 		Proposer:              proposer,
 		Validators:            validators,
@@ -93,7 +100,52 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 	}, nil
 }
 
-func getBlockField(val *big.Int) []byte {
+func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdBlock.Body) (int64, error) {
+	headerBytes, err := bp.marshalizer.Marshal(header)
+	if err != nil {
+		return 0, err
+	}
+	bodyBytes, err := bp.marshalizer.Marshal(body)
+	if err != nil {
+		return 0, err
+	}
+
+	blockSize := len(headerBytes) + len(bodyBytes)
+
+	return int64(blockSize), nil
+}
+
+func (bp *blockProcessor) computeSizeOfTxs(pool *indexer.Pool) int64 {
+	if pool == nil {
+		return 0
+	}
+
+	sizeTxs := 0
+	sizeTxs += bp.computeSizeOfMap(pool.Txs)
+	sizeTxs += bp.computeSizeOfMap(pool.Receipts)
+	sizeTxs += bp.computeSizeOfMap(pool.Invalid)
+	sizeTxs += bp.computeSizeOfMap(pool.Rewards)
+	sizeTxs += bp.computeSizeOfMap(pool.Scrs)
+
+	return int64(sizeTxs)
+}
+
+func (bp *blockProcessor) computeSizeOfMap(mapTxs map[string]data.TransactionHandler) int {
+	txsSize := 0
+	for _, tx := range mapTxs {
+		txBytes, err := bp.marshalizer.Marshal(tx)
+		if err != nil {
+			log.Debug("block processor, computeSizeOfMap", "error", err)
+			continue
+		}
+
+		txsSize += len(txBytes)
+	}
+
+	return txsSize
+}
+
+func getBytes(val *big.Int) []byte {
 	if val != nil {
 		return val.Bytes()
 	}
@@ -126,58 +178,13 @@ func getEpochStartInfo(header data.HeaderHandler) *schema.EpochStartInfo {
 	economics := metaHeader.EpochStart.Economics
 
 	return &schema.EpochStartInfo{
-		TotalSupply:                      getBlockField(economics.TotalSupply),
-		TotalToDistribute:                getBlockField(economics.TotalToDistribute),
-		TotalNewlyMinted:                 getBlockField(economics.TotalNewlyMinted),
-		RewardsPerBlock:                  getBlockField(economics.RewardsPerBlock),
-		RewardsForProtocolSustainability: getBlockField(economics.RewardsForProtocolSustainability),
-		NodePrice:                        getBlockField(economics.NodePrice),
+		TotalSupply:                      getBytes(economics.TotalSupply),
+		TotalToDistribute:                getBytes(economics.TotalToDistribute),
+		TotalNewlyMinted:                 getBytes(economics.TotalNewlyMinted),
+		RewardsPerBlock:                  getBytes(economics.RewardsPerBlock),
+		RewardsForProtocolSustainability: getBytes(economics.RewardsForProtocolSustainability),
+		NodePrice:                        getBytes(economics.NodePrice),
 		PrevEpochStartRound:              int64(economics.PrevEpochStartRound),
 		PrevEpochStartHash:               economics.PrevEpochStartHash,
 	}
-}
-
-func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdBlock.Body) (int64, error) {
-	headerBytes, err := bp.marshalizer.Marshal(header)
-	if err != nil {
-		return 0, err
-	}
-	bodyBytes, err := bp.marshalizer.Marshal(body)
-	if err != nil {
-		return 0, err
-	}
-
-	blockSize := len(headerBytes) + len(bodyBytes)
-
-	return int64(blockSize), nil
-}
-
-func (bp *blockProcessor) computeSizeOfTxs(pool *indexer.Pool) int64 {
-	if pool == nil {
-		return 0
-	}
-
-	sizeTxs := 0
-	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Txs)
-	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Receipts)
-	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Invalid)
-	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Rewards)
-	sizeTxs += computeSizeOfMap(bp.marshalizer, pool.Scrs)
-
-	return int64(sizeTxs)
-}
-
-func computeSizeOfMap(marshalizer marshal.Marshalizer, mapTxs map[string]data.TransactionHandler) int {
-	txsSize := 0
-	for _, tx := range mapTxs {
-		txBytes, err := marshalizer.Marshal(tx)
-		if err != nil {
-			log.Debug("block processor, computeSizeOfMap", "error", err)
-			continue
-		}
-
-		txsSize += len(txBytes)
-	}
-
-	return txsSize
 }

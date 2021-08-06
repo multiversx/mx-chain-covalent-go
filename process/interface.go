@@ -11,6 +11,11 @@ type BlockHandler interface {
 	ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error)
 }
 
+// MiniBlockHandler defines what a mini blocks processor shall do
+type MiniBlockHandler interface {
+	ProcessMiniBlocks() ([]*schema.MiniBlock, error)
+}
+
 // TransactionHandler defines what a transaction processor shall do
 type TransactionHandler interface {
 	ProcessTransactions(transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error)

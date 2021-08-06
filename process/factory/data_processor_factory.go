@@ -5,6 +5,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
 	blockCovalent "github.com/ElrondNetwork/covalent-indexer-go/process/block"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/block/miniblocks"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/logs"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
@@ -24,7 +25,12 @@ type ArgsDataProcessor struct {
 
 // CreateDataProcessor creates a new data handler instance of type data processor
 func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) {
-	blockHandler, err := blockCovalent.NewBlockProcessor(args.hasher, args.marshalizer)
+	miniBlocksHandler, err := miniblocks.NewMiniBlocksProcessor(args.hasher, args.marshalizer)
+	if err != nil {
+		return nil, err
+	}
+
+	blockHandler, err := blockCovalent.NewBlockProcessor(args.hasher, args.marshalizer, miniBlocksHandler)
 	if err != nil {
 		return nil, err
 	}
