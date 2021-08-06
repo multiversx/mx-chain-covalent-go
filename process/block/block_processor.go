@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	"math/big"
 )
 
 type blockProcessor struct {
@@ -38,7 +39,12 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 	if !ok {
 		return nil, covalent.ErrBlockBodyAssertion
 	}
-	_ = body
+
+	blockSizeInBytes, err := bp.computeBlockSize(args.Header, body)
+	if err != nil {
+		return nil, err
+	}
+
 	nonce := int64(args.Header.GetNonce())
 	round := int64(args.Header.GetRound())
 	epoch := int32(args.Header.GetEpoch())
@@ -47,14 +53,13 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 	proposer := getProposerIndex(args.SignersIndexes)
 	validators := uIntSliceToIntSlice(args.SignersIndexes)
 	pubKeysBitmap := args.Header.GetPubKeysBitmap()
-	size := int64(321321321) // TODO
 	timeStamp := int64(args.Header.GetTimeStamp())
 	rootHash := args.Header.GetRootHash()
 	prevHash := args.Header.GetPrevHash()
 	shardID := int32(args.Header.GetShardID())
 	txCount := int32(args.Header.GetTxCount())
-	accumulatedFees := args.Header.GetAccumulatedFees().Bytes()
-	developerFees := args.Header.GetDeveloperFees().Bytes()
+	accumulatedFees := getBlockField(args.Header.GetAccumulatedFees())
+	developerFees := getBlockField(args.Header.GetDeveloperFees())
 	isStartOfEpochBlock := args.Header.IsStartOfEpochBlock()
 	epochStartInfo := getEpochStartInfo(args.Header)
 
@@ -68,8 +73,8 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		Proposer:              proposer,
 		Validators:            validators,
 		PubKeysBitmap:         pubKeysBitmap,
-		Size:                  size, /*TODO*/
-		SizeTxs:               0,    /*TODO*/
+		Size:                  blockSizeInBytes,
+		SizeTxs:               0, /*TODO*/
 		Timestamp:             timeStamp,
 		StateRootHash:         rootHash,
 		PrevHash:              prevHash,
@@ -80,6 +85,14 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		EpochStartBlock:       isStartOfEpochBlock,
 		EpochStartInfo:        epochStartInfo,
 	}, nil
+}
+
+func getBlockField(val *big.Int) []byte {
+	if val != nil {
+		return val.Bytes()
+	}
+
+	return nil
 }
 
 func strSliceToBytesSlice(in []string) [][]byte {
@@ -113,54 +126,44 @@ func getProposerIndex(signersIndexes []uint64) int64 {
 }
 
 func getEpochStartInfo(header data.HeaderHandler) *schema.EpochStartInfo {
-
-	economics, exists := getEconomicsIfExists(header)
-	if !exists {
+	if header.GetShardID() != core.MetachainShardId {
 		return nil
 	}
 
+	metaHeader, ok := header.(*erdBlock.MetaBlock)
+	if !ok {
+		return nil
+	}
+
+	if !metaHeader.IsStartOfEpochBlock() {
+		return nil
+	}
+
+	economics := metaHeader.EpochStart.Economics
+
 	return &schema.EpochStartInfo{
-		TotalSupply:                      economics.TotalSupply.Bytes(),
-		TotalToDistribute:                economics.TotalToDistribute.Bytes(),
-		TotalNewlyMinted:                 economics.TotalNewlyMinted.Bytes(),
-		RewardsPerBlock:                  economics.RewardsPerBlock.Bytes(),
-		RewardsForProtocolSustainability: economics.RewardsForProtocolSustainability.Bytes(),
-		NodePrice:                        economics.NodePrice.Bytes(),
+		TotalSupply:                      getBlockField(economics.TotalSupply),
+		TotalToDistribute:                getBlockField(economics.TotalToDistribute),
+		TotalNewlyMinted:                 getBlockField(economics.TotalNewlyMinted),
+		RewardsPerBlock:                  getBlockField(economics.RewardsPerBlock),
+		RewardsForProtocolSustainability: getBlockField(economics.RewardsForProtocolSustainability),
+		NodePrice:                        getBlockField(economics.NodePrice),
 		PrevEpochStartRound:              int64(economics.PrevEpochStartRound),
 		PrevEpochStartHash:               economics.PrevEpochStartHash,
 	}
 }
 
-func getEconomicsIfExists(header data.HeaderHandler) (*erdBlock.Economics, bool) {
-	if header.GetShardID() != core.MetachainShardId {
-		return nil, false
-	}
-
-	metaHeader, ok := header.(*erdBlock.MetaBlock)
-	if !ok {
-		return nil, false
-	}
-
-	if !metaHeader.IsStartOfEpochBlock() {
-		return nil, false
-	}
-
-	return &metaHeader.EpochStart.Economics, true
-}
-
-func (bp *blockProcessor) computeBlockSizeAndHeaderHash(header data.HeaderHandler, body *erdBlock.Body) (int, []byte, error) {
+func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdBlock.Body) (int64, error) {
 	headerBytes, err := bp.marshalizer.Marshal(header)
 	if err != nil {
-		return 0, nil, err
+		return 0, err
 	}
 	bodyBytes, err := bp.marshalizer.Marshal(body)
 	if err != nil {
-		return 0, nil, err
+		return 0, err
 	}
 
 	blockSize := len(headerBytes) + len(bodyBytes)
 
-	headerHash := bp.hasher.Compute(string(headerBytes))
-
-	return blockSize, headerHash, nil
+	return int64(blockSize), nil
 }
