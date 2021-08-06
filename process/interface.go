@@ -3,11 +3,12 @@ package process
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
+	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
 
 // BlockHandler defines what a block processor shall do
 type BlockHandler interface {
-	ProcessBlock(signersIndexes []uint64, hash []byte, header data.HeaderHandler, block data.BodyHandler) (*schema.Block, error)
+	ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error)
 }
 
 // TransactionHandler defines what a transaction processor shall do

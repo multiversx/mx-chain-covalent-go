@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
+	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
 
 type blockProcessor struct{}
@@ -16,43 +17,43 @@ func NewBlockProcessor() (*blockProcessor, error) {
 }
 
 // ProcessBlock converts block data to a specific structure defined by avro schema
-func (bp *blockProcessor) ProcessBlock(signersIndexes []uint64, hash []byte, header data.HeaderHandler, block data.BodyHandler) (*schema.Block, error) {
-	body, ok := block.(*erdBlock.Body)
+func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error) {
+	body, ok := args.Body.(*erdBlock.Body)
 	if !ok {
 		return nil, covalent.ErrBlockBodyAssertion
 	}
-
-	nonce := int64(header.GetNonce())
-	round := int64(header.GetRound())
-	epoch := int32(header.GetEpoch())
-	proposer := getProposerIndex(signersIndexes)
-	validators := uIntSliceToIntSlice(signersIndexes)
-	pubKeysBitmap := header.GetPubKeysBitmap()
+	_ = body
+	nonce := int64(args.Header.GetNonce())
+	round := int64(args.Header.GetRound())
+	epoch := int32(args.Header.GetEpoch())
+	hash := args.HeaderHash
+	notarizedBlocksHashes := strSliceToBytesSlice(args.NotarizedHeadersHashes)
+	proposer := getProposerIndex(args.SignersIndexes)
+	validators := uIntSliceToIntSlice(args.SignersIndexes)
+	pubKeysBitmap := args.Header.GetPubKeysBitmap()
 	size := int64(321321321) // TODO
-
-	timeStamp := int64(header.GetTimeStamp())
-	rootHash := header.GetRootHash()
-	prevHash := header.GetPrevHash()
-	shardID := int32(header.GetShardID())
-	txCount := int32(header.GetTxCount())
-
-	accumulatedFees := header.GetAccumulatedFees().Bytes()
-	developerFees := header.GetDeveloperFees().Bytes()
-	isStartOfEpochBlock := header.IsStartOfEpochBlock()
-	epochStartInfo := getEpochStartInfoForMeta(header)
+	timeStamp := int64(args.Header.GetTimeStamp())
+	rootHash := args.Header.GetRootHash()
+	prevHash := args.Header.GetPrevHash()
+	shardID := int32(args.Header.GetShardID())
+	txCount := int32(args.Header.GetTxCount())
+	accumulatedFees := args.Header.GetAccumulatedFees().Bytes()
+	developerFees := args.Header.GetDeveloperFees().Bytes()
+	isStartOfEpochBlock := args.Header.IsStartOfEpochBlock()
+	epochStartInfo := getEpochStartInfo(args.Header)
 
 	return &schema.Block{
 		Nonce:                 nonce,
 		Round:                 round,
 		Epoch:                 epoch,
 		Hash:                  hash,
-		MiniBlocks:            nil,
-		NotarizedBlocksHashes: nil, /*TODO*/
+		MiniBlocks:            nil, /*TODO*/
+		NotarizedBlocksHashes: notarizedBlocksHashes,
 		Proposer:              proposer,
 		Validators:            validators,
 		PubKeysBitmap:         pubKeysBitmap,
-		Size:                  size,
-		SizeTxs:               0,
+		Size:                  size, /*TODO*/
+		SizeTxs:               0,    /*TODO*/
 		Timestamp:             timeStamp,
 		StateRootHash:         rootHash,
 		PrevHash:              prevHash,
@@ -63,27 +64,18 @@ func (bp *blockProcessor) ProcessBlock(signersIndexes []uint64, hash []byte, hea
 		EpochStartBlock:       isStartOfEpochBlock,
 		EpochStartInfo:        epochStartInfo,
 	}, nil
+}
 
-	body.GetMiniBlocks()
+func strSliceToBytesSlice(in []string) [][]byte {
+	out := make([][]byte, len(in))
 
-	_ = hash
-	//miniblocks from body
-	getProposerIndex(signersIndexes)
-	_ = signersIndexes
-	header.GetPubKeysBitmap()
-	body.Size()
-	//size txs?
-	header.GetTimeStamp()
-	header.GetRootHash() // ?? stateroothash?
-	header.GetPrevHash()
-	header.GetShardID()
-	header.GetTxCount()
-	header.GetAccumulatedFees()
-	header.GetDeveloperFees()
-	header.IsStartOfEpochBlock()
-	getEpochStartInfoForMeta(header)
+	for i := range in {
+		out[i] = make([]byte, len(in[i]))
+		tmp := []byte(in[i])
+		out = append(out, tmp)
+	}
 
-	return nil, nil
+	return out
 }
 
 func uIntSliceToIntSlice(in []uint64) []int64 {
@@ -104,30 +96,38 @@ func getProposerIndex(signersIndexes []uint64) int64 {
 	return 0
 }
 
-func getEpochStartInfoForMeta(header data.HeaderHandler) *schema.EpochStartInfo {
-	if header.GetShardID() != core.MetachainShardId {
+func getEpochStartInfo(header data.HeaderHandler) *schema.EpochStartInfo {
+
+	economics, exists := getEconomicsIfExists(header)
+	if !exists {
 		return nil
+	}
+
+	return &schema.EpochStartInfo{
+		TotalSupply:                      economics.TotalSupply.Bytes(),
+		TotalToDistribute:                economics.TotalToDistribute.Bytes(),
+		TotalNewlyMinted:                 economics.TotalNewlyMinted.Bytes(),
+		RewardsPerBlock:                  economics.RewardsPerBlock.Bytes(),
+		RewardsForProtocolSustainability: economics.RewardsForProtocolSustainability.Bytes(),
+		NodePrice:                        economics.NodePrice.Bytes(),
+		PrevEpochStartRound:              int64(economics.PrevEpochStartRound),
+		PrevEpochStartHash:               economics.PrevEpochStartHash,
+	}
+}
+
+func getEconomicsIfExists(header data.HeaderHandler) (*erdBlock.Economics, bool) {
+	if header.GetShardID() != core.MetachainShardId {
+		return nil, false
 	}
 
 	metaHeader, ok := header.(*erdBlock.MetaBlock)
 	if !ok {
-		return nil
+		return nil, false
 	}
 
 	if !metaHeader.IsStartOfEpochBlock() {
-		return nil
+		return nil, false
 	}
 
-	metaHeaderEconomics := metaHeader.EpochStart.Economics
-
-	return &schema.EpochStartInfo{
-		TotalSupply:                      metaHeaderEconomics.TotalSupply.Bytes(),
-		TotalToDistribute:                metaHeaderEconomics.TotalToDistribute.Bytes(),
-		TotalNewlyMinted:                 metaHeaderEconomics.TotalNewlyMinted.Bytes(),
-		RewardsPerBlock:                  metaHeaderEconomics.RewardsPerBlock.Bytes(),
-		RewardsForProtocolSustainability: metaHeaderEconomics.RewardsForProtocolSustainability.Bytes(),
-		NodePrice:                        metaHeaderEconomics.NodePrice.Bytes(),
-		PrevEpochStartRound:              int64(metaHeaderEconomics.PrevEpochStartRound),
-		PrevEpochStartHash:               metaHeaderEconomics.PrevEpochStartHash,
-	}
+	return &metaHeader.EpochStart.Economics, true
 }
