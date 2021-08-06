@@ -9,6 +9,8 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/hashing"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 )
 
 // ArgsDataProcessor holds all input dependencies required by data processor factory
@@ -16,11 +18,13 @@ import (
 type ArgsDataProcessor struct {
 	PubKeyConvertor core.PubkeyConverter
 	Accounts        covalent.AccountsAdapter
+	hasher          hashing.Hasher
+	marshalizer     marshal.Marshalizer
 }
 
 // CreateDataProcessor creates a new data handler instance of type data processor
 func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) {
-	blockHandler, err := blockCovalent.NewBlockProcessor()
+	blockHandler, err := blockCovalent.NewBlockProcessor(args.hasher, args.marshalizer)
 	if err != nil {
 		return nil, err
 	}

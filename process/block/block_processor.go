@@ -4,16 +4,32 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/hashing"
+	"github.com/ElrondNetwork/elrond-go-core/marshal"
 )
 
-type blockProcessor struct{}
+type blockProcessor struct {
+	hasher      hashing.Hasher
+	marshalizer marshal.Marshalizer
+}
 
 // NewBlockProcessor creates a new instance of block processor
-func NewBlockProcessor() (*blockProcessor, error) {
-	return &blockProcessor{}, nil
+func NewBlockProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer) (*blockProcessor, error) {
+	if check.IfNil(hasher) {
+		return nil, covalent.ErrNilHasher
+	}
+	if check.IfNil(marshalizer) {
+		return nil, covalent.ErrNilMarshalizer
+	}
+
+	return &blockProcessor{
+		hasher:      hasher,
+		marshalizer: marshalizer,
+	}, nil
 }
 
 // ProcessBlock converts block data to a specific structure defined by avro schema
@@ -130,4 +146,21 @@ func getEconomicsIfExists(header data.HeaderHandler) (*erdBlock.Economics, bool)
 	}
 
 	return &metaHeader.EpochStart.Economics, true
+}
+
+func (bp *blockProcessor) computeBlockSizeAndHeaderHash(header data.HeaderHandler, body *erdBlock.Body) (int, []byte, error) {
+	headerBytes, err := bp.marshalizer.Marshal(header)
+	if err != nil {
+		return 0, nil, err
+	}
+	bodyBytes, err := bp.marshalizer.Marshal(body)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	blockSize := len(headerBytes) + len(bodyBytes)
+
+	headerHash := bp.hasher.Compute(string(headerBytes))
+
+	return blockSize, headerHash, nil
 }
