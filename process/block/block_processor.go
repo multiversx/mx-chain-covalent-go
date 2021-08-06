@@ -10,8 +10,11 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"math/big"
 )
+
+var log = logger.GetOrCreate("indexer/workItems")
 
 type blockProcessor struct {
 	hasher      hashing.Hasher
@@ -45,6 +48,8 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		return nil, err
 	}
 
+	txsSizeInBytes := ComputeSizeOfTxs(bp.marshalizer, args.TransactionsPool)
+
 	nonce := int64(args.Header.GetNonce())
 	round := int64(args.Header.GetRound())
 	epoch := int32(args.Header.GetEpoch())
@@ -74,7 +79,7 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		Validators:            validators,
 		PubKeysBitmap:         pubKeysBitmap,
 		Size:                  blockSizeInBytes,
-		SizeTxs:               0, /*TODO*/
+		SizeTxs:               txsSizeInBytes,
 		Timestamp:             timeStamp,
 		StateRootHash:         rootHash,
 		PrevHash:              prevHash,
@@ -166,4 +171,35 @@ func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdB
 	blockSize := len(headerBytes) + len(bodyBytes)
 
 	return int64(blockSize), nil
+}
+
+// ComputeSizeOfTxs will compute size of transactions in bytes
+func ComputeSizeOfTxs(marshalizer marshal.Marshalizer, pool *indexer.Pool) int64 {
+	if pool == nil {
+		return 0
+	}
+
+	sizeTxs := 0
+	sizeTxs += computeSizeOfMap(marshalizer, pool.Txs)
+	sizeTxs += computeSizeOfMap(marshalizer, pool.Receipts)
+	sizeTxs += computeSizeOfMap(marshalizer, pool.Invalid)
+	sizeTxs += computeSizeOfMap(marshalizer, pool.Rewards)
+	sizeTxs += computeSizeOfMap(marshalizer, pool.Scrs)
+
+	return int64(sizeTxs)
+}
+
+func computeSizeOfMap(marshalizer marshal.Marshalizer, mapTxs map[string]data.TransactionHandler) int {
+	txsSize := 0
+	for _, tx := range mapTxs {
+		txBytes, err := marshalizer.Marshal(tx)
+		if err != nil {
+			log.Debug("itemBlock.computeSizeOfMap", "error", err)
+			continue
+		}
+
+		txsSize += len(txBytes)
+	}
+
+	return txsSize
 }
