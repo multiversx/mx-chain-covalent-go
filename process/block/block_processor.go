@@ -31,6 +31,9 @@ func NewBlockProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer, m
 	if check.IfNil(marshalizer) {
 		return nil, covalent.ErrNilMarshalizer
 	}
+	if mbHandler == nil {
+		return nil, covalent.ErrNilMiniBlockHandler
+	}
 
 	return &blockProcessor{
 		hasher:            hasher,

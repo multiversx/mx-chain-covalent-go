@@ -16,3 +16,6 @@ var ErrNilHasher = errors.New("nil hasher provided")
 
 // ErrNilMarshalizer signals that a nil marshalizer has been provided
 var ErrNilMarshalizer = errors.New("nil marshalizer provided")
+
+// ErrNilMiniBlockHandler signals that a nil mini block handler has been provided
+var ErrNilMiniBlockHandler = errors.New("nil mini block handler provided")
