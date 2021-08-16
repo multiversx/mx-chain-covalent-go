@@ -13,10 +13,9 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"math/big"
 )
 
-var log = logger.GetOrCreate("indexer/workItems")
+var log = logger.GetOrCreate("process/block/blockProcessor")
 
 type blockProcessor struct {
 	hasher            hashing.Hasher
@@ -65,14 +64,14 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 	proposer := getProposerIndex(args.SignersIndexes)
 	validators := utility.UIntSliceToIntSlice(args.SignersIndexes)
 	pubKeysBitmap := args.Header.GetPubKeysBitmap()
-	txsSizeInBytes := bp.computeSizeOfTxs(args.TransactionsPool)
+	txsSizeInBytes := bp.computeTxsSize(args.TransactionsPool)
 	timeStamp := int64(args.Header.GetTimeStamp())
 	rootHash := args.Header.GetRootHash()
 	prevHash := args.Header.GetPrevHash()
 	shardID := int32(args.Header.GetShardID())
 	txCount := int32(args.Header.GetTxCount())
-	accumulatedFees := getBytes(args.Header.GetAccumulatedFees())
-	developerFees := getBytes(args.Header.GetDeveloperFees())
+	accumulatedFees := utility.GetBytes(args.Header.GetAccumulatedFees())
+	developerFees := utility.GetBytes(args.Header.GetDeveloperFees())
 	isStartOfEpochBlock := args.Header.IsStartOfEpochBlock()
 	epochStartInfo := getEpochStartInfo(args.Header)
 
@@ -115,27 +114,27 @@ func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdB
 	return int64(blockSize), nil
 }
 
-func (bp *blockProcessor) computeSizeOfTxs(pool *indexer.Pool) int64 {
+func (bp *blockProcessor) computeTxsSize(pool *indexer.Pool) int64 {
 	if pool == nil {
 		return 0
 	}
 
 	sizeTxs := 0
-	sizeTxs += bp.computeSizeOfMap(pool.Txs)
-	sizeTxs += bp.computeSizeOfMap(pool.Receipts)
-	sizeTxs += bp.computeSizeOfMap(pool.Invalid)
-	sizeTxs += bp.computeSizeOfMap(pool.Rewards)
-	sizeTxs += bp.computeSizeOfMap(pool.Scrs)
+	sizeTxs += bp.computeMapSize(pool.Txs)
+	sizeTxs += bp.computeMapSize(pool.Receipts)
+	sizeTxs += bp.computeMapSize(pool.Invalid)
+	sizeTxs += bp.computeMapSize(pool.Rewards)
+	sizeTxs += bp.computeMapSize(pool.Scrs)
 
 	return int64(sizeTxs)
 }
 
-func (bp *blockProcessor) computeSizeOfMap(mapTxs map[string]data.TransactionHandler) int {
+func (bp *blockProcessor) computeMapSize(mapTxs map[string]data.TransactionHandler) int {
 	txsSize := 0
 	for _, tx := range mapTxs {
 		txBytes, err := bp.marshalizer.Marshal(tx)
 		if err != nil {
-			log.Debug("block processor, computeSizeOfMap", "error", err)
+			log.Debug("blockProcessor.computeMapSize", "error", err)
 			continue
 		}
 
@@ -143,14 +142,6 @@ func (bp *blockProcessor) computeSizeOfMap(mapTxs map[string]data.TransactionHan
 	}
 
 	return txsSize
-}
-
-func getBytes(val *big.Int) []byte {
-	if val != nil {
-		return val.Bytes()
-	}
-
-	return nil
 }
 
 func getProposerIndex(signersIndexes []uint64) int64 {
@@ -178,12 +169,12 @@ func getEpochStartInfo(header data.HeaderHandler) *schema.EpochStartInfo {
 	economics := metaHeader.EpochStart.Economics
 
 	return &schema.EpochStartInfo{
-		TotalSupply:                      getBytes(economics.TotalSupply),
-		TotalToDistribute:                getBytes(economics.TotalToDistribute),
-		TotalNewlyMinted:                 getBytes(economics.TotalNewlyMinted),
-		RewardsPerBlock:                  getBytes(economics.RewardsPerBlock),
-		RewardsForProtocolSustainability: getBytes(economics.RewardsForProtocolSustainability),
-		NodePrice:                        getBytes(economics.NodePrice),
+		TotalSupply:                      utility.GetBytes(economics.TotalSupply),
+		TotalToDistribute:                utility.GetBytes(economics.TotalToDistribute),
+		TotalNewlyMinted:                 utility.GetBytes(economics.TotalNewlyMinted),
+		RewardsPerBlock:                  utility.GetBytes(economics.RewardsPerBlock),
+		RewardsForProtocolSustainability: utility.GetBytes(economics.RewardsForProtocolSustainability),
+		NodePrice:                        utility.GetBytes(economics.NodePrice),
 		PrevEpochStartRound:              int64(economics.PrevEpochStartRound),
 		PrevEpochStartHash:               economics.PrevEpochStartHash,
 	}

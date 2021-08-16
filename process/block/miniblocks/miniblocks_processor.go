@@ -12,7 +12,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-var log = logger.GetOrCreate("indexer/process/miniblocks")
+var log = logger.GetOrCreate("process/block/miniblocks/miniBlocksProcessor")
 
 type miniBlocksProcessor struct {
 	hasher      hashing.Hasher
@@ -42,7 +42,7 @@ func (mbp *miniBlocksProcessor) ProcessMiniBlocks(headerHash []byte, header data
 
 		miniBlock, err := mbp.processMiniBlock(mb, header, headerHash)
 		if err != nil {
-			log.Warn("miniBlocksProcessor.ProcessMiniBlocks cannot prepare miniBlock", "error", err)
+			log.Warn("miniBlocksProcessor.ProcessMiniBlocks cannot process miniBlock", "error", err)
 			continue
 		}
 

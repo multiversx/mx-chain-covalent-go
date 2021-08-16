@@ -1,5 +1,7 @@
 package utility
 
+import "math/big"
+
 func StrSliceToBytesSlice(in []string) [][]byte {
 	out := make([][]byte, len(in))
 
@@ -20,4 +22,12 @@ func UIntSliceToIntSlice(in []uint64) []int64 {
 	}
 
 	return out
+}
+
+func GetBytes(val *big.Int) []byte {
+	if val != nil {
+		return val.Bytes()
+	}
+
+	return nil
 }
