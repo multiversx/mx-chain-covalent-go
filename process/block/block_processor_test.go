@@ -95,7 +95,8 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 				MarshalCalled: currTest.Marshaller},
 			&mock.MiniBlockHandlerStub{})
 
-		_, err := bp.ProcessBlock(getInitializedArgs(false))
+		args := getInitializedArgs(false)
+		_, err := bp.ProcessBlock(args)
 		require.Equal(t, currTest.expectedErr, err)
 	}
 }
