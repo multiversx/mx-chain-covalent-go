@@ -1,15 +1,17 @@
 package miniblocks
 
 import (
+	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
+	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
+func TestNewMiniBlocksProcessor(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -40,4 +42,65 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 		_, err := NewMiniBlocksProcessor(currTest.args())
 		require.Equal(t, currTest.expectedErr, err)
 	}
+}
+
+func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
+	mbp, _ := NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
+
+	headerHash := []byte("header hash")
+	header := &block.Header{TimeStamp: 123}
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            3},
+		{
+			ReceiverShardID: 4,
+			SenderShardID:   5,
+			Type:            6,
+		}}}
+
+	ret, _ := mbp.ProcessMiniBlocks(headerHash, header, body)
+
+	require.Len(t, ret, 2)
+
+	require.Equal(t, ret[0].Hash, []byte("ok"))
+	require.Equal(t, ret[0].Timestamp, int64(123))
+	require.Equal(t, ret[0].ReceiverShardID, int32(1))
+	require.Equal(t, ret[0].SenderShardID, int32(2))
+	require.Equal(t, ret[0].Type, int32(3))
+
+	require.Equal(t, ret[1].Hash, []byte("ok"))
+	require.Equal(t, ret[1].Timestamp, int64(123))
+	require.Equal(t, ret[1].ReceiverShardID, int32(4))
+	require.Equal(t, ret[1].SenderShardID, int32(5))
+	require.Equal(t, ret[1].Type, int32(6))
+}
+
+func TestMiniBlocksProcessor_ProcessMiniBlocks_InvalidMarshaller_ExpectZeroMBProcessed(t *testing.T) {
+	mbp, _ := NewMiniBlocksProcessor(
+		&mock.HasherStub{},
+		&mock.MarshallerStub{
+			MarshalCalled: func(obj interface{}) ([]byte, error) {
+				return nil, errors.New("error marshaller stub")
+			},
+		})
+
+	headerHash := []byte("header hash")
+	header := &block.Header{TimeStamp: 123}
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            3},
+		{
+			ReceiverShardID: 4,
+			SenderShardID:   5,
+			Type:            6,
+		}}}
+
+	ret, err := mbp.ProcessMiniBlocks(headerHash, header, body)
+
+	require.Equal(t, err, nil)
+	require.Len(t, ret, 0)
 }
