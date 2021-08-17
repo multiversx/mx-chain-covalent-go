@@ -19,9 +19,7 @@
            {"name": "Hash", "type": "hash"},
            {"name": "SenderShardID", "type": "int"},
            {"name": "ReceiverShardID", "type": "int"},
-           {"name": "SenderBlockHash", "type": "hash"},
-           {"name": "ReceiverBlockHash", "type": "hash"},
-           {"name": "Type", "type": "bytes"},
+           {"name": "Type", "type": "int"},
            {"name": "Timestamp", "type": "long"}
          ]
        }}},

@@ -74,21 +74,16 @@ func (o *Block) Schema() avro.Schema {
 }
 
 type MiniBlock struct {
-	Hash              []byte
-	SenderShardID     int32
-	ReceiverShardID   int32
-	SenderBlockHash   []byte
-	ReceiverBlockHash []byte
-	Type              []byte
-	Timestamp         int64
+	Hash            []byte
+	SenderShardID   int32
+	ReceiverShardID int32
+	Type            int32
+	Timestamp       int64
 }
 
 func NewMiniBlock() *MiniBlock {
 	return &MiniBlock{
-		Hash:              make([]byte, 32),
-		SenderBlockHash:   make([]byte, 32),
-		ReceiverBlockHash: make([]byte, 32),
-		Type:              []byte{},
+		Hash: make([]byte, 32),
 	}
 }
 
@@ -361,24 +356,8 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                         "type": "int"
                                     },
                                     {
-                                        "name": "SenderBlockHash",
-                                        "type": {
-                                            "type": "fixed",
-                                            "size": 32,
-                                            "name": "hash"
-                                        }
-                                    },
-                                    {
-                                        "name": "ReceiverBlockHash",
-                                        "type": {
-                                            "type": "fixed",
-                                            "size": 32,
-                                            "name": "hash"
-                                        }
-                                    },
-                                    {
                                         "name": "Type",
-                                        "type": "bytes"
+                                        "type": "int"
                                     },
                                     {
                                         "name": "Timestamp",
@@ -902,24 +881,8 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                             "type": "int"
                         },
                         {
-                            "name": "SenderBlockHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
-                            "name": "ReceiverBlockHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
                             "name": "Type",
-                            "type": "bytes"
+                            "type": "int"
                         },
                         {
                             "name": "Timestamp",
@@ -1069,24 +1032,8 @@ var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
             "type": "int"
         },
         {
-            "name": "SenderBlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "ReceiverBlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
             "name": "Type",
-            "type": "bytes"
+            "type": "int"
         },
         {
             "name": "Timestamp",
