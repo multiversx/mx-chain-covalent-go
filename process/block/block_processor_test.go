@@ -51,7 +51,6 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 }
 
 func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProcessError(t *testing.T) {
-
 	errMarshallHeader := errors.New("err header marshall")
 	errMarshallBody := errors.New("err body marshall")
 
@@ -89,8 +88,45 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 
 		args := getInitializedArgs(false)
 		_, err := bp.ProcessBlock(args)
+
 		require.Equal(t, currTest.expectedErr, err)
 	}
+}
+
+func TestBlockProcessor_ProcessBlock_InvalidBody_ExpectErrBlockBodyAssertion(t *testing.T) {
+	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+
+	args := getInitializedArgs(false)
+	args.Body = nil
+	_, err := bp.ProcessBlock(args)
+
+	require.Equal(t, err, covalent.ErrBlockBodyAssertion)
+}
+
+func TestNewBlockProcessor_ProcessBlock_InvalidMBHandler_ExpectErr(t *testing.T) {
+	errMBHandler := errors.New("error mb handler")
+
+	bp, _ := NewBlockProcessor(
+		&mock.MarshallerStub{},
+		&mock.MiniBlockHandlerStub{
+			ProcessMiniBlockCalled: func(headerHash []byte, header data.HeaderHandler, body *erdBlock.Body) ([]*schema.MiniBlock, error) {
+				return nil, errMBHandler
+			}})
+
+	args := getInitializedArgs(false)
+	_, err := bp.ProcessBlock(args)
+
+	require.Equal(t, err, errMBHandler)
+}
+
+func TestNewBlockProcessor_ProcessBlock_NoSigners_ExpectDefaultProposerIndex(t *testing.T) {
+	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+
+	args := getInitializedArgs(false)
+	args.SignersIndexes = nil
+	ret, _ := bp.ProcessBlock(args)
+
+	require.Equal(t, ret.Proposer, DefaultProposerIndex)
 }
 
 func TestBlockProcessor_ProcessBlock(t *testing.T) {

@@ -13,6 +13,8 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 )
 
+const DefaultProposerIndex = int64(0)
+
 type blockProcessor struct {
 	marshalizer       marshal.Marshalizer
 	miniBlocksHandler process.MiniBlockHandler
@@ -111,7 +113,7 @@ func getProposerIndex(signersIndexes []uint64) int64 {
 		return int64(signersIndexes[0])
 	}
 
-	return 0
+	return DefaultProposerIndex
 }
 
 func getEpochStartInfo(header data.HeaderHandler) *schema.EpochStartInfo {

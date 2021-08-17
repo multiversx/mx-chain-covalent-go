@@ -7,8 +7,13 @@ import (
 )
 
 type MiniBlockHandlerStub struct {
+	ProcessMiniBlockCalled func(headerHash []byte, header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error)
 }
 
 func (mbhs *MiniBlockHandlerStub) ProcessMiniBlocks(headerHash []byte, header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error) {
+	if mbhs.ProcessMiniBlockCalled != nil {
+		return mbhs.ProcessMiniBlockCalled(headerHash, header, body)
+	}
+
 	return nil, nil
 }
