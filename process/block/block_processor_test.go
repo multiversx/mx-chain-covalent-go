@@ -1,6 +1,7 @@
 package block
 
 import (
+	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
@@ -32,19 +33,19 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler) {
-				return nil, &mock.MarshalizerMock{}, &mock.MiniBlockHandlerStub{}
+				return nil, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{}
 			},
 			expectedErr: covalent.ErrNilHasher,
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler) {
-				return &mock.HasherMock{}, &mock.MarshalizerMock{}, nil
+				return &mock.HasherMock{}, &mock.MarshallerStub{}, nil
 			},
 			expectedErr: covalent.ErrNilMiniBlockHandler,
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler) {
-				return &mock.HasherMock{}, &mock.MarshalizerMock{}, &mock.MiniBlockHandlerStub{}
+				return &mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{}
 			},
 			expectedErr: nil,
 		},
@@ -56,10 +57,22 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 	}
 }
 
+func TestBlockProcessor_Marshal(t *testing.T) {
+
+	expectedError := errors.New("expectedError")
+	marshaller := &mock.MarshallerStub{
+		MarshalCalled: func(obj interface{}) ([]byte, error) {
+			return nil, expectedError
+		},
+	}
+	_ = marshaller
+
+}
+
 func TestBlockProcessor_ProcessBlock(t *testing.T) {
 	t.Parallel()
 
-	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshalizerMock{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(false)
 	ret, _ := bp.ProcessBlock(args)
 
@@ -87,7 +100,7 @@ func TestBlockProcessor_ProcessBlock(t *testing.T) {
 func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	t.Parallel()
 
-	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshalizerMock{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(true)
 	ret, _ := bp.ProcessBlock(args)
 
@@ -119,7 +132,7 @@ func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 }
 
 func TestBlockProcessor_ProcessMetaBlock_NotStartOfEpochBlock_ExpectNilEpochStartInfo(t *testing.T) {
-	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshalizerMock{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 
 	metaBlockHeader := getInitializedMetaBlockHeader()
 	metaBlockHeader.EpochStart.LastFinalizedHeaders = nil
