@@ -21,7 +21,7 @@
            {"name": "ReceiverShardID", "type": "int"},
            {"name": "SenderBlockHash", "type": "hash"},
            {"name": "ReceiverBlockHash", "type": "hash"},
-           {"name": "Type", "type": "int"},
+           {"name": "Type", "type": "bytes"},
            {"name": "Timestamp", "type": "long"}
          ]
        }}},
@@ -36,20 +36,60 @@
        {"name": "PrevHash", "type": "hash"},
        {"name": "ShardID", "type": "int"},
        {"name": "TxCount", "type": "int"},
-       {"name": "AccumulatedFees", "type": "bytes"},
-       {"name": "DeveloperFees", "type": "bytes"},
+       {"name": "AccumulatedFees", "type": {
+         "type": "bytes",
+         "logicalType": "bignum",
+         "precision": 1000,
+         "scale": 0
+       }},
+       {"name": "DeveloperFees", "type": {
+         "type": "bytes",
+         "logicalType": "bignum",
+         "precision": 1000,
+         "scale": 0
+       }},
        {"name": "EpochStartBlock", "type": "boolean"},
        {"name": "EpochStartInfo", "type":
        {"name": "EpochStartInfo",
          "type": "record",
          "fields": [
-           {"name": "TotalSupply", "type": "bytes"},
-           {"name": "TotalToDistribute", "type": "bytes"},
-           {"name": "TotalNewlyMinted", "type": "bytes"},
-           {"name": "RewardsPerBlock", "type": "bytes"},
-           {"name": "RewardsForProtocolSustainability", "type": "bytes"},
-           {"name": "NodePrice", "type": "bytes"},
-           {"name": "PrevEpochStartRound", "type": "long"},
+           {"name": "TotalSupply", "type": {
+             "type": "bytes",
+             "logicalType": "bignum",
+             "precision": 1000,
+             "scale": 0
+           }},
+           {"name": "TotalToDistribute", "type": {
+             "type": "bytes",
+             "logicalType": "bignum",
+             "precision": 1000,
+             "scale": 0
+           }},
+           {"name": "TotalNewlyMinted", "type": {
+             "type": "bytes",
+             "logicalType": "bignum",
+             "precision": 1000,
+             "scale": 0
+           }},
+           {"name": "RewardsPerBlock", "type": {
+             "type": "bytes",
+             "logicalType": "bignum",
+             "precision": 1000,
+             "scale": 0
+           }},
+           {"name": "RewardsForProtocolSustainability", "type": {
+             "type": "bytes",
+             "logicalType": "bignum",
+             "precision": 1000,
+             "scale": 0
+           }},
+           {"name": "NodePrice", "type": {
+             "type": "bytes",
+             "logicalType": "bignum",
+             "precision": 1000,
+             "scale": 0
+           }},
+           {"name": "PrevEpochStartRound", "type": "int"},
            {"name": "PrevEpochStartHash", "type": "hash"}
          ]
        }}
@@ -64,7 +104,12 @@
        {"name": "BlockHash", "type": "hash"},
        {"name": "Nonce", "type": "long"},
        {"name": "Round", "type": "long"},
-       {"name": "Value", "type": "bytes"},
+       {"name": "Value",  "type": {
+         "type": "bytes",
+         "logicalType": "bignum",
+         "precision": 1000,
+         "scale": 0
+       }},
        {"name": "Receiver", "type": {
          "name": "address", "type": "fixed", "size": 62}},
        {"name": "Sender", "type": "address"},
@@ -88,7 +133,12 @@
        {"name": "Nonce", "type": "long"},
        {"name": "GasLimit", "type": "long"},
        {"name": "GasPrice", "type": "long"},
-       {"name": "Value", "type": "bytes"},
+       {"name": "Value", "type": {
+         "type": "bytes",
+         "logicalType": "bignum",
+         "precision": 1000,
+         "scale": 0
+       }},
        {"name": "Sender", "type": "address"},
        {"name": "Receiver", "type": "address"},
        {"name": "RelayerAddr", "type": "address"},
@@ -109,7 +159,12 @@
      "type": "record",
      "fields": [
        {"name": "Hash", "type": "hash"},
-       {"name": "Value", "type": "bytes"},
+       {"name": "Value", "type": {
+         "type": "bytes",
+         "logicalType": "bignum",
+         "precision": 1000,
+         "scale": 0
+       }},
        {"name": "Sender", "type": "address"},
        {"name": "Data", "type": "bytes"},
        {"name": "TxHash", "type": "hash"},
@@ -141,7 +196,12 @@
      "type": "record",
      "fields": [
        {"name": "Address", "type": "address"},
-       {"name": "Balance", "type": "bytes"},
+       {"name": "Balance", "type": {
+         "type": "bytes",
+         "logicalType": "bignum",
+         "precision": 1000,
+         "scale": 0
+       }},
        {"name": "Nonce", "type": "long"}
      ]
      }}}
