@@ -7,8 +7,7 @@ func StrSliceToBytesSlice(in []string) [][]byte {
 
 	for i := range in {
 		out[i] = make([]byte, len(in[i]))
-		tmp := []byte(in[i])
-		out = append(out, tmp)
+		out[i] = []byte(in[i])
 	}
 
 	return out
