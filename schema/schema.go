@@ -40,7 +40,6 @@ type Block struct {
 	Validators            []int64
 	PubKeysBitmap         []byte
 	Size                  int64
-	SizeTxs               int64
 	Timestamp             int64
 	StateRootHash         []byte
 	PrevHash              []byte
@@ -80,7 +79,7 @@ type MiniBlock struct {
 	ReceiverShardID   int32
 	SenderBlockHash   []byte
 	ReceiverBlockHash []byte
-	Type              int32
+	Type              []byte
 	Timestamp         int64
 }
 
@@ -89,6 +88,7 @@ func NewMiniBlock() *MiniBlock {
 		Hash:              make([]byte, 32),
 		SenderBlockHash:   make([]byte, 32),
 		ReceiverBlockHash: make([]byte, 32),
+		Type:              []byte{},
 	}
 }
 
@@ -106,7 +106,7 @@ type EpochStartInfo struct {
 	RewardsPerBlock                  []byte
 	RewardsForProtocolSustainability []byte
 	NodePrice                        []byte
-	PrevEpochStartRound              int64
+	PrevEpochStartRound              int32
 	PrevEpochStartHash               []byte
 }
 
@@ -378,7 +378,7 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                     },
                                     {
                                         "name": "Type",
-                                        "type": "int"
+                                        "type": "bytes"
                                     },
                                     {
                                         "name": "Timestamp",
@@ -416,10 +416,6 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "Size",
-                        "type": "long"
-                    },
-                    {
-                        "name": "SizeTxs",
                         "type": "long"
                     },
                     {
@@ -494,7 +490,7 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                 },
                                 {
                                     "name": "PrevEpochStartRound",
-                                    "type": "long"
+                                    "type": "int"
                                 },
                                 {
                                     "name": "PrevEpochStartHash",
@@ -923,7 +919,7 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "Type",
-                            "type": "int"
+                            "type": "bytes"
                         },
                         {
                             "name": "Timestamp",
@@ -961,10 +957,6 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Size",
-            "type": "long"
-        },
-        {
-            "name": "SizeTxs",
             "type": "long"
         },
         {
@@ -1039,7 +1031,7 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "PrevEpochStartRound",
-                        "type": "long"
+                        "type": "int"
                     },
                     {
                         "name": "PrevEpochStartHash",
@@ -1094,7 +1086,7 @@ var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Type",
-            "type": "int"
+            "type": "bytes"
         },
         {
             "name": "Timestamp",
@@ -1134,7 +1126,7 @@ var _EpochStartInfo_schema, _EpochStartInfo_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "PrevEpochStartRound",
-            "type": "long"
+            "type": "int"
         },
         {
             "name": "PrevEpochStartHash",

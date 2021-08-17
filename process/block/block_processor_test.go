@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
-	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	"github.com/stretchr/testify/require"
 	"math/big"
@@ -22,30 +21,24 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		args        func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler)
+		args        func() (marshal.Marshalizer, process.MiniBlockHandler)
 		expectedErr error
 	}{
 		{
-			args: func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler) {
-				return &mock.HasherMock{}, nil, nil
+			args: func() (marshal.Marshalizer, process.MiniBlockHandler) {
+				return nil, &mock.MiniBlockHandlerStub{}
 			},
 			expectedErr: covalent.ErrNilMarshalizer,
 		},
 		{
-			args: func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler) {
-				return nil, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{}
-			},
-			expectedErr: covalent.ErrNilHasher,
-		},
-		{
-			args: func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler) {
-				return &mock.HasherMock{}, &mock.MarshallerStub{}, nil
+			args: func() (marshal.Marshalizer, process.MiniBlockHandler) {
+				return &mock.MarshallerStub{}, nil
 			},
 			expectedErr: covalent.ErrNilMiniBlockHandler,
 		},
 		{
-			args: func() (hashing.Hasher, marshal.Marshalizer, process.MiniBlockHandler) {
-				return &mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{}
+			args: func() (marshal.Marshalizer, process.MiniBlockHandler) {
+				return &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{}
 			},
 			expectedErr: nil,
 		},
@@ -90,7 +83,6 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 
 	for _, currTest := range tests {
 		bp, _ := NewBlockProcessor(
-			&mock.HasherMock{},
 			&mock.MarshallerStub{
 				MarshalCalled: currTest.Marshaller},
 			&mock.MiniBlockHandlerStub{})
@@ -104,7 +96,7 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 func TestBlockProcessor_ProcessBlock(t *testing.T) {
 	t.Parallel()
 
-	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(false)
 	ret, _ := bp.ProcessBlock(args)
 
@@ -117,7 +109,6 @@ func TestBlockProcessor_ProcessBlock(t *testing.T) {
 	require.Equal(t, ret.Validators, utility.UIntSliceToIntSlice(args.SignersIndexes))
 	require.Equal(t, ret.PubKeysBitmap, args.Header.GetPubKeysBitmap())
 	require.Equal(t, ret.Size, int64(485))
-	require.Equal(t, ret.SizeTxs, int64(0))
 	require.Equal(t, ret.Timestamp, int64(args.Header.GetTimeStamp()))
 	require.Equal(t, ret.StateRootHash, args.Header.GetRootHash())
 	require.Equal(t, ret.PrevHash, args.Header.GetPrevHash())
@@ -132,7 +123,7 @@ func TestBlockProcessor_ProcessBlock(t *testing.T) {
 func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	t.Parallel()
 
-	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(true)
 	ret, _ := bp.ProcessBlock(args)
 
@@ -144,7 +135,6 @@ func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	require.Equal(t, ret.Proposer, int64(args.SignersIndexes[0]))
 	require.Equal(t, ret.Validators, utility.UIntSliceToIntSlice(args.SignersIndexes))
 	require.Equal(t, ret.PubKeysBitmap, args.Header.GetPubKeysBitmap())
-	require.Equal(t, ret.SizeTxs, int64(0))
 	require.Equal(t, ret.Timestamp, int64(args.Header.GetTimeStamp()))
 	require.Equal(t, ret.StateRootHash, args.Header.GetRootHash())
 	require.Equal(t, ret.PrevHash, args.Header.GetPrevHash())
@@ -161,12 +151,12 @@ func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	require.Equal(t, ret.EpochStartInfo.RewardsPerBlock, metaBlockEconomics.RewardsPerBlock.Bytes())
 	require.Equal(t, ret.EpochStartInfo.RewardsForProtocolSustainability, metaBlockEconomics.RewardsForProtocolSustainability.Bytes())
 	require.Equal(t, ret.EpochStartInfo.NodePrice, metaBlockEconomics.NodePrice.Bytes())
-	require.Equal(t, ret.EpochStartInfo.PrevEpochStartRound, int64(metaBlockEconomics.PrevEpochStartRound))
+	require.Equal(t, ret.EpochStartInfo.PrevEpochStartRound, int32(metaBlockEconomics.PrevEpochStartRound))
 	require.Equal(t, ret.EpochStartInfo.PrevEpochStartHash, metaBlockEconomics.PrevEpochStartHash)
 }
 
 func TestBlockProcessor_ProcessMetaBlock_NotStartOfEpochBlock_ExpectNilEpochStartInfo(t *testing.T) {
-	bp, _ := NewBlockProcessor(&mock.HasherMock{}, &mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 
 	metaBlockHeader := getInitializedMetaBlockHeader()
 	metaBlockHeader.EpochStart.LastFinalizedHeaders = nil

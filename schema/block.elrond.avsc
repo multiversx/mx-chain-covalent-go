@@ -30,7 +30,6 @@
        {"name": "Validators", "type": {"type": "array", "items": "long"}},
        {"name": "PubKeysBitmap", "type": "bytes"},
        {"name": "Size", "type": "long"},
-       {"name": "SizeTxs", "type": "long"},
        {"name": "Timestamp", "type": "long"},
        {"name": "StateRootHash", "type": "hash"},
        {"name": "PrevHash", "type": "hash"},

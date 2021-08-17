@@ -10,24 +10,16 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
-	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-var log = logger.GetOrCreate("process/block/blockProcessor")
-
 type blockProcessor struct {
-	hasher            hashing.Hasher
 	marshalizer       marshal.Marshalizer
 	miniBlocksHandler process.MiniBlockHandler
 }
 
 // NewBlockProcessor creates a new instance of block processor
-func NewBlockProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer, mbHandler process.MiniBlockHandler) (*blockProcessor, error) {
-	if check.IfNil(hasher) {
-		return nil, covalent.ErrNilHasher
-	}
+func NewBlockProcessor(marshalizer marshal.Marshalizer, mbHandler process.MiniBlockHandler) (*blockProcessor, error) {
 	if check.IfNil(marshalizer) {
 		return nil, covalent.ErrNilMarshalizer
 	}
@@ -36,7 +28,6 @@ func NewBlockProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer, m
 	}
 
 	return &blockProcessor{
-		hasher:            hasher,
 		marshalizer:       marshalizer,
 		miniBlocksHandler: mbHandler,
 	}, nil
@@ -67,7 +58,6 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 	proposer := getProposerIndex(args.SignersIndexes)
 	validators := utility.UIntSliceToIntSlice(args.SignersIndexes)
 	pubKeysBitmap := args.Header.GetPubKeysBitmap()
-	txsSizeInBytes := bp.computeTxsSize(args.TransactionsPool)
 	timeStamp := int64(args.Header.GetTimeStamp())
 	rootHash := args.Header.GetRootHash()
 	prevHash := args.Header.GetPrevHash()
@@ -89,7 +79,6 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		Validators:            validators,
 		PubKeysBitmap:         pubKeysBitmap,
 		Size:                  blockSizeInBytes,
-		SizeTxs:               txsSizeInBytes,
 		Timestamp:             timeStamp,
 		StateRootHash:         rootHash,
 		PrevHash:              prevHash,
@@ -115,36 +104,6 @@ func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdB
 	blockSize := len(headerBytes) + len(bodyBytes)
 
 	return int64(blockSize), nil
-}
-
-func (bp *blockProcessor) computeTxsSize(pool *indexer.Pool) int64 {
-	if pool == nil {
-		return 0
-	}
-
-	sizeTxs := 0
-	sizeTxs += bp.computeMapSize(pool.Txs)
-	sizeTxs += bp.computeMapSize(pool.Receipts)
-	sizeTxs += bp.computeMapSize(pool.Invalid)
-	sizeTxs += bp.computeMapSize(pool.Rewards)
-	sizeTxs += bp.computeMapSize(pool.Scrs)
-
-	return int64(sizeTxs)
-}
-
-func (bp *blockProcessor) computeMapSize(mapTxs map[string]data.TransactionHandler) int {
-	txsSize := 0
-	for _, tx := range mapTxs {
-		txBytes, err := bp.marshalizer.Marshal(tx)
-		if err != nil {
-			log.Debug("blockProcessor.computeMapSize", "error", err)
-			continue
-		}
-
-		txsSize += len(txBytes)
-	}
-
-	return txsSize
 }
 
 func getProposerIndex(signersIndexes []uint64) int64 {
@@ -178,7 +137,7 @@ func getEpochStartInfo(header data.HeaderHandler) *schema.EpochStartInfo {
 		RewardsPerBlock:                  utility.GetBytes(economics.RewardsPerBlock),
 		RewardsForProtocolSustainability: utility.GetBytes(economics.RewardsForProtocolSustainability),
 		NodePrice:                        utility.GetBytes(economics.NodePrice),
-		PrevEpochStartRound:              int64(economics.PrevEpochStartRound),
+		PrevEpochStartRound:              int32(economics.PrevEpochStartRound),
 		PrevEpochStartHash:               economics.PrevEpochStartHash,
 	}
 }
