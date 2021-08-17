@@ -1,6 +1,7 @@
 package block
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
@@ -56,16 +57,47 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 	}
 }
 
-func TestBlockProcessor_Marshal(t *testing.T) {
+func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProcessError(t *testing.T) {
 
-	expectedError := errors.New("expectedError")
-	marshaller := &mock.MarshallerStub{
-		MarshalCalled: func(obj interface{}) ([]byte, error) {
-			return nil, expectedError
+	errMarshallHeader := errors.New("err header marshall")
+	errMarshallBody := errors.New("err body marshall")
+
+	tests := []struct {
+		Marshaller  func(obj interface{}) ([]byte, error)
+		expectedErr error
+	}{
+		{
+			Marshaller: func(obj interface{}) ([]byte, error) {
+				_, ok := obj.(*erdBlock.Header)
+				if ok {
+					return nil, errMarshallHeader
+				}
+				return json.Marshal(obj)
+			},
+			expectedErr: errMarshallHeader,
+		},
+		{
+			Marshaller: func(obj interface{}) ([]byte, error) {
+				_, ok := obj.(*erdBlock.Body)
+				if ok {
+					return nil, errMarshallBody
+				}
+				return json.Marshal(obj)
+			},
+			expectedErr: errMarshallBody,
 		},
 	}
-	_ = marshaller
 
+	for _, currTest := range tests {
+		bp, _ := NewBlockProcessor(
+			&mock.HasherMock{},
+			&mock.MarshallerStub{
+				MarshalCalled: currTest.Marshaller},
+			&mock.MiniBlockHandlerStub{})
+
+		_, err := bp.ProcessBlock(getInitializedArgs(false))
+		require.Equal(t, currTest.expectedErr, err)
+	}
 }
 
 func TestBlockProcessor_ProcessBlock(t *testing.T) {
