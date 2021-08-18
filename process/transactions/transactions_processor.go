@@ -47,7 +47,6 @@ func (txp *transactionProcessor) ProcessTransactions(
 	}
 
 	allTxs := make([]*schema.Transaction, 0)
-
 	for _, currMiniBlock := range body.MiniBlocks {
 		if currMiniBlock.Type != block.TxBlock {
 			continue
