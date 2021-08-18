@@ -46,30 +46,46 @@ func (txp *transactionProcessor) ProcessTransactions(
 		return nil, covalent.ErrBlockBodyAssertion
 	}
 
-	ret := make([]*schema.Transaction, 0)
+	allTxs := make([]*schema.Transaction, 0)
 
-	for _, mb := range body.MiniBlocks {
-		if mb.Type != block.TxBlock {
+	for _, currMiniBlock := range body.MiniBlocks {
+		if currMiniBlock.Type != block.TxBlock {
 			continue
 		}
 
-		mbHash, err := core.CalculateHash(txp.marshaller, txp.hasher, mb)
+		txsInCurrMB, err := txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash)
 		if err != nil {
 			return nil, err
 		}
-
-		for _, txHash := range mb.TxHashes {
-			tx, found := txp.findTransactionInPool(txHash, transactions)
-			if !found {
-				continue
-			}
-
-			convertedTx := txp.convertTransaction(tx, txHash, mbHash, headerHash, mb, header)
-			ret = append(ret, convertedTx)
-		}
+		allTxs = append(allTxs, txsInCurrMB...)
 	}
 
-	return ret, nil
+	return allTxs, nil
+}
+
+func (txp *transactionProcessor) processTxsFromMiniBlock(
+	transactions map[string]data.TransactionHandler,
+	miniBlock *erdBlock.MiniBlock,
+	header data.HeaderHandler,
+	blockHash []byte) ([]*schema.Transaction, error) {
+
+	miniBlockHash, err := core.CalculateHash(txp.marshaller, txp.hasher, miniBlock)
+	if err != nil {
+		return nil, err
+	}
+
+	txsInMiniBlock := make([]*schema.Transaction, 0)
+	for _, txHash := range miniBlock.TxHashes {
+		tx, found := txp.findTransactionInPool(txHash, transactions)
+		if !found {
+			continue
+		}
+
+		convertedTx := txp.convertTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+		txsInMiniBlock = append(txsInMiniBlock, convertedTx)
+	}
+
+	return txsInMiniBlock, nil
 }
 
 func (txp *transactionProcessor) findTransactionInPool(
