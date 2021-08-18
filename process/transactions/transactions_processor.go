@@ -59,34 +59,60 @@ func (txp *transactionProcessor) ProcessTransactions(
 		}
 
 		for _, txHash := range mb.TxHashes {
-			myTx, found := transactions[string(txHash)]
+			tx, found := txp.findTransactionInPool(txHash, transactions)
 			if !found {
-				//something is wrong
+				continue
 			}
-			convertedTx := myTx.(*transaction.Transaction)
 
-			tx := &schema.Transaction{
-				Hash:             txHash,
-				MiniBlockHash:    mbHash,
-				BlockHash:        headerHash,
-				Nonce:            int64(convertedTx.GetNonce()),
-				Round:            int64(header.GetRound()), //from header
-				Value:            utility.GetBytes(convertedTx.GetValue()),
-				Receiver:         convertedTx.GetRcvAddr(),
-				Sender:           convertedTx.GetSndAddr(),
-				ReceiverShard:    int32(mb.ReceiverShardID),
-				SenderShard:      int32(mb.SenderShardID),
-				GasPrice:         int64(convertedTx.GetGasPrice()),
-				GasLimit:         int64(convertedTx.GetGasLimit()),
-				Signature:        convertedTx.GetSignature(),
-				Timestamp:        int64(header.GetTimeStamp()), // from header
-				SenderUserName:   convertedTx.GetSndUserName(),
-				ReceiverUserName: convertedTx.GetRcvAddr(),
-			}
-			ret = append(ret, tx)
-			//convert transaction
+			convertedTx := txp.convertTransaction(tx, txHash, mbHash, headerHash, mb, header)
+			ret = append(ret, convertedTx)
 		}
 	}
 
 	return ret, nil
+}
+
+func (txp *transactionProcessor) findTransactionInPool(
+	txHash []byte,
+	transactions map[string]data.TransactionHandler) (*transaction.Transaction, bool) {
+
+	tx, found := transactions[string(txHash)]
+	if !found {
+		return nil, false
+	}
+
+	convertedTx, castOk := tx.(*transaction.Transaction)
+	if !castOk {
+		return nil, false
+	}
+
+	return convertedTx, true
+}
+
+func (txp *transactionProcessor) convertTransaction(
+	tx *transaction.Transaction,
+	txHash []byte,
+	miniBlockHash []byte,
+	blockHash []byte,
+	miniBlock *erdBlock.MiniBlock,
+	header data.HeaderHandler) *schema.Transaction {
+
+	return &schema.Transaction{
+		Hash:             txHash,
+		MiniBlockHash:    miniBlockHash,
+		BlockHash:        blockHash,
+		Nonce:            int64(tx.GetNonce()),
+		Round:            int64(header.GetRound()),
+		Value:            utility.GetBytes(tx.GetValue()),
+		Receiver:         tx.GetRcvAddr(),
+		Sender:           tx.GetSndAddr(),
+		ReceiverShard:    int32(miniBlock.ReceiverShardID),
+		SenderShard:      int32(miniBlock.SenderShardID),
+		GasPrice:         int64(tx.GetGasPrice()),
+		GasLimit:         int64(tx.GetGasLimit()),
+		Signature:        tx.GetSignature(),
+		Timestamp:        int64(header.GetTimeStamp()),
+		SenderUserName:   tx.GetSndUserName(),
+		ReceiverUserName: tx.GetRcvAddr(),
+	}
 }

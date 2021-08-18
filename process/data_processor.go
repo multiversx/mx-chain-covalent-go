@@ -42,7 +42,7 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 		return nil, err
 	}
 
-	transactions, err := dp.transactionHandler.ProcessTransactions(args.TransactionsPool.Txs)
+	transactions, err := dp.transactionHandler.ProcessTransactions(args.Header, args.HeaderHash, args.Body, args.TransactionsPool.Txs)
 	if err != nil {
 		return nil, err
 	}
