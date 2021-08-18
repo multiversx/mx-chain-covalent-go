@@ -19,7 +19,11 @@ type MiniBlockHandler interface {
 
 // TransactionHandler defines what a transaction processor shall do
 type TransactionHandler interface {
-	ProcessTransactions(transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error)
+	ProcessTransactions(
+		header data.HeaderHandler,
+		headerHash []byte,
+		bodyHandler data.BodyHandler,
+		transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error)
 }
 
 // SCHandler defines what a smart contract processor shall do

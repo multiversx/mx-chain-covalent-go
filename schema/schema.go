@@ -79,11 +79,13 @@ type MiniBlock struct {
 	ReceiverShardID int32
 	Type            int32
 	Timestamp       int64
+	TxHashes        [][]byte
 }
 
 func NewMiniBlock() *MiniBlock {
 	return &MiniBlock{
-		Hash: make([]byte, 32),
+		Hash:     make([]byte, 32),
+		TxHashes: make([][]byte, 0),
 	}
 }
 
@@ -362,6 +364,13 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                     {
                                         "name": "Timestamp",
                                         "type": "long"
+                                    },
+                                    {
+                                        "name": "TxHashes",
+                                        "type": {
+                                            "type": "array",
+                                            "items": "bytes"
+                                        }
                                     }
                                 ]
                             }
@@ -887,6 +896,13 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                         {
                             "name": "Timestamp",
                             "type": "long"
+                        },
+                        {
+                            "name": "TxHashes",
+                            "type": {
+                                "type": "array",
+                                "items": "bytes"
+                            }
                         }
                     ]
                 }
@@ -1038,6 +1054,13 @@ var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
         {
             "name": "Timestamp",
             "type": "long"
+        },
+        {
+            "name": "TxHashes",
+            "type": {
+                "type": "array",
+                "items": "bytes"
+            }
         }
     ]
 }`)

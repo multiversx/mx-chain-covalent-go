@@ -20,7 +20,8 @@
            {"name": "SenderShardID", "type": "int"},
            {"name": "ReceiverShardID", "type": "int"},
            {"name": "Type", "type": "int"},
-           {"name": "Timestamp", "type": "long"}
+           {"name": "Timestamp", "type": "long"},
+           {"name": "TxHashes", "type": {"type": "array", "items": "bytes"}}
          ]
        }}},
        {"name": "NotarizedBlocksHashes", "type": {"type": "array", "items": "hash"}},

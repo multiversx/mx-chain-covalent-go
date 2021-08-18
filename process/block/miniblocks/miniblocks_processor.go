@@ -20,8 +20,8 @@ type miniBlocksProcessor struct {
 }
 
 // NewMiniBlocksProcessor will create a new instance of miniBlocksProcessor
-func NewMiniBlocksProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer) (*miniBlocksProcessor, error) {
-	if check.IfNil(marshalizer) {
+func NewMiniBlocksProcessor(hasher hashing.Hasher, marshaller marshal.Marshalizer) (*miniBlocksProcessor, error) {
+	if check.IfNil(marshaller) {
 		return nil, covalent.ErrNilMarshaller
 	}
 	if check.IfNil(hasher) {
@@ -30,7 +30,7 @@ func NewMiniBlocksProcessor(hasher hashing.Hasher, marshalizer marshal.Marshaliz
 
 	return &miniBlocksProcessor{
 		hasher:     hasher,
-		marshaller: marshalizer,
+		marshaller: marshaller,
 	}, nil
 }
 
@@ -60,6 +60,7 @@ func (mbp *miniBlocksProcessor) processMiniBlock(miniBlock *block.MiniBlock, hea
 
 	return &schema.MiniBlock{
 		Hash:            miniBlockHash,
+		TxHashes:        miniBlock.GetTxHashes(),
 		SenderShardID:   int32(miniBlock.SenderShardID),
 		ReceiverShardID: int32(miniBlock.ReceiverShardID),
 		Type:            int32(miniBlock.Type),
