@@ -35,7 +35,7 @@ func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) 
 		return nil, err
 	}
 
-	transactionsHandler, err := transactions.NewTransactionProcessor(args.Hasher, args.Marshaller)
+	transactionsHandler, err := transactions.NewTransactionProcessor(args.PubKeyConvertor, args.Hasher, args.Marshaller)
 	if err != nil {
 		return nil, err
 	}

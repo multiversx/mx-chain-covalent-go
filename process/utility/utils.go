@@ -1,6 +1,9 @@
 package utility
 
-import "math/big"
+import (
+	"github.com/ElrondNetwork/elrond-go-core/core"
+	"math/big"
+)
 
 func StrSliceToBytesSlice(in []string) [][]byte {
 	out := make([][]byte, len(in))
@@ -29,4 +32,8 @@ func GetBytes(val *big.Int) []byte {
 	}
 
 	return nil
+}
+
+func PubKeyToBech32(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
+	return []byte(pubKeyConverter.Encode(pubKey))
 }

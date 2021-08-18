@@ -15,12 +15,19 @@ import (
 )
 
 type transactionProcessor struct {
-	hasher     hashing.Hasher
-	marshaller marshal.Marshalizer
+	hasher          hashing.Hasher
+	marshaller      marshal.Marshalizer
+	pubKeyConverter core.PubkeyConverter
 }
 
 // NewTransactionProcessor creates a new instance of transactions processor
-func NewTransactionProcessor(hasher hashing.Hasher, marshaller marshal.Marshalizer) (*transactionProcessor, error) {
+func NewTransactionProcessor(
+	pubKeyConverter core.PubkeyConverter,
+	hasher hashing.Hasher,
+	marshaller marshal.Marshalizer) (*transactionProcessor, error) {
+	if check.IfNil(pubKeyConverter) {
+		return nil, covalent.ErrNilPubKeyConverter
+	}
 	if check.IfNil(marshaller) {
 		return nil, covalent.ErrNilMarshaller
 	}
@@ -29,8 +36,9 @@ func NewTransactionProcessor(hasher hashing.Hasher, marshaller marshal.Marshaliz
 	}
 
 	return &transactionProcessor{
-		hasher:     hasher,
-		marshaller: marshaller,
+		pubKeyConverter: pubKeyConverter,
+		hasher:          hasher,
+		marshaller:      marshaller,
 	}, nil
 }
 
@@ -75,7 +83,7 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 
 	txsInMiniBlock := make([]*schema.Transaction, 0)
 	for _, txHash := range miniBlock.TxHashes {
-		tx, found := txp.findTransactionInPool(txHash, transactions)
+		tx, found := findTransactionInPool(txHash, transactions)
 		if !found {
 			continue
 		}
@@ -87,10 +95,7 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 	return txsInMiniBlock, nil
 }
 
-func (txp *transactionProcessor) findTransactionInPool(
-	txHash []byte,
-	transactions map[string]data.TransactionHandler) (*transaction.Transaction, bool) {
-
+func findTransactionInPool(txHash []byte, transactions map[string]data.TransactionHandler) (*transaction.Transaction, bool) {
 	tx, found := transactions[string(txHash)]
 	if !found {
 		return nil, false
@@ -119,8 +124,8 @@ func (txp *transactionProcessor) convertTransaction(
 		Nonce:            int64(tx.GetNonce()),
 		Round:            int64(header.GetRound()),
 		Value:            utility.GetBytes(tx.GetValue()),
-		Receiver:         tx.GetRcvAddr(),
-		Sender:           tx.GetSndAddr(),
+		Receiver:         utility.PubKeyToBech32(txp.pubKeyConverter, tx.GetRcvAddr()),
+		Sender:           utility.PubKeyToBech32(txp.pubKeyConverter, tx.GetSndAddr()),
 		ReceiverShard:    int32(miniBlock.ReceiverShardID),
 		SenderShard:      int32(miniBlock.SenderShardID),
 		GasPrice:         int64(tx.GetGasPrice()),
