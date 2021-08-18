@@ -16,21 +16,21 @@ import (
 const DefaultProposerIndex = int64(0)
 
 type blockProcessor struct {
-	marshalizer       marshal.Marshalizer
+	marshaller        marshal.Marshalizer
 	miniBlocksHandler process.MiniBlockHandler
 }
 
 // NewBlockProcessor creates a new instance of block processor
-func NewBlockProcessor(marshalizer marshal.Marshalizer, mbHandler process.MiniBlockHandler) (*blockProcessor, error) {
-	if check.IfNil(marshalizer) {
-		return nil, covalent.ErrNilMarshalizer
+func NewBlockProcessor(marshaller marshal.Marshalizer, mbHandler process.MiniBlockHandler) (*blockProcessor, error) {
+	if check.IfNil(marshaller) {
+		return nil, covalent.ErrNilMarshaller
 	}
 	if mbHandler == nil {
 		return nil, covalent.ErrNilMiniBlockHandler
 	}
 
 	return &blockProcessor{
-		marshalizer:       marshalizer,
+		marshaller:        marshaller,
 		miniBlocksHandler: mbHandler,
 	}, nil
 }
@@ -94,11 +94,11 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 }
 
 func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdBlock.Body) (int64, error) {
-	headerBytes, err := bp.marshalizer.Marshal(header)
+	headerBytes, err := bp.marshaller.Marshal(header)
 	if err != nil {
 		return 0, err
 	}
-	bodyBytes, err := bp.marshalizer.Marshal(body)
+	bodyBytes, err := bp.marshaller.Marshal(body)
 	if err != nil {
 		return 0, err
 	}

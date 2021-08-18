@@ -14,8 +14,8 @@ var ErrBlockBodyAssertion = errors.New("error asserting BodyHandler interface of
 // ErrNilHasher signals that a nil hasher has been provided
 var ErrNilHasher = errors.New("nil hasher provided")
 
-// ErrNilMarshalizer signals that a nil marshalizer has been provided
-var ErrNilMarshalizer = errors.New("nil marshalizer provided")
+// ErrNilMarshaller signals that a nil marshaller has been provided
+var ErrNilMarshaller = errors.New("nil marshaller provided")
 
 // ErrNilMiniBlockHandler signals that a nil mini block handler has been provided
 var ErrNilMiniBlockHandler = errors.New("nil mini block handler provided")

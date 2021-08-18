@@ -22,7 +22,7 @@ type miniBlocksProcessor struct {
 // NewMiniBlocksProcessor will create a new instance of miniBlocksProcessor
 func NewMiniBlocksProcessor(hasher hashing.Hasher, marshalizer marshal.Marshalizer) (*miniBlocksProcessor, error) {
 	if check.IfNil(marshalizer) {
-		return nil, covalent.ErrNilMarshalizer
+		return nil, covalent.ErrNilMarshaller
 	}
 	if check.IfNil(hasher) {
 		return nil, covalent.ErrNilHasher

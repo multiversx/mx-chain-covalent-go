@@ -30,7 +30,7 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 		return nil, covalent.ErrNilHasher
 	}
 	if check.IfNil(args.Marshaller) {
-		return nil, covalent.ErrNilMarshalizer
+		return nil, covalent.ErrNilMarshaller
 	}
 
 	argsDataProcessor := &factory.ArgsDataProcessor{

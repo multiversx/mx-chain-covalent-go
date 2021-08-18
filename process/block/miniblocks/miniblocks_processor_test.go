@@ -29,7 +29,7 @@ func TestNewMiniBlocksProcessor(t *testing.T) {
 			args: func() (hashing.Hasher, marshal.Marshalizer) {
 				return &mock.HasherStub{}, nil
 			},
-			expectedErr: covalent.ErrNilMarshalizer,
+			expectedErr: covalent.ErrNilMarshaller,
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer) {

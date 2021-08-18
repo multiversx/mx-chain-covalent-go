@@ -29,7 +29,7 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 			args: func() (marshal.Marshalizer, process.MiniBlockHandler) {
 				return nil, &mock.MiniBlockHandlerStub{}
 			},
-			expectedErr: covalent.ErrNilMarshalizer,
+			expectedErr: covalent.ErrNilMarshaller,
 		},
 		{
 			args: func() (marshal.Marshalizer, process.MiniBlockHandler) {

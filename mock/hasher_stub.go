@@ -5,7 +5,7 @@ type HasherStub struct {
 }
 
 // Compute outputs a constant dummy hash
-func (hs *HasherStub) Compute(s string) []byte {
+func (hs *HasherStub) Compute(string) []byte {
 	return []byte("ok")
 }
 
