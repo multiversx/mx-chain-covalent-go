@@ -19,18 +19,18 @@ import (
 type ArgsDataProcessor struct {
 	PubKeyConvertor core.PubkeyConverter
 	Accounts        covalent.AccountsAdapter
-	hasher          hashing.Hasher
-	marshalizer     marshal.Marshalizer
+	Hasher          hashing.Hasher
+	Marshaller      marshal.Marshalizer
 }
 
 // CreateDataProcessor creates a new data handler instance of type data processor
 func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) {
-	miniBlocksHandler, err := miniblocks.NewMiniBlocksProcessor(args.hasher, args.marshalizer)
+	miniBlocksHandler, err := miniblocks.NewMiniBlocksProcessor(args.Hasher, args.Marshaller)
 	if err != nil {
 		return nil, err
 	}
 
-	blockHandler, err := blockCovalent.NewBlockProcessor(args.hasher, args.marshalizer, miniBlocksHandler)
+	blockHandler, err := blockCovalent.NewBlockProcessor(args.Marshaller, miniBlocksHandler)
 	if err != nil {
 		return nil, err
 	}

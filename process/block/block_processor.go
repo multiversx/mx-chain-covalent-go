@@ -47,7 +47,7 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		return nil, err
 	}
 
-	miniBlocks, err := bp.miniBlocksHandler.ProcessMiniBlocks(args.HeaderHash, args.Header, body)
+	miniBlocks, err := bp.miniBlocksHandler.ProcessMiniBlocks(args.Header, body)
 	if err != nil {
 		return nil, err
 	}

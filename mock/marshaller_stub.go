@@ -1,15 +1,6 @@
 package mock
 
-import (
-	"encoding/json"
-	"errors"
-)
-
-// ErrMockMarshalizer -
-var ErrMockMarshalizer = errors.New("MarshallerStub generic error")
-
-// ErrNilObjectToMarshal -
-var ErrNilObjectToMarshal = errors.New("nil object to serialize from")
+import "encoding/json"
 
 // MarshallerStub that will be used for testing
 type MarshallerStub struct {
@@ -17,7 +8,7 @@ type MarshallerStub struct {
 	UnmarshalCalled func(obj interface{}, buff []byte) error
 }
 
-// Marshal converts the input object in a slice of bytes
+// Marshal calls a custom marshall function if defined, otherwise returns json marshal
 func (mm *MarshallerStub) Marshal(obj interface{}) ([]byte, error) {
 	if mm.MarshalCalled != nil {
 		return mm.MarshalCalled(obj)
@@ -25,7 +16,7 @@ func (mm *MarshallerStub) Marshal(obj interface{}) ([]byte, error) {
 	return json.Marshal(obj)
 }
 
-// Unmarshal applies the serialized values over an instantiated object
+// Unmarshal calls a custom unmarshall function if defined, otherwise returns json unmarshal
 func (mm *MarshallerStub) Unmarshal(obj interface{}, buff []byte) error {
 	if mm.UnmarshalCalled != nil {
 		return mm.UnmarshalCalled(obj, buff)
@@ -33,7 +24,7 @@ func (mm *MarshallerStub) Unmarshal(obj interface{}, buff []byte) error {
 	return json.Unmarshal(buff, obj)
 }
 
-// IsInterfaceNil returns true if there is no value under the interface
+// IsInterfaceNil returns true if interface is nil, false otherwise
 func (mm *MarshallerStub) IsInterfaceNil() bool {
 	return mm == nil
 }

@@ -1,9 +1,10 @@
-package miniblocks
+package miniblocks_test
 
 import (
 	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/block/miniblocks"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
@@ -39,15 +40,14 @@ func TestNewMiniBlocksProcessor(t *testing.T) {
 	}
 
 	for _, currTest := range tests {
-		_, err := NewMiniBlocksProcessor(currTest.args())
+		_, err := miniblocks.NewMiniBlocksProcessor(currTest.args())
 		require.Equal(t, currTest.expectedErr, err)
 	}
 }
 
 func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
-	mbp, _ := NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
+	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
 
-	headerHash := []byte("header hash")
 	header := &block.Header{TimeStamp: 123}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
 		{
@@ -57,10 +57,10 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
 		{
 			ReceiverShardID: 4,
 			SenderShardID:   5,
-			Type:            6,
-		}}}
+			Type:            6},
+	}}
 
-	ret, _ := mbp.ProcessMiniBlocks(headerHash, header, body)
+	ret, _ := mbp.ProcessMiniBlocks(header, body)
 
 	require.Len(t, ret, 2)
 
@@ -78,7 +78,7 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
 }
 
 func TestMiniBlocksProcessor_ProcessMiniBlocks_InvalidMarshaller_ExpectZeroMBProcessed(t *testing.T) {
-	mbp, _ := NewMiniBlocksProcessor(
+	mbp, _ := miniblocks.NewMiniBlocksProcessor(
 		&mock.HasherStub{},
 		&mock.MarshallerStub{
 			MarshalCalled: func(obj interface{}) ([]byte, error) {
@@ -86,7 +86,6 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks_InvalidMarshaller_ExpectZeroMBPro
 			},
 		})
 
-	headerHash := []byte("header hash")
 	header := &block.Header{TimeStamp: 123}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
 		{
@@ -96,10 +95,10 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks_InvalidMarshaller_ExpectZeroMBPro
 		{
 			ReceiverShardID: 4,
 			SenderShardID:   5,
-			Type:            6,
-		}}}
+			Type:            6},
+	}}
 
-	ret, err := mbp.ProcessMiniBlocks(headerHash, header, body)
+	ret, err := mbp.ProcessMiniBlocks(header, body)
 
 	require.Equal(t, err, nil)
 	require.Len(t, ret, 0)

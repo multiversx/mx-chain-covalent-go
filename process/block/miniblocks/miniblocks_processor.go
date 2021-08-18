@@ -34,12 +34,12 @@ func NewMiniBlocksProcessor(hasher hashing.Hasher, marshalizer marshal.Marshaliz
 	}, nil
 }
 
-func (mbp *miniBlocksProcessor) ProcessMiniBlocks(headerHash []byte, header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error) {
+func (mbp *miniBlocksProcessor) ProcessMiniBlocks(header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error) {
 	miniBlocks := make([]*schema.MiniBlock, 0)
 
 	for _, mb := range body.MiniBlocks {
 
-		miniBlock, err := mbp.processMiniBlock(mb, header, headerHash)
+		miniBlock, err := mbp.processMiniBlock(mb, header)
 		if err != nil {
 			log.Warn("miniBlocksProcessor.ProcessMiniBlocks cannot process miniBlock", "error", err)
 			continue
@@ -51,7 +51,7 @@ func (mbp *miniBlocksProcessor) ProcessMiniBlocks(headerHash []byte, header data
 	return miniBlocks, nil
 }
 
-func (mbp *miniBlocksProcessor) processMiniBlock(miniBlock *block.MiniBlock, header data.HeaderHandler, headerHash []byte) (*schema.MiniBlock, error) {
+func (mbp *miniBlocksProcessor) processMiniBlock(miniBlock *block.MiniBlock, header data.HeaderHandler) (*schema.MiniBlock, error) {
 	miniBlockHash, err := core.CalculateHash(mbp.marshaller, mbp.hasher, miniBlock)
 	if err != nil {
 		return nil, err

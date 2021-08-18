@@ -1,4 +1,4 @@
-package block
+package block_test
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/block"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
@@ -45,7 +46,7 @@ func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
 	}
 
 	for _, currTest := range tests {
-		_, err := NewBlockProcessor(currTest.args())
+		_, err := block.NewBlockProcessor(currTest.args())
 		require.Equal(t, currTest.expectedErr, err)
 	}
 }
@@ -81,7 +82,7 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 	}
 
 	for _, currTest := range tests {
-		bp, _ := NewBlockProcessor(
+		bp, _ := block.NewBlockProcessor(
 			&mock.MarshallerStub{
 				MarshalCalled: currTest.Marshaller},
 			&mock.MiniBlockHandlerStub{})
@@ -94,7 +95,7 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 }
 
 func TestBlockProcessor_ProcessBlock_InvalidBody_ExpectErrBlockBodyAssertion(t *testing.T) {
-	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 
 	args := getInitializedArgs(false)
 	args.Body = nil
@@ -106,10 +107,10 @@ func TestBlockProcessor_ProcessBlock_InvalidBody_ExpectErrBlockBodyAssertion(t *
 func TestNewBlockProcessor_ProcessBlock_InvalidMBHandler_ExpectErr(t *testing.T) {
 	errMBHandler := errors.New("error mb handler")
 
-	bp, _ := NewBlockProcessor(
+	bp, _ := block.NewBlockProcessor(
 		&mock.MarshallerStub{},
 		&mock.MiniBlockHandlerStub{
-			ProcessMiniBlockCalled: func(headerHash []byte, header data.HeaderHandler, body *erdBlock.Body) ([]*schema.MiniBlock, error) {
+			ProcessMiniBlockCalled: func(header data.HeaderHandler, body *erdBlock.Body) ([]*schema.MiniBlock, error) {
 				return nil, errMBHandler
 			}})
 
@@ -120,19 +121,19 @@ func TestNewBlockProcessor_ProcessBlock_InvalidMBHandler_ExpectErr(t *testing.T)
 }
 
 func TestNewBlockProcessor_ProcessBlock_NoSigners_ExpectDefaultProposerIndex(t *testing.T) {
-	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 
 	args := getInitializedArgs(false)
 	args.SignersIndexes = nil
 	ret, _ := bp.ProcessBlock(args)
 
-	require.Equal(t, ret.Proposer, DefaultProposerIndex)
+	require.Equal(t, ret.Proposer, block.DefaultProposerIndex)
 }
 
 func TestBlockProcessor_ProcessBlock(t *testing.T) {
 	t.Parallel()
 
-	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(false)
 	ret, _ := bp.ProcessBlock(args)
 
@@ -140,7 +141,7 @@ func TestBlockProcessor_ProcessBlock(t *testing.T) {
 	require.Equal(t, ret.Round, int64(args.Header.GetRound()))
 	require.Equal(t, ret.Epoch, int32(args.Header.GetEpoch()))
 	require.Equal(t, ret.Hash, args.HeaderHash)
-	require.Equal(t, ret.NotarizedBlocksHashes, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes)) //TODO: test this utlity
+	require.Equal(t, ret.NotarizedBlocksHashes, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes))
 	require.Equal(t, ret.Proposer, int64(args.SignersIndexes[0]))
 	require.Equal(t, ret.Validators, utility.UIntSliceToIntSlice(args.SignersIndexes))
 	require.Equal(t, ret.PubKeysBitmap, args.Header.GetPubKeysBitmap())
@@ -159,7 +160,7 @@ func TestBlockProcessor_ProcessBlock(t *testing.T) {
 func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	t.Parallel()
 
-	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(true)
 	ret, _ := bp.ProcessBlock(args)
 
@@ -167,7 +168,7 @@ func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	require.Equal(t, ret.Round, int64(args.Header.GetRound()))
 	require.Equal(t, ret.Epoch, int32(args.Header.GetEpoch()))
 	require.Equal(t, ret.Hash, args.HeaderHash)
-	require.Equal(t, ret.NotarizedBlocksHashes, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes)) //TODO: test this utlity
+	require.Equal(t, ret.NotarizedBlocksHashes, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes))
 	require.Equal(t, ret.Proposer, int64(args.SignersIndexes[0]))
 	require.Equal(t, ret.Validators, utility.UIntSliceToIntSlice(args.SignersIndexes))
 	require.Equal(t, ret.PubKeysBitmap, args.Header.GetPubKeysBitmap())
@@ -192,7 +193,7 @@ func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 }
 
 func TestBlockProcessor_ProcessMetaBlock_NotStartOfEpochBlock_ExpectNilEpochStartInfo(t *testing.T) {
-	bp, _ := NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 
 	metaBlockHeader := getInitializedMetaBlockHeader()
 	metaBlockHeader.EpochStart.LastFinalizedHeaders = nil
@@ -210,7 +211,7 @@ func getInitializedArgs(metaBlock bool) *indexer.ArgsSaveBlockData {
 	if metaBlock {
 		header = getInitializedMetaBlockHeader()
 	} else {
-		header = getInitialisedHeader()
+		header = getInitialisedBlockHeader()
 	}
 
 	return &indexer.ArgsSaveBlockData{
@@ -255,7 +256,7 @@ func getInitializedMetaBlockHeader() *erdBlock.MetaBlock {
 	}
 }
 
-func getInitialisedHeader() *erdBlock.Header {
+func getInitialisedBlockHeader() *erdBlock.Header {
 	return &erdBlock.Header{
 		Nonce:              1,
 		PrevHash:           []byte("prev hash"),

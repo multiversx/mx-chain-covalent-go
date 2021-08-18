@@ -14,7 +14,7 @@ type BlockHandler interface {
 
 // MiniBlockHandler defines what a mini blocks processor shall do
 type MiniBlockHandler interface {
-	ProcessMiniBlocks(headerHash []byte, header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error)
+	ProcessMiniBlocks(header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error)
 }
 
 // TransactionHandler defines what a transaction processor shall do
