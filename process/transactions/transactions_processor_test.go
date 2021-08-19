@@ -1,6 +1,7 @@
 package transactions_test
 
 import (
+	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
@@ -55,6 +56,38 @@ func TestNewTransactionProcessor(t *testing.T) {
 	}
 }
 
+func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *testing.T) {
+	headerHash := []byte("header hash")
+	header := &block.Header{Round: 111, TimeStamp: 222}
+	txPool := map[string]data.TransactionHandler{}
+	body := data.BodyHandler(nil)
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	_, err := txp.ProcessTransactions(header, headerHash, body, txPool)
+
+	require.Equal(t, err, covalent.ErrBlockBodyAssertion)
+}
+
+func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(t *testing.T) {
+	headerHash := []byte("header hash")
+	header := &block.Header{Round: 111, TimeStamp: 222}
+	txPool := map[string]data.TransactionHandler{}
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{{Type: block.TxBlock}}}
+
+	errMarshaller := errors.New("err marshaller")
+	txp, _ := transactions.NewTransactionProcessor(
+		&mock.PubKeyConverterStub{},
+		&mock.HasherStub{},
+		&mock.MarshallerStub{
+			MarshalCalled: func(obj interface{}) ([]byte, error) {
+				return nil, errMarshaller
+			},
+		})
+	_, err := txp.ProcessTransactions(header, headerHash, body, txPool)
+
+	require.Equal(t, err, errMarshaller)
+}
+
 func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 	txHash1 := []byte("x")
 	txHash2 := []byte("y")
@@ -87,8 +120,8 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 			Type:            block.SmartContractResultBlock},
 		{
 			TxHashes:        [][]byte{txHash5},
-			ReceiverShardID: 6,
-			SenderShardID:   7,
+			ReceiverShardID: 10,
+			SenderShardID:   11,
 			Type:            block.TxBlock},
 	}}
 
