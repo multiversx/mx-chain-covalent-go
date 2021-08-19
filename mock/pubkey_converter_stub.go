@@ -1,35 +1,35 @@
 package mock
 
-// PubKeyConverterStub -
+// PubKeyConverterStub that will be used for testing
 type PubKeyConverterStub struct {
 	DecodeCalled func(humanReadable string) ([]byte, error)
 	EncodeCalled func(pkBytes []byte) string
 }
 
-// Len -
-func (pcs *PubKeyConverterStub) Len() int {
+// Len returns zero
+func (pkcs *PubKeyConverterStub) Len() int {
 	return 0
 }
 
-// Decode -
-func (pcs *PubKeyConverterStub) Decode(humanReadable string) ([]byte, error) {
-	if pcs.DecodeCalled != nil {
-		return pcs.DecodeCalled(humanReadable)
+// Decode calls a custom decode function if defined, otherwise returns an empty byte slice, nil err
+func (pkcs *PubKeyConverterStub) Decode(humanReadable string) ([]byte, error) {
+	if pkcs.DecodeCalled != nil {
+		return pkcs.DecodeCalled(humanReadable)
 	}
 
 	return make([]byte, 0), nil
 }
 
-// Encode -
-func (pcs *PubKeyConverterStub) Encode(pkBytes []byte) string {
-	if pcs.EncodeCalled != nil {
-		return pcs.EncodeCalled(pkBytes)
+// Encode calls a custom encode function if defined, otherwise returns "erd1"+input, nil err
+func (pkcs *PubKeyConverterStub) Encode(pkBytes []byte) string {
+	if pkcs.EncodeCalled != nil {
+		return pkcs.EncodeCalled(pkBytes)
 	}
 
 	return "erd1" + string(pkBytes)
 }
 
-// IsInterfaceNil -
-func (pcs *PubKeyConverterStub) IsInterfaceNil() bool {
-	return pcs == nil
+// IsInterfaceNil returns true if interface is nil, false otherwise
+func (pkcs *PubKeyConverterStub) IsInterfaceNil() bool {
+	return pkcs == nil
 }
