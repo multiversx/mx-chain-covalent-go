@@ -25,30 +25,41 @@ func NewSCProcessor(pubKeyConverter core.PubkeyConverter) (*scProcessor, error) 
 
 // ProcessSCs converts smart contracts data to a specific structure defined by avro schema
 func (scp *scProcessor) ProcessSCs(transactions map[string]data.TransactionHandler, timeStamp uint64) ([]*schema.SCResult, error) {
-	allScrTxs := make([]*schema.SCResult, 0)
-	for currHash, currTx := range transactions {
-		scrTx := currTx.(*smartContractResult.SmartContractResult)
-		scrCovalent := &schema.SCResult{
-			Hash:           []byte(currHash),
-			Nonce:          int64(scrTx.GetNonce()),
-			GasLimit:       int64(scrTx.GetGasLimit()),
-			GasPrice:       int64(scrTx.GetGasPrice()),
-			Value:          utility.GetBytes(scrTx.GetValue()),
-			Sender:         utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetSndAddr()),
-			Receiver:       utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetRcvAddr()),
-			RelayerAddr:    utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetRelayerAddr()),
-			RelayedValue:   utility.GetBytes(scrTx.GetRelayedValue()),
-			Code:           scrTx.GetCode(),
-			Data:           scrTx.GetData(),
-			PrevTxHash:     scrTx.GetPrevTxHash(),
-			OriginalTxHash: scrTx.GetOriginalTxHash(),
-			CallType:       int32(scrTx.GetCallType()),
-			CodeMetadata:   scrTx.GetCodeMetadata(),
-			ReturnMessage:  scrTx.GetReturnMessage(),
-			Timestamp:      int64(timeStamp),
-		}
+	allSCRs := make([]*schema.SCResult, 0)
 
-		allScrTxs = append(allScrTxs, scrCovalent)
+	for currTxHash, currTx := range transactions {
+		currSCR := scp.processSCResult(currTx, currTxHash, timeStamp)
+
+		if currSCR != nil {
+			allSCRs = append(allSCRs, currSCR)
+		}
 	}
-	return allScrTxs, nil
+	return allSCRs, nil
+}
+
+func (scp *scProcessor) processSCResult(tx data.TransactionHandler, txHash string, timeStamp uint64) *schema.SCResult {
+	scrTx, castOk := tx.(*smartContractResult.SmartContractResult)
+	if !castOk {
+		return nil
+	}
+
+	return &schema.SCResult{
+		Hash:           []byte(txHash),
+		Nonce:          int64(scrTx.GetNonce()),
+		GasLimit:       int64(scrTx.GetGasLimit()),
+		GasPrice:       int64(scrTx.GetGasPrice()),
+		Value:          utility.GetBytes(scrTx.GetValue()),
+		Sender:         utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetSndAddr()),
+		Receiver:       utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetRcvAddr()),
+		RelayerAddr:    utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetRelayerAddr()),
+		RelayedValue:   utility.GetBytes(scrTx.GetRelayedValue()),
+		Code:           scrTx.GetCode(),
+		Data:           scrTx.GetData(),
+		PrevTxHash:     scrTx.GetPrevTxHash(),
+		OriginalTxHash: scrTx.GetOriginalTxHash(),
+		CallType:       int32(scrTx.GetCallType()),
+		CodeMetadata:   scrTx.GetCodeMetadata(),
+		ReturnMessage:  scrTx.GetReturnMessage(),
+		Timestamp:      int64(timeStamp),
+	}
 }
