@@ -34,6 +34,6 @@ func GetBytes(val *big.Int) []byte {
 	return nil
 }
 
-func PubKeyToBech32(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
+func EncodePubKey(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
 	return []byte(pubKeyConverter.Encode(pubKey))
 }

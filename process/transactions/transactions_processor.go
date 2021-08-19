@@ -12,7 +12,10 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
+
+var log = logger.GetOrCreate("process/transactions/transactionProcessor")
 
 type transactionProcessor struct {
 	hasher          hashing.Hasher
@@ -85,6 +88,7 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 	for _, txHash := range miniBlock.TxHashes {
 		tx, found := findTransactionInPool(txHash, transactions)
 		if !found {
+			log.Warn("transactionProcessor.processTxsFromMiniBlock tx hash not found in tx pool", "hash", txHash)
 			continue
 		}
 
@@ -96,17 +100,17 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 }
 
 func findTransactionInPool(txHash []byte, transactions map[string]data.TransactionHandler) (*transaction.Transaction, bool) {
-	tx, found := transactions[string(txHash)]
-	if !found {
+	tx, isInTxPool := transactions[string(txHash)]
+	if !isInTxPool {
 		return nil, false
 	}
 
-	convertedTx, castOk := tx.(*transaction.Transaction)
+	castedTx, castOk := tx.(*transaction.Transaction)
 	if !castOk {
 		return nil, false
 	}
 
-	return convertedTx, true
+	return castedTx, true
 }
 
 func (txp *transactionProcessor) convertTransaction(
@@ -124,8 +128,8 @@ func (txp *transactionProcessor) convertTransaction(
 		Nonce:            int64(tx.GetNonce()),
 		Round:            int64(header.GetRound()),
 		Value:            utility.GetBytes(tx.GetValue()),
-		Receiver:         utility.PubKeyToBech32(txp.pubKeyConverter, tx.GetRcvAddr()),
-		Sender:           utility.PubKeyToBech32(txp.pubKeyConverter, tx.GetSndAddr()),
+		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
+		Sender:           utility.EncodePubKey(txp.pubKeyConverter, tx.GetSndAddr()),
 		ReceiverShard:    int32(miniBlock.ReceiverShardID),
 		SenderShard:      int32(miniBlock.SenderShardID),
 		GasPrice:         int64(tx.GetGasPrice()),
@@ -133,6 +137,6 @@ func (txp *transactionProcessor) convertTransaction(
 		Signature:        tx.GetSignature(),
 		Timestamp:        int64(header.GetTimeStamp()),
 		SenderUserName:   tx.GetSndUserName(),
-		ReceiverUserName: tx.GetRcvAddr(),
+		ReceiverUserName: tx.GetRcvUserName(),
 	}
 }
