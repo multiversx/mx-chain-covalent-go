@@ -28,7 +28,7 @@ type TransactionHandler interface {
 
 // SCHandler defines what a smart contract processor shall do
 type SCHandler interface {
-	ProcessSCs(transactions map[string]data.TransactionHandler) ([]*schema.SCResult, error)
+	ProcessSCs(transactions map[string]data.TransactionHandler, timeStamp uint64) ([]*schema.SCResult, error)
 }
 
 // ReceiptHandler defines what a receipt processor shall do

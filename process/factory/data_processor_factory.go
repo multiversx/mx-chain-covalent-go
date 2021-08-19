@@ -45,7 +45,7 @@ func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) 
 		return nil, err
 	}
 
-	scHandler, err := transactions.NewSCProcessor()
+	scHandler, err := transactions.NewSCProcessor(args.PubKeyConvertor)
 	if err != nil {
 		return nil, err
 	}

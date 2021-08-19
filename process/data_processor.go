@@ -47,7 +47,7 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 		return nil, err
 	}
 
-	smartContracts, err := dp.scHandler.ProcessSCs(args.TransactionsPool.Scrs)
+	smartContracts, err := dp.scHandler.ProcessSCs(args.TransactionsPool.Scrs, args.Header.GetTimeStamp())
 	if err != nil {
 		return nil, err
 	}
