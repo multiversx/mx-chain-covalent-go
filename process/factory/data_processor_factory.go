@@ -40,7 +40,7 @@ func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) 
 		return nil, err
 	}
 
-	receiptsHandler, err := receipts.NewReceiptsProcessor()
+	receiptsHandler, err := receipts.NewReceiptsProcessor(args.PubKeyConvertor)
 	if err != nil {
 		return nil, err
 	}
