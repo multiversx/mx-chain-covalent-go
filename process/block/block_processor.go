@@ -37,63 +37,41 @@ func NewBlockProcessor(marshaller marshal.Marshalizer, mbHandler process.MiniBlo
 
 // ProcessBlock converts block data to a specific structure defined by avro schema
 func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error) {
-	body, ok := args.Body.(*erdBlock.Body)
-	if !ok {
-		return nil, covalent.ErrBlockBodyAssertion
-	}
-
-	blockSizeInBytes, err := bp.computeBlockSize(args.Header, body)
+	blockSizeInBytes, err := bp.computeBlockSize(args.Header, args.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	miniBlocks, err := bp.miniBlocksHandler.ProcessMiniBlocks(args.Header, body)
+	miniBlocks, err := bp.miniBlocksHandler.ProcessMiniBlocks(args.Header, args.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	nonce := int64(args.Header.GetNonce())
-	round := int64(args.Header.GetRound())
-	epoch := int32(args.Header.GetEpoch())
-	hash := args.HeaderHash
-	notarizedBlocksHashes := utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes)
-	proposer := getProposerIndex(args.SignersIndexes)
-	validators := utility.UIntSliceToIntSlice(args.SignersIndexes)
-	pubKeysBitmap := args.Header.GetPubKeysBitmap()
-	timeStamp := int64(args.Header.GetTimeStamp())
-	rootHash := args.Header.GetRootHash()
-	prevHash := args.Header.GetPrevHash()
-	shardID := int32(args.Header.GetShardID())
-	txCount := int32(args.Header.GetTxCount())
-	accumulatedFees := utility.GetBytes(args.Header.GetAccumulatedFees())
-	developerFees := utility.GetBytes(args.Header.GetDeveloperFees())
-	isStartOfEpochBlock := args.Header.IsStartOfEpochBlock()
-	epochStartInfo := getEpochStartInfo(args.Header)
-
+	header := args.Header
 	return &schema.Block{
-		Nonce:                 nonce,
-		Round:                 round,
-		Epoch:                 epoch,
-		Hash:                  hash,
+		Nonce:                 int64(header.GetNonce()),
+		Round:                 int64(header.GetRound()),
+		Epoch:                 int32(header.GetEpoch()),
+		Hash:                  args.HeaderHash,
 		MiniBlocks:            miniBlocks,
-		NotarizedBlocksHashes: notarizedBlocksHashes,
-		Proposer:              proposer,
-		Validators:            validators,
-		PubKeysBitmap:         pubKeysBitmap,
+		NotarizedBlocksHashes: utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes),
+		Proposer:              getProposerIndex(args.SignersIndexes),
+		Validators:            utility.UIntSliceToIntSlice(args.SignersIndexes),
+		PubKeysBitmap:         header.GetPubKeysBitmap(),
 		Size:                  blockSizeInBytes,
-		Timestamp:             timeStamp,
-		StateRootHash:         rootHash,
-		PrevHash:              prevHash,
-		ShardID:               shardID,
-		TxCount:               txCount,
-		AccumulatedFees:       accumulatedFees,
-		DeveloperFees:         developerFees,
-		EpochStartBlock:       isStartOfEpochBlock,
-		EpochStartInfo:        epochStartInfo,
+		Timestamp:             int64(header.GetTimeStamp()),
+		StateRootHash:         header.GetRootHash(),
+		PrevHash:              header.GetPrevHash(),
+		ShardID:               int32(header.GetShardID()),
+		TxCount:               int32(header.GetTxCount()),
+		AccumulatedFees:       utility.GetBytes(header.GetAccumulatedFees()),
+		DeveloperFees:         utility.GetBytes(header.GetDeveloperFees()),
+		EpochStartBlock:       header.IsStartOfEpochBlock(),
+		EpochStartInfo:        getEpochStartInfo(header),
 	}, nil
 }
 
-func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body *erdBlock.Body) (int64, error) {
+func (bp *blockProcessor) computeBlockSize(header data.HeaderHandler, body data.BodyHandler) (int64, error) {
 	headerBytes, err := bp.marshaller.Marshal(header)
 	if err != nil {
 		return 0, err

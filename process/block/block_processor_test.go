@@ -7,6 +7,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/block"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/block/miniblocks"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
@@ -95,7 +96,8 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 }
 
 func TestBlockProcessor_ProcessBlock_InvalidBody_ExpectErrBlockBodyAssertion(t *testing.T) {
-	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
+	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
+	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, mbp)
 
 	args := getInitializedArgs(false)
 	args.Body = nil
@@ -110,7 +112,7 @@ func TestNewBlockProcessor_ProcessBlock_InvalidMBHandler_ExpectErr(t *testing.T)
 	bp, _ := block.NewBlockProcessor(
 		&mock.MarshallerStub{},
 		&mock.MiniBlockHandlerStub{
-			ProcessMiniBlockCalled: func(header data.HeaderHandler, body *erdBlock.Body) ([]*schema.MiniBlock, error) {
+			ProcessMiniBlockCalled: func(header data.HeaderHandler, body data.BodyHandler) ([]*schema.MiniBlock, error) {
 				return nil, errMBHandler
 			}})
 
