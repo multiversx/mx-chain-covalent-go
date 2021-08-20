@@ -5,6 +5,8 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
@@ -14,8 +16,50 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	"github.com/stretchr/testify/require"
 	"math/big"
+	"math/rand"
+	"strconv"
 	"testing"
 )
+
+type headerData struct {
+	header     data.HeaderHandler
+	headerHash []byte
+}
+
+type transactionData struct {
+	tx         *transaction.Transaction
+	txHash     []byte
+	headerData *headerData
+}
+
+func generateRandomTx() *transaction.Transaction {
+	return &transaction.Transaction{
+		Nonce:       rand.Uint64(),
+		Value:       big.NewInt(rand.Int63()),
+		RcvAddr:     []byte(strconv.Itoa(rand.Int())),
+		SndAddr:     []byte(strconv.Itoa(rand.Int())),
+		GasLimit:    rand.Uint64(),
+		GasPrice:    rand.Uint64(),
+		Signature:   []byte(strconv.Itoa(rand.Int())),
+		SndUserName: []byte(strconv.Itoa(rand.Int())),
+		RcvUserName: []byte(strconv.Itoa(rand.Int())),
+	}
+}
+
+func generateRandomHeaderData() *headerData {
+	return &headerData{
+		header:     &block.Header{Round: rand.Uint64(), TimeStamp: rand.Uint64()},
+		headerHash: []byte(strconv.Itoa(rand.Int())),
+	}
+}
+
+func generateRandomTxData(headerData *headerData) *transactionData {
+	return &transactionData{
+		txHash:     []byte(strconv.Itoa(rand.Int())),
+		tx:         generateRandomTx(),
+		headerData: headerData,
+	}
+}
 
 func TestNewTransactionProcessor(t *testing.T) {
 	t.Parallel()
@@ -57,20 +101,18 @@ func TestNewTransactionProcessor(t *testing.T) {
 }
 
 func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *testing.T) {
-	headerHash := []byte("header hash")
-	header := &block.Header{Round: 111, TimeStamp: 222}
+	hData := generateRandomHeaderData()
 	txPool := map[string]data.TransactionHandler{}
 	body := data.BodyHandler(nil)
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
-	_, err := txp.ProcessTransactions(header, headerHash, body, txPool)
+	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Equal(t, err, covalent.ErrBlockBodyAssertion)
 }
 
 func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(t *testing.T) {
-	headerHash := []byte("header hash")
-	header := &block.Header{Round: 111, TimeStamp: 222}
+	hData := generateRandomHeaderData()
 	txPool := map[string]data.TransactionHandler{}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{{Type: block.TxBlock}}}
 
@@ -83,159 +125,201 @@ func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(
 				return nil, errMarshaller
 			},
 		})
-	_, err := txp.ProcessTransactions(header, headerHash, body, txPool)
+	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Equal(t, err, errMarshaller)
 }
 
-func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
-	txHash1 := []byte("x")
-	txHash2 := []byte("y")
-	txHash3 := []byte("z")
-	txHash4 := []byte("scr block")
-	txHash5 := []byte("tx block, scr tx")
+func TestTransactionProcessor_ProcessTransactions_OneEmptyTxBlock_ExpectZeroProcessedTxs(t *testing.T) {
+	hData := generateRandomHeaderData()
 
-	headerHash := []byte("header hash")
-	header := &block.Header{Round: 111, TimeStamp: 222}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
 		{
-			TxHashes:        [][]byte{txHash1, txHash2},
+			TxHashes:        [][]byte{},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.TxBlock},
+	},
+	}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, map[string]data.TransactionHandler{})
+
+	require.Len(t, ret, 0)
+}
+
+func TestTransactionProcessor_ProcessTransactions_OneTxBlock_TxNotFoundInPool_ExpectZeroProcessedTxs(t *testing.T) {
+	hData := generateRandomHeaderData()
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{[]byte("tx not found")},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.TxBlock},
+	},
+	}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, map[string]data.TransactionHandler{})
+
+	require.Len(t, ret, 0)
+}
+
+func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneTx_ExpectOneProcessedTx(t *testing.T) {
+	hData := generateRandomHeaderData()
+	txData1 := generateRandomTxData(hData)
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{txData1.txHash},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.TxBlock},
+	},
+	}
+
+	txPool := map[string]data.TransactionHandler{
+		string(txData1.txHash): txData1.tx}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+
+	require.Len(t, ret, 1)
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+}
+
+func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_ExpectTwoProcessedTxs(t *testing.T) {
+	hData := generateRandomHeaderData()
+
+	txData1 := generateRandomTxData(hData)
+	txData2 := generateRandomTxData(hData)
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{txData1.txHash, txData2.txHash},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.TxBlock},
+	},
+	}
+
+	txPool := map[string]data.TransactionHandler{
+		string(txData1.txHash): txData1.tx,
+		string(txData2.txHash): txData2.tx}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+
+	require.Len(t, ret, 2)
+
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[1], txData2, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+}
+
+func TestTransactionProcessor_ProcessTransactions_TwoTxBlocks_TwoTxs_ExpectTwoProcessedTx(t *testing.T) {
+	hData := generateRandomHeaderData()
+
+	txData1 := generateRandomTxData(hData)
+	txData2 := generateRandomTxData(hData)
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{txData1.txHash},
 			ReceiverShardID: 1,
 			SenderShardID:   2,
 			Type:            block.TxBlock},
 		{
-			TxHashes:        [][]byte{txHash3, []byte("tx not found in pool")},
-			ReceiverShardID: 4,
-			SenderShardID:   5,
+			TxHashes:        [][]byte{txData2.txHash},
+			ReceiverShardID: 3,
+			SenderShardID:   4,
 			Type:            block.TxBlock},
-		{
-			TxHashes:        [][]byte{},
-			ReceiverShardID: 6,
-			SenderShardID:   7,
-			Type:            block.TxBlock},
-		{
-			TxHashes:        [][]byte{txHash4},
-			ReceiverShardID: 8,
-			SenderShardID:   9,
-			Type:            block.SmartContractResultBlock},
-		{
-			TxHashes:        [][]byte{txHash5},
-			ReceiverShardID: 10,
-			SenderShardID:   11,
-			Type:            block.TxBlock},
-	}}
-
-	tx1 := &transaction.Transaction{
-		Nonce:       1,
-		Value:       big.NewInt(2),
-		RcvAddr:     []byte("rcv1"),
-		SndAddr:     []byte("snd1"),
-		GasLimit:    3,
-		GasPrice:    4,
-		Signature:   []byte("sig1"),
-		SndUserName: []byte("sndName1"),
-		RcvUserName: []byte("rcvName1"),
-	}
-	tx2 := &transaction.Transaction{
-		Nonce:       5,
-		Value:       big.NewInt(6),
-		RcvAddr:     []byte("rcv2"),
-		SndAddr:     []byte("snd2"),
-		GasLimit:    7,
-		GasPrice:    8,
-		Signature:   []byte("sig2"),
-		SndUserName: []byte("sndName2"),
-		RcvUserName: nil,
-	}
-	tx3 := &transaction.Transaction{
-		Nonce:       9,
-		Value:       big.NewInt(10),
-		RcvAddr:     []byte("rcv3"),
-		SndAddr:     []byte("snd3"),
-		GasLimit:    11,
-		GasPrice:    12,
-		Signature:   []byte("sig3"),
-		SndUserName: nil,
-		RcvUserName: nil,
-	}
-	tx4 := &smartContractResult.SmartContractResult{
-		Nonce:    13,
-		Value:    big.NewInt(14),
-		RcvAddr:  []byte("rcv4"),
-		SndAddr:  []byte("snd4"),
-		GasLimit: 15,
-		GasPrice: 16,
-	}
-	tx5 := &smartContractResult.SmartContractResult{
-		Nonce:    17,
-		Value:    big.NewInt(18),
-		RcvAddr:  []byte("rcv5"),
-		SndAddr:  []byte("snd5"),
-		GasLimit: 19,
-		GasPrice: 20,
+	},
 	}
 
 	txPool := map[string]data.TransactionHandler{
-		string(txHash1): tx1,
-		string(txHash2): tx2,
-		string(txHash3): tx3,
-		string(txHash4): tx4,
-		string(txHash5): tx5,
-	}
+		string(txData1.txHash): txData1.tx,
+		string(txData2.txHash): txData2.tx}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
-	ret, _ := txp.ProcessTransactions(header, headerHash, body, txPool)
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
-	require.Len(t, ret, 3)
+	require.Len(t, ret, 2)
 
-	require.Equal(t, ret[0].Hash, txHash1)
-	require.Equal(t, ret[0].MiniBlockHash, []byte("ok"))
-	require.Equal(t, ret[0].BlockHash, headerHash)
-	require.Equal(t, ret[0].Nonce, int64(1))
-	require.Equal(t, ret[0].Round, int64(111))
-	require.Equal(t, ret[0].Value, big.NewInt(2).Bytes())
-	require.Equal(t, ret[0].Receiver, []byte("erd1rcv1"))
-	require.Equal(t, ret[0].Sender, []byte("erd1snd1"))
-	require.Equal(t, ret[0].ReceiverShard, int32(1))
-	require.Equal(t, ret[0].SenderShard, int32(2))
-	require.Equal(t, ret[0].GasPrice, int64(4))
-	require.Equal(t, ret[0].GasLimit, int64(3))
-	require.Equal(t, ret[0].Signature, []byte("sig1"))
-	require.Equal(t, ret[0].Timestamp, int64(222))
-	require.Equal(t, ret[0].SenderUserName, []byte("sndName1"))
-	require.Equal(t, ret[0].ReceiverUserName, []byte("rcvName1"))
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[1], txData2, body.GetMiniBlocks()[1], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+}
 
-	require.Equal(t, ret[1].Hash, txHash2)
-	require.Equal(t, ret[1].MiniBlockHash, []byte("ok"))
-	require.Equal(t, ret[1].BlockHash, headerHash)
-	require.Equal(t, ret[1].Nonce, int64(5))
-	require.Equal(t, ret[1].Round, int64(111))
-	require.Equal(t, ret[1].Value, big.NewInt(6).Bytes())
-	require.Equal(t, ret[1].Receiver, []byte("erd1rcv2"))
-	require.Equal(t, ret[1].Sender, []byte("erd1snd2"))
-	require.Equal(t, ret[1].ReceiverShard, int32(1))
-	require.Equal(t, ret[1].SenderShard, int32(2))
-	require.Equal(t, ret[1].GasPrice, int64(8))
-	require.Equal(t, ret[1].GasLimit, int64(7))
-	require.Equal(t, ret[1].Signature, []byte("sig2"))
-	require.Equal(t, ret[1].Timestamp, int64(222))
-	require.Equal(t, ret[1].SenderUserName, []byte("sndName2"))
-	require.Equal(t, ret[1].ReceiverUserName, []byte(nil))
+func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneSCRTx_ExpectZeroProcessedTxs(t *testing.T) {
+	hData := generateRandomHeaderData()
+	scrHash := []byte("scr tx hash")
 
-	require.Equal(t, ret[2].Hash, txHash3)
-	require.Equal(t, ret[2].MiniBlockHash, []byte("ok"))
-	require.Equal(t, ret[2].BlockHash, headerHash)
-	require.Equal(t, ret[2].Nonce, int64(9))
-	require.Equal(t, ret[2].Round, int64(111))
-	require.Equal(t, ret[2].Value, big.NewInt(10).Bytes())
-	require.Equal(t, ret[2].Receiver, []byte("erd1rcv3"))
-	require.Equal(t, ret[2].Sender, []byte("erd1snd3"))
-	require.Equal(t, ret[2].ReceiverShard, int32(4))
-	require.Equal(t, ret[2].SenderShard, int32(5))
-	require.Equal(t, ret[2].GasPrice, int64(12))
-	require.Equal(t, ret[2].GasLimit, int64(11))
-	require.Equal(t, ret[2].Signature, []byte("sig3"))
-	require.Equal(t, ret[2].Timestamp, int64(222))
-	require.Equal(t, ret[2].SenderUserName, []byte(nil))
-	require.Equal(t, ret[2].ReceiverUserName, []byte(nil))
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{scrHash},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.TxBlock},
+	},
+	}
+
+	txPool := map[string]data.TransactionHandler{
+		string(scrHash): &smartContractResult.SmartContractResult{}}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+
+	require.Len(t, ret, 0)
+}
+
+func TestTransactionProcessor_ProcessTransactions_OneSCRBlock_OneSCRTx_ExpectZeroProcessedTxs(t *testing.T) {
+	hData := generateRandomHeaderData()
+	scrHash := []byte("scr tx hash")
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{scrHash},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.SmartContractResultBlock},
+	},
+	}
+
+	txPool := map[string]data.TransactionHandler{
+		string(scrHash): &smartContractResult.SmartContractResult{}}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+
+	require.Len(t, ret, 0)
+}
+
+func requireProcessedTransactionEqual(
+	t *testing.T,
+	processedTx *schema.Transaction,
+	td *transactionData,
+	miniBlock *block.MiniBlock,
+	pubKeyConverter core.PubkeyConverter,
+	hasher hashing.Hasher,
+	marshaller marshal.Marshalizer) {
+
+	tx := td.tx
+	hData := td.headerData
+	mbHash, _ := core.CalculateHash(marshaller, hasher, miniBlock)
+
+	require.Equal(t, processedTx.Hash, td.txHash)
+	require.Equal(t, processedTx.Nonce, int64(tx.GetNonce()))
+	require.Equal(t, processedTx.Value, tx.GetValue().Bytes())
+	require.Equal(t, processedTx.Receiver, utility.EncodePubKey(pubKeyConverter, tx.GetRcvAddr()))
+	require.Equal(t, processedTx.Sender, utility.EncodePubKey(pubKeyConverter, tx.GetSndAddr()))
+	require.Equal(t, processedTx.ReceiverShard, int32(miniBlock.GetReceiverShardID()))
+	require.Equal(t, processedTx.SenderShard, int32(miniBlock.GetSenderShardID()))
+	require.Equal(t, processedTx.GasPrice, int64(tx.GetGasPrice()))
+	require.Equal(t, processedTx.GasLimit, int64(tx.GetGasLimit()))
+	require.Equal(t, processedTx.Signature, tx.GetSignature())
+	require.Equal(t, processedTx.SenderUserName, tx.GetSndUserName())
+	require.Equal(t, processedTx.ReceiverUserName, tx.GetRcvUserName())
+	require.Equal(t, processedTx.MiniBlockHash, mbHash)
+	require.Equal(t, processedTx.BlockHash, hData.headerHash)
+	require.Equal(t, processedTx.Round, int64(hData.header.GetRound()))
+	require.Equal(t, processedTx.Timestamp, int64(hData.header.GetTimeStamp()))
 }
