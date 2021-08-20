@@ -97,7 +97,7 @@ func TestScProcessor_ProcessSCs(t *testing.T) {
 		"hash3": tx3,
 	}
 
-	ret, _ := scp.ProcessSCs(txPool, 123)
+	ret := scp.ProcessSCs(txPool, 123)
 
 	require.Len(t, ret, 2)
 
