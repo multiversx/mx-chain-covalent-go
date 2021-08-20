@@ -3,7 +3,6 @@ package process
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
 
@@ -14,7 +13,7 @@ type BlockHandler interface {
 
 // MiniBlockHandler defines what a mini blocks processor shall do
 type MiniBlockHandler interface {
-	ProcessMiniBlocks(header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error)
+	ProcessMiniBlocks(header data.HeaderHandler, body data.BodyHandler) ([]*schema.MiniBlock, error)
 }
 
 // TransactionHandler defines what a transaction processor shall do

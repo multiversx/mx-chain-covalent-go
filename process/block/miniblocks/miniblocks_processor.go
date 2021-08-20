@@ -35,10 +35,16 @@ func NewMiniBlocksProcessor(hasher hashing.Hasher, marshalizer marshal.Marshaliz
 }
 
 // ProcessMiniBlocks converts mini blocks core data to a specific mini blocks structure array defined by avro schema
-func (mbp *miniBlocksProcessor) ProcessMiniBlocks(header data.HeaderHandler, body *block.Body) ([]*schema.MiniBlock, error) {
-	miniBlocks := make([]*schema.MiniBlock, 0)
+func (mbp *miniBlocksProcessor) ProcessMiniBlocks(header data.HeaderHandler, body data.BodyHandler) ([]*schema.MiniBlock, error) {
+	erdBody, castOk := body.(*block.Body)
+	if !castOk {
+		return nil, covalent.ErrBlockBodyAssertion
+	}
 
-	for _, mb := range body.MiniBlocks {
+	miniBlocks := make([]*schema.MiniBlock, 0)
+	erdMiniBlocks := erdBody.GetMiniBlocks()
+
+	for _, mb := range erdMiniBlocks {
 
 		miniBlock, err := mbp.processMiniBlock(mb, header)
 		if err != nil {
