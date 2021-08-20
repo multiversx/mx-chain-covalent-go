@@ -24,23 +24,35 @@ func NewReceiptsProcessor(pubKeyConverter core.PubkeyConverter) (*receiptsProces
 }
 
 // ProcessReceipts converts receipts data to a specific structure defined by avro schema
-func (rp *receiptsProcessor) ProcessReceipts(receipts map[string]data.TransactionHandler, timeStamp uint64) ([]*schema.Receipt, error) {
+func (rp *receiptsProcessor) ProcessReceipts(receipts map[string]data.TransactionHandler, timeStamp uint64) []*schema.Receipt {
 	allReceipts := make([]*schema.Receipt, 0)
 
 	for currHash, currReceipt := range receipts {
-
-		rec, _ := currReceipt.(*receipt.Receipt)
-		receipt := &schema.Receipt{
-			Hash:      []byte(currHash),
-			Value:     utility.GetBytes(rec.GetValue()),
-			Sender:    utility.EncodePubKey(rp.pubKeyConverter, rec.GetSndAddr()),
-			Data:      rec.GetData(),
-			TxHash:    rec.GetTxHash(),
-			Timestamp: int64(timeStamp),
+		rec := rp.processReceipt(currReceipt, currHash, timeStamp)
+		if rec != nil {
+			allReceipts = append(allReceipts, rec)
 		}
-
-		allReceipts = append(allReceipts, receipt)
 	}
 
-	return allReceipts, nil
+	return allReceipts
+}
+
+func (rp *receiptsProcessor) processReceipt(
+	tx data.TransactionHandler,
+	receiptHash string,
+	timeStamp uint64) *schema.Receipt {
+
+	rec, castOk := tx.(*receipt.Receipt)
+	if !castOk {
+		return nil
+	}
+
+	return &schema.Receipt{
+		Hash:      []byte(receiptHash),
+		Value:     utility.GetBytes(rec.GetValue()),
+		Sender:    utility.EncodePubKey(rp.pubKeyConverter, rec.GetSndAddr()),
+		Data:      rec.GetData(),
+		TxHash:    rec.GetTxHash(),
+		Timestamp: int64(timeStamp),
+	}
 }
