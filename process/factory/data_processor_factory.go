@@ -50,7 +50,7 @@ func CreateDataProcessor(args *ArgsDataProcessor) (covalent.DataHandler, error) 
 		return nil, err
 	}
 
-	logHandler, err := logs.NewLogsProcessor()
+	logHandler, err := logs.NewLogsProcessor(args.PubKeyConvertor)
 	if err != nil {
 		return nil, err
 	}
