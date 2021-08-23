@@ -53,7 +53,7 @@ func generateRandomReceipt() *receipt.Receipt {
 	}
 }
 
-func TestReceiptsProcessor_ProcessReceipts(t *testing.T) {
+func TestReceiptsProcessor_ProcessReceipts_TwoReceipts_OneNormalTx_ExpectTwoProcessedReceipts(t *testing.T) {
 	rp, _ := receipts.NewReceiptsProcessor(&mock.PubKeyConverterStub{})
 
 	receipt1 := generateRandomReceipt()
