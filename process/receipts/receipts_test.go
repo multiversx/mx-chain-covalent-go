@@ -2,10 +2,10 @@ package receipts_test
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/receipt"

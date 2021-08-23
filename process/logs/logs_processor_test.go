@@ -2,10 +2,11 @@ package logs_test
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/logs"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
@@ -125,7 +126,7 @@ func TestLogsProcessor_ProcessLogs_ThreeLogs_FourEvents_ExpectTwoProcessedLogsAn
 
 func generateRandomEvent() *transaction.Event {
 	return &transaction.Event{
-		Address:    []byte(strconv.Itoa(rand.Int())),
+		Address:    testscommon.GenerateRandomBytes(),
 		Identifier: []byte(strconv.Itoa(rand.Int())),
 		Topics:     [][]byte{[]byte(strconv.Itoa(rand.Int())), []byte(strconv.Itoa(rand.Int()))},
 		Data:       []byte(strconv.Itoa(rand.Int())),
