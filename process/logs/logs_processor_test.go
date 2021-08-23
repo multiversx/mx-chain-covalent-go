@@ -50,12 +50,12 @@ func TestLogsProcessor_ProcessLogs_OneNilLog_ExpectZeroProcessedLogs(t *testing.
 		"hash1": nil,
 	}
 
-	ret, _ := lp.ProcessLogs(logsAndEvents)
+	ret := lp.ProcessLogs(logsAndEvents)
 	require.Len(t, ret, 0)
 
 }
 
-func TestLogsProcessor_ProcessLogs_OneLog_NoEvent_ExpectOneProcessedLogAndZeroEvents(t *testing.T) {
+func TestLogsProcessor_ProcessLogs_OneLog_NoEvent_ExpectOneProcessedLogsAndZeroEvents(t *testing.T) {
 	lp, _ := logs.NewLogsProcessor(&mock.PubKeyConverterStub{})
 
 	log := &transaction.Log{
@@ -66,7 +66,7 @@ func TestLogsProcessor_ProcessLogs_OneLog_NoEvent_ExpectOneProcessedLogAndZeroEv
 		"hash1": log,
 	}
 
-	ret, _ := lp.ProcessLogs(logsAndEvents)
+	ret := lp.ProcessLogs(logsAndEvents)
 
 	require.Len(t, ret, 1)
 	require.Len(t, ret[0].Events, 0)
@@ -85,14 +85,14 @@ func TestLogsProcessor_ProcessLogs_OneLog_OneEvent_ExpectOneProcessedLogAndOneEv
 		"hash1": log,
 	}
 
-	ret, _ := lp.ProcessLogs(logsAndEvents)
+	ret := lp.ProcessLogs(logsAndEvents)
 	require.Len(t, ret, 1)
 	require.Len(t, ret[0].Events, 1)
 
 	requireProcessedLogEqual(t, ret[0], log, "hash1", &mock.PubKeyConverterStub{})
 }
 
-func TestLogsProcessor_ProcessLogs_ThreeLogs_FourEvents_ExpectTwoProcessedLogAndThreeEvents(t *testing.T) {
+func TestLogsProcessor_ProcessLogs_ThreeLogs_FourEvents_ExpectTwoProcessedLogsAndThreeEvents(t *testing.T) {
 	lp, _ := logs.NewLogsProcessor(&mock.PubKeyConverterStub{})
 
 	event1 := generateRandomEvent()
@@ -114,7 +114,7 @@ func TestLogsProcessor_ProcessLogs_ThreeLogs_FourEvents_ExpectTwoProcessedLogAnd
 		"hash3": log2,
 	}
 
-	ret, _ := lp.ProcessLogs(logsAndEvents)
+	ret := lp.ProcessLogs(logsAndEvents)
 	require.Len(t, ret, 2)
 	require.Len(t, ret[0].Events, 2)
 	require.Len(t, ret[1].Events, 1)

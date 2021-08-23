@@ -23,7 +23,7 @@ func NewLogsProcessor(pubKeyConverter core.PubkeyConverter) (*logsProcessor, err
 }
 
 // ProcessLogs converts logs data to a specific structure defined by avro schema
-func (lp *logsProcessor) ProcessLogs(logs map[string]data.LogHandler) ([]*schema.Log, error) {
+func (lp *logsProcessor) ProcessLogs(logs map[string]data.LogHandler) []*schema.Log {
 	allLogs := make([]*schema.Log, 0)
 
 	for currHash, currLog := range logs {
@@ -33,7 +33,7 @@ func (lp *logsProcessor) ProcessLogs(logs map[string]data.LogHandler) ([]*schema
 		}
 	}
 
-	return allLogs, nil
+	return allLogs
 }
 
 func (lp *logsProcessor) processLog(hash string, log data.LogHandler) *schema.Log {
