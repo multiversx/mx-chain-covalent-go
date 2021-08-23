@@ -12,8 +12,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/stretchr/testify/require"
-	"math/rand"
-	"strconv"
 	"testing"
 )
 
@@ -60,7 +58,7 @@ func TestLogsProcessor_ProcessLogs_OneLog_NoEvent_ExpectOneProcessedLogsAndZeroE
 	lp, _ := logs.NewLogsProcessor(&mock.PubKeyConverterStub{})
 
 	log := &transaction.Log{
-		Address: []byte(strconv.Itoa(rand.Int())),
+		Address: testscommon.GenerateRandomBytes(),
 		Events:  []*transaction.Event{},
 	}
 	logsAndEvents := map[string]data.LogHandler{
@@ -78,7 +76,7 @@ func TestLogsProcessor_ProcessLogs_OneLog_OneEvent_ExpectOneProcessedLogAndOneEv
 
 	event := generateRandomEvent()
 	log := &transaction.Log{
-		Address: []byte(strconv.Itoa(rand.Int())),
+		Address: testscommon.GenerateRandomBytes(),
 		Events:  []*transaction.Event{event},
 	}
 
@@ -100,12 +98,12 @@ func TestLogsProcessor_ProcessLogs_ThreeLogs_FourEvents_ExpectTwoProcessedLogsAn
 	event2 := generateRandomEvent()
 	event3 := generateRandomEvent()
 	log1 := &transaction.Log{
-		Address: []byte(strconv.Itoa(rand.Int())),
+		Address: testscommon.GenerateRandomBytes(),
 		Events:  []*transaction.Event{event1, nil, event2},
 	}
 
 	log2 := &transaction.Log{
-		Address: []byte(strconv.Itoa(rand.Int())),
+		Address: testscommon.GenerateRandomBytes(),
 		Events:  []*transaction.Event{event3},
 	}
 
@@ -127,9 +125,9 @@ func TestLogsProcessor_ProcessLogs_ThreeLogs_FourEvents_ExpectTwoProcessedLogsAn
 func generateRandomEvent() *transaction.Event {
 	return &transaction.Event{
 		Address:    testscommon.GenerateRandomBytes(),
-		Identifier: []byte(strconv.Itoa(rand.Int())),
-		Topics:     [][]byte{[]byte(strconv.Itoa(rand.Int())), []byte(strconv.Itoa(rand.Int()))},
-		Data:       []byte(strconv.Itoa(rand.Int())),
+		Identifier: testscommon.GenerateRandomBytes(),
+		Topics:     [][]byte{testscommon.GenerateRandomBytes(), testscommon.GenerateRandomBytes()},
+		Data:       testscommon.GenerateRandomBytes(),
 	}
 }
 

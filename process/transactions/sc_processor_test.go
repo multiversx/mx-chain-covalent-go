@@ -5,15 +5,14 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/stretchr/testify/require"
-	"math/big"
 	"math/rand"
-	"strconv"
 	"testing"
 )
 
@@ -47,21 +46,21 @@ func TestNewSCProcessor(t *testing.T) {
 func generateRandomSCR() *smartContractResult.SmartContractResult {
 	return &smartContractResult.SmartContractResult{
 		Nonce:          rand.Uint64(),
-		Value:          big.NewInt(rand.Int63()),
-		RcvAddr:        []byte(strconv.Itoa(rand.Int())),
-		SndAddr:        []byte(strconv.Itoa(rand.Int())),
-		RelayerAddr:    []byte(strconv.Itoa(rand.Int())),
-		RelayedValue:   big.NewInt(rand.Int63()),
-		Code:           []byte(strconv.Itoa(rand.Int())),
-		Data:           []byte(strconv.Itoa(rand.Int())),
-		PrevTxHash:     []byte(strconv.Itoa(rand.Int())),
-		OriginalTxHash: []byte(strconv.Itoa(rand.Int())),
+		Value:          testscommon.GenerateRandomBigInt(),
+		RcvAddr:        testscommon.GenerateRandomBytes(),
+		SndAddr:        testscommon.GenerateRandomBytes(),
+		RelayerAddr:    testscommon.GenerateRandomBytes(),
+		RelayedValue:   testscommon.GenerateRandomBigInt(),
+		Code:           testscommon.GenerateRandomBytes(),
+		Data:           testscommon.GenerateRandomBytes(),
+		PrevTxHash:     testscommon.GenerateRandomBytes(),
+		OriginalTxHash: testscommon.GenerateRandomBytes(),
 		GasLimit:       rand.Uint64(),
 		GasPrice:       rand.Uint64(),
 		CallType:       vm.CallType(rand.Int()),
-		CodeMetadata:   []byte(strconv.Itoa(rand.Int())),
-		ReturnMessage:  []byte(strconv.Itoa(rand.Int())),
-		OriginalSender: []byte(strconv.Itoa(rand.Int())),
+		CodeMetadata:   testscommon.GenerateRandomBytes(),
+		ReturnMessage:  testscommon.GenerateRandomBytes(),
+		OriginalSender: testscommon.GenerateRandomBytes(),
 	}
 }
 
