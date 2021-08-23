@@ -42,5 +42,14 @@ type LogHandler interface {
 
 // AccountsHandler defines what an account processor shall do
 type AccountsHandler interface {
-	ProcessAccounts() ([]*schema.AccountBalanceUpdate, error)
+	ProcessAccounts(
+		processedTxs []*schema.Transaction,
+		processedSCRs []*schema.SCResult,
+		processedReceipts []*schema.Receipt) ([]*schema.AccountBalanceUpdate, error)
+}
+
+type ShardCoordinator interface {
+	SelfShardID() uint32
+	ComputeShardID(address []byte) uint32
+	IsInterfaceNil() bool
 }
