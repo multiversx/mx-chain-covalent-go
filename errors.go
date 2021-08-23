@@ -22,3 +22,6 @@ var ErrNilMiniBlockHandler = errors.New("received nil input value: mini block ha
 
 // ErrNilShardCoordinator signals that a shard coordinator input parameter is nil
 var ErrNilShardCoordinator = errors.New("received nil input value: shard coordinator")
+
+// ErrCannotCastAccountHandlerToUserAccount signals an error when trying to cast from AccountHandler to UserAccountHandler
+var ErrCannotCastAccountHandlerToUserAccount = errors.New("cannot cast AccountHandler to UserAccountHandler")

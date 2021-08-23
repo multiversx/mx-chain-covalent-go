@@ -3,11 +3,15 @@ package accounts
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
+
+var log = logger.GetOrCreate("process/accounts")
 
 type accountsProcessor struct {
 	shardCoordinator process.ShardCoordinator
@@ -45,27 +49,19 @@ func (ap *accountsProcessor) ProcessAccounts(
 	processedReceipts []*schema.Receipt) ([]*schema.AccountBalanceUpdate, error) {
 
 	addresses := ap.getAllAddresses(processedTxs, processedSCRs, processedReceipts)
-	_ = addresses
+	accounts := make([]*schema.AccountBalanceUpdate, 0)
 
-	sender := processedTxs[1].Sender
-	_ = processedSCRs[1].Receiver
-	_ = processedReceipts[1].Sender
+	for address, _ := range addresses {
+		account, err := ap.processAccount(address)
+		if err != nil {
+			log.Warn("cannot get user account", "address", address, "error", err)
+			continue
+		}
 
-	if ap.shardCoordinator.SelfShardID() == ap.shardCoordinator.ComputeShardID(sender) {
-		// Add to map
+		accounts = append(accounts, account)
 	}
-	// SAME for receiver
 
-	accountSender, _ := ap.accounts.LoadAccount(sender)
-
-	newAcc := accountSender.(data.UserAccountHandler)
-
-	newAcc.GetBalance()
-
-	var myMap map[string]struct{}
-	myMap["da"] = struct{}{}
-
-	return nil, nil
+	return accounts, nil
 }
 
 func (ap *accountsProcessor) getAllAddresses(
@@ -95,4 +91,22 @@ func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct
 	if ap.shardCoordinator.SelfShardID() == ap.shardCoordinator.ComputeShardID(address) {
 		addresses[string(address)] = struct{}{}
 	}
+}
+
+func (ap *accountsProcessor) processAccount(address string) (*schema.AccountBalanceUpdate, error) {
+	acc, err := ap.accounts.LoadAccount([]byte(address))
+	if err != nil || check.IfNil(acc) {
+		return nil, err
+	}
+
+	account, castOk := acc.(data.UserAccountHandler)
+	if !castOk {
+		return nil, covalent.ErrCannotCastAccountHandlerToUserAccount
+	}
+
+	return &schema.AccountBalanceUpdate{
+		Address: utility.EncodePubKey(ap.pubKeyConverter, account.AddressBytes()),
+		Balance: utility.GetBytes(account.GetBalance()),
+		Nonce:   int64(account.GetNonce()),
+	}, nil
 }
