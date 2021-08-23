@@ -33,7 +33,7 @@ func (lp *logsProcessor) ProcessLogs(logs map[string]data.LogHandler) ([]*schema
 		}
 	}
 
-	return nil, nil
+	return allLogs, nil
 }
 
 func (lp *logsProcessor) processLog(hash string, log data.LogHandler) *schema.Log {
