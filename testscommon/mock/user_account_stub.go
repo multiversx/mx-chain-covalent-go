@@ -7,50 +7,37 @@ import (
 
 // UserAccountStub -
 type UserAccountStub struct {
-	CurrentBalance     int64
-	CurrentNonce       uint64
-	GetBalanceCalled   func() *big.Int
-	GetNonceCalled     func() uint64
-	AddressBytesCalled func() []byte
+	CurrentBalance int64
+	CurrentNonce   uint64
 }
 
 // IncreaseNonce -
-func (us *UserAccountStub) IncreaseNonce(_ uint64) {
+func (uas *UserAccountStub) IncreaseNonce(_ uint64) {
 }
 
-// GetBalance calls a custom GetBalance function if defined, otherwise returns a dummy value
-func (us *UserAccountStub) GetBalance() *big.Int {
-	if us.GetBalanceCalled != nil {
-		return us.GetBalanceCalled()
-	}
-
-	us.CurrentBalance++
-	return big.NewInt(us.CurrentBalance)
+// GetBalance increments CurrentBalance and returns it as a big int
+func (uas *UserAccountStub) GetBalance() *big.Int {
+	uas.CurrentBalance++
+	return big.NewInt(uas.CurrentBalance)
 }
 
-// AddressBytes calls a custom AddressBytes function if defined, otherwise returns a dummy byte slice
-func (us *UserAccountStub) AddressBytes() []byte {
-	if us.AddressBytesCalled != nil {
-		return us.AddressBytesCalled()
-	}
-	return []byte("addr" + strconv.Itoa(int(us.CurrentBalance)))
+// AddressBytes returns a byte slice of ("addr" + CurrentBalance)
+func (uas *UserAccountStub) AddressBytes() []byte {
+	return []byte("addr" + strconv.Itoa(int(uas.CurrentBalance)))
 }
 
-// GetNonce calls a custom GetNonce function if defined, otherwise returns a dummy value
-func (us *UserAccountStub) GetNonce() uint64 {
-	if us.GetNonceCalled != nil {
-		return us.GetNonceCalled()
-	}
-	us.CurrentNonce++
-	return us.CurrentNonce
+// GetNonce increments CurrentNonce and returns it
+func (uas *UserAccountStub) GetNonce() uint64 {
+	uas.CurrentNonce++
+	return uas.CurrentNonce
 }
 
 // IsInterfaceNil returns true if interface is nil, false otherwise
-func (us *UserAccountStub) IsInterfaceNil() bool {
-	return us == nil
+func (uas *UserAccountStub) IsInterfaceNil() bool {
+	return uas == nil
 }
 
 // RetrieveValueFromDataTrieTracker -
-func (us *UserAccountStub) RetrieveValueFromDataTrieTracker(key []byte) ([]byte, error) {
+func (uas *UserAccountStub) RetrieveValueFromDataTrieTracker(key []byte) ([]byte, error) {
 	return nil, nil
 }

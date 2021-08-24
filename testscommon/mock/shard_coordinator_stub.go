@@ -2,16 +2,11 @@ package mock
 
 // ShardCoordinatorMock -
 type ShardCoordinatorMock struct {
-	SelfID          uint32
-	ComputeIdCalled func(address []byte) uint32
+	SelfID uint32
 }
 
-// ComputeId calls a custom compute id function if defined, otherwise returns 0
+// ComputeId returns 0
 func (scm *ShardCoordinatorMock) ComputeId(address []byte) uint32 {
-	if scm.ComputeIdCalled != nil {
-		return scm.ComputeIdCalled(address)
-	}
-
 	return 0
 }
 

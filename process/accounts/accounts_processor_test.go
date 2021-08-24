@@ -92,7 +92,7 @@ func TestAccountsProcessor_ProcessAccounts_InvalidLoadAccount_ExpectZeroAccounts
 func TestAccountsProcessor_ProcessAccounts_NotInSameShard_ExpectZeroAccounts(t *testing.T) {
 	ap, _ := accounts.NewAccountsProcessor(
 		&mock.ShardCoordinatorMock{SelfID: 4},
-		&mock.AccountsAdapterStub{},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountStub{}},
 		&mock.PubKeyConverterStub{})
 
 	tx := &schema.Transaction{
