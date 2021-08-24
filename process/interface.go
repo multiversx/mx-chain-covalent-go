@@ -45,11 +45,11 @@ type AccountsHandler interface {
 	ProcessAccounts(
 		processedTxs []*schema.Transaction,
 		processedSCRs []*schema.SCResult,
-		processedReceipts []*schema.Receipt) ([]*schema.AccountBalanceUpdate, error)
+		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate
 }
 
 type ShardCoordinator interface {
-	SelfShardID() uint32
-	ComputeShardID(address []byte) uint32
+	SelfId() uint32
+	ComputeId(address []byte) uint32
 	IsInterfaceNil() bool
 }

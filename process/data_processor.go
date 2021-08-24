@@ -50,11 +50,7 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 	smartContracts := dp.scHandler.ProcessSCs(args.TransactionsPool.Scrs, args.Header.GetTimeStamp())
 	receipts := dp.receiptHandler.ProcessReceipts(args.TransactionsPool.Receipts, args.Header.GetTimeStamp())
 	logs := dp.logHandler.ProcessLogs(args.TransactionsPool.Logs)
-
-	accountUpdates, err := dp.accountsHandler.ProcessAccounts()
-	if err != nil {
-		return nil, err
-	}
+	accountUpdates := dp.accountsHandler.ProcessAccounts(transactions, smartContracts, receipts)
 
 	return &schema.BlockResult{
 		Block:        block,

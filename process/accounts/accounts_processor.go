@@ -46,7 +46,7 @@ func NewAccountsProcessor(
 func (ap *accountsProcessor) ProcessAccounts(
 	processedTxs []*schema.Transaction,
 	processedSCRs []*schema.SCResult,
-	processedReceipts []*schema.Receipt) ([]*schema.AccountBalanceUpdate, error) {
+	processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate {
 
 	addresses := ap.getAllAddresses(processedTxs, processedSCRs, processedReceipts)
 	accounts := make([]*schema.AccountBalanceUpdate, 0)
@@ -54,14 +54,14 @@ func (ap *accountsProcessor) ProcessAccounts(
 	for address, _ := range addresses {
 		account, err := ap.processAccount(address)
 		if err != nil {
-			log.Warn("cannot get user account", "address", address, "error", err)
+			log.Warn("cannot get address account", "address", address, "error", err)
 			continue
 		}
 
 		accounts = append(accounts, account)
 	}
 
-	return accounts, nil
+	return accounts
 }
 
 func (ap *accountsProcessor) getAllAddresses(
@@ -88,7 +88,7 @@ func (ap *accountsProcessor) getAllAddresses(
 }
 
 func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct{}, address []byte) {
-	if ap.shardCoordinator.SelfShardID() == ap.shardCoordinator.ComputeShardID(address) {
+	if ap.shardCoordinator.SelfId() == ap.shardCoordinator.ComputeId(address) {
 		addresses[string(address)] = struct{}{}
 	}
 }
