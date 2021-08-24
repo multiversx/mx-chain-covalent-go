@@ -53,7 +53,7 @@ func (ap *accountsProcessor) ProcessAccounts(
 
 	for address, _ := range addresses {
 		account, err := ap.processAccount(address)
-		if err != nil {
+		if err != nil || account == nil {
 			log.Warn("cannot get address account", "address", address, "error", err)
 			continue
 		}
@@ -95,7 +95,7 @@ func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct
 
 func (ap *accountsProcessor) processAccount(address string) (*schema.AccountBalanceUpdate, error) {
 	acc, err := ap.accounts.LoadAccount([]byte(address))
-	if err != nil || check.IfNil(acc) {
+	if err != nil {
 		return nil, err
 	}
 
