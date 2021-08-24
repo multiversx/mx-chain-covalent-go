@@ -6,7 +6,7 @@ type ShardCoordinatorMock struct {
 }
 
 // ComputeId returns 0
-func (scm *ShardCoordinatorMock) ComputeId(address []byte) uint32 {
+func (scm *ShardCoordinatorMock) ComputeId([]byte) uint32 {
 	return 0
 }
 

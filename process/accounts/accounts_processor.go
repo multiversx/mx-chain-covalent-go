@@ -51,7 +51,7 @@ func (ap *accountsProcessor) ProcessAccounts(
 	addresses := ap.getAllAddresses(processedTxs, processedSCRs, processedReceipts)
 	accounts := make([]*schema.AccountBalanceUpdate, 0)
 
-	for address, _ := range addresses {
+	for address := range addresses {
 		account, err := ap.processAccount(address)
 		if err != nil || account == nil {
 			log.Warn("cannot get address account", "address", address, "error", err)

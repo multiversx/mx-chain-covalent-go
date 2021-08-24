@@ -38,6 +38,6 @@ func (uas *UserAccountStub) IsInterfaceNil() bool {
 }
 
 // RetrieveValueFromDataTrieTracker -
-func (uas *UserAccountStub) RetrieveValueFromDataTrieTracker(key []byte) ([]byte, error) {
+func (uas *UserAccountStub) RetrieveValueFromDataTrieTracker([]byte) ([]byte, error) {
 	return nil, nil
 }
