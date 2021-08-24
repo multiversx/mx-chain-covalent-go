@@ -2,10 +2,12 @@ package mock
 
 import vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 
+// AccountsAdapterStub -
 type AccountsAdapterStub struct {
 	LoadAccountCalled func(address []byte) (vmcommon.AccountHandler, error)
 }
 
+// LoadAccount calls a custom load account function if defined, otherwise returns nil, nil
 func (as *AccountsAdapterStub) LoadAccount(address []byte) (vmcommon.AccountHandler, error) {
 	if as.LoadAccountCalled != nil {
 		return as.LoadAccountCalled(address)
@@ -13,6 +15,7 @@ func (as *AccountsAdapterStub) LoadAccount(address []byte) (vmcommon.AccountHand
 	return nil, nil
 }
 
+// IsInterfaceNil returns true if interface is nil, false otherwise
 func (as *AccountsAdapterStub) IsInterfaceNil() bool {
 	return as == nil
 }

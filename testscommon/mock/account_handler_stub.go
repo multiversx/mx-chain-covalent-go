@@ -13,7 +13,7 @@ type UserAccountStub struct {
 func (us *UserAccountStub) IncreaseNonce(_ uint64) {
 }
 
-// GetBalance -
+// GetBalance calls a custom GetBalance function if defined, otherwise returns a dummy value
 func (us *UserAccountStub) GetBalance() *big.Int {
 	if us.GetBalanceCalled != nil {
 		return us.GetBalanceCalled()
@@ -21,7 +21,7 @@ func (us *UserAccountStub) GetBalance() *big.Int {
 	return big.NewInt(10)
 }
 
-// AddressBytes -
+// AddressBytes calls a custom AddressBytes function if defined, otherwise returns a dummy byte slice
 func (us *UserAccountStub) AddressBytes() []byte {
 	if us.AddressBytesCalled != nil {
 		return us.AddressBytesCalled()
@@ -29,7 +29,7 @@ func (us *UserAccountStub) AddressBytes() []byte {
 	return []byte("addr")
 }
 
-// GetNonce -
+// GetNonce calls a custom GetNonce function if defined, otherwise returns a dummy value
 func (us *UserAccountStub) GetNonce() uint64 {
 	if us.GetNonceCalled != nil {
 		return us.GetNonceCalled()
@@ -37,7 +37,7 @@ func (us *UserAccountStub) GetNonce() uint64 {
 	return 14
 }
 
-// IsInterfaceNil -
+// IsInterfaceNil returns true if interface is nil, false otherwise
 func (us *UserAccountStub) IsInterfaceNil() bool {
 	return us == nil
 }
