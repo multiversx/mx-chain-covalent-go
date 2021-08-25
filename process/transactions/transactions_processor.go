@@ -106,11 +106,7 @@ func findTransactionInPool(txHash []byte, transactions map[string]data.Transacti
 	}
 
 	castedTx, castOk := tx.(*transaction.Transaction)
-	if !castOk {
-		return nil, false
-	}
-
-	return castedTx, true
+	return castedTx, castOk
 }
 
 func (txp *transactionProcessor) convertTransaction(
