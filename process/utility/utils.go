@@ -40,7 +40,7 @@ func EncodePubKey(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
 	return []byte(pubKeyConverter.Encode(pubKey))
 }
 
-func Write(record avro.AvroRecord) ([]byte, error) {
+func Encode(record avro.AvroRecord) ([]byte, error) {
 	writer := avro.NewSpecificDatumWriter()
 	writer.SetSchema(record.Schema())
 
