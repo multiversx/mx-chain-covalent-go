@@ -28,13 +28,13 @@ func TestNewMiniBlocksProcessor(t *testing.T) {
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer) {
-				return &mock.HasherStub{}, nil
+				return &mock.HasherMock{}, nil
 			},
 			expectedErr: covalent.ErrNilMarshaller,
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer) {
-				return &mock.HasherStub{}, &mock.MarshallerStub{}
+				return &mock.HasherMock{}, &mock.MarshallerStub{}
 			},
 			expectedErr: nil,
 		},
@@ -47,7 +47,7 @@ func TestNewMiniBlocksProcessor(t *testing.T) {
 }
 
 func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
-	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
+	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherMock{}, &mock.MarshallerStub{})
 
 	header := &block.Header{TimeStamp: 123}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
@@ -84,7 +84,7 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
 
 func TestMiniBlocksProcessor_ProcessMiniBlocks_InvalidMarshaller_ExpectZeroMBProcessed(t *testing.T) {
 	mbp, _ := miniblocks.NewMiniBlocksProcessor(
-		&mock.HasherStub{},
+		&mock.HasherMock{},
 		&mock.MarshallerStub{
 			MarshalCalled: func(obj interface{}) ([]byte, error) {
 				return nil, errors.New("error marshaller stub")

@@ -41,8 +41,8 @@ func (mbp *miniBlocksProcessor) ProcessMiniBlocks(header data.HeaderHandler, bod
 		return nil, covalent.ErrBlockBodyAssertion
 	}
 
-	miniBlocks := make([]*schema.MiniBlock, 0)
 	erdMiniBlocks := erdBody.GetMiniBlocks()
+	miniBlocks := make([]*schema.MiniBlock, 0, len(erdMiniBlocks))
 
 	for _, mb := range erdMiniBlocks {
 

@@ -70,7 +70,7 @@ func TestNewTransactionProcessor(t *testing.T) {
 	}{
 		{
 			args: func() (core.PubkeyConverter, hashing.Hasher, marshal.Marshalizer) {
-				return nil, &mock.HasherStub{}, &mock.MarshallerStub{}
+				return nil, &mock.HasherMock{}, &mock.MarshallerStub{}
 			},
 			expectedErr: covalent.ErrNilPubKeyConverter,
 		},
@@ -82,13 +82,13 @@ func TestNewTransactionProcessor(t *testing.T) {
 		},
 		{
 			args: func() (core.PubkeyConverter, hashing.Hasher, marshal.Marshalizer) {
-				return &mock.PubKeyConverterStub{}, &mock.HasherStub{}, nil
+				return &mock.PubKeyConverterStub{}, &mock.HasherMock{}, nil
 			},
 			expectedErr: covalent.ErrNilMarshaller,
 		},
 		{
 			args: func() (core.PubkeyConverter, hashing.Hasher, marshal.Marshalizer) {
-				return &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{}
+				return &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{}
 			},
 			expectedErr: nil,
 		},
@@ -105,7 +105,7 @@ func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *tes
 	txPool := map[string]data.TransactionHandler{}
 	body := data.BodyHandler(nil)
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Equal(t, covalent.ErrBlockBodyAssertion, err)
@@ -119,7 +119,7 @@ func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(
 	errMarshaller := errors.New("err marshaller")
 	txp, _ := transactions.NewTransactionProcessor(
 		&mock.PubKeyConverterStub{},
-		&mock.HasherStub{},
+		&mock.HasherMock{},
 		&mock.MarshallerStub{
 			MarshalCalled: func(obj interface{}) ([]byte, error) {
 				return nil, errMarshaller
@@ -142,7 +142,7 @@ func TestTransactionProcessor_ProcessTransactions_OneEmptyTxBlock_ExpectZeroProc
 	},
 	}
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, map[string]data.TransactionHandler{})
 
 	require.Nil(t, err)
@@ -161,7 +161,7 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_TxNotFoundInPool_Ex
 	},
 	}
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, map[string]data.TransactionHandler{})
 
 	require.Nil(t, err)
@@ -184,11 +184,11 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneTx_ExpectOneProc
 	txPool := map[string]data.TransactionHandler{
 		string(txData1.txHash): txData1.tx}
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Len(t, ret, 1)
-	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 }
 
 func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_ExpectTwoProcessedTxs(t *testing.T) {
@@ -210,13 +210,13 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_Expect
 		string(txData1.txHash): txData1.tx,
 		string(txData2.txHash): txData2.tx}
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Len(t, ret, 2)
 
-	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
-	requireProcessedTransactionEqual(t, ret[1], txData2, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[1], txData2, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 }
 
 func TestTransactionProcessor_ProcessTransactions_TwoTxBlocks_TwoTxs_ExpectTwoProcessedTx(t *testing.T) {
@@ -243,13 +243,13 @@ func TestTransactionProcessor_ProcessTransactions_TwoTxBlocks_TwoTxs_ExpectTwoPr
 		string(txData1.txHash): txData1.tx,
 		string(txData2.txHash): txData2.tx}
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Len(t, ret, 2)
 
-	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
-	requireProcessedTransactionEqual(t, ret[1], txData2, body.GetMiniBlocks()[1], &mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[1], txData2, body.GetMiniBlocks()[1], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 }
 
 func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneSCRTx_ExpectZeroProcessedTxs(t *testing.T) {
@@ -268,7 +268,7 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneSCRTx_ExpectZero
 	txPool := map[string]data.TransactionHandler{
 		string(scrHash): &smartContractResult.SmartContractResult{}}
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Nil(t, err)
@@ -290,7 +290,7 @@ func TestTransactionProcessor_ProcessTransactions_OneSCRBlock_OneSCRTx_ExpectZer
 	txPool := map[string]data.TransactionHandler{
 		string(scrHash): &smartContractResult.SmartContractResult{}}
 
-	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherStub{}, &mock.MarshallerStub{})
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
 
 	require.Nil(t, err)

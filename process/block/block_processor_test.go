@@ -96,7 +96,7 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 }
 
 func TestBlockProcessor_ProcessBlock_InvalidBody_ExpectErrBlockBodyAssertion(t *testing.T) {
-	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
+	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherMock{}, &mock.MarshallerStub{})
 	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, mbp)
 
 	args := getInitializedArgs(false)
@@ -129,7 +129,7 @@ func TestNewBlockProcessor_ProcessBlock_NoSigners_ExpectDefaultProposerIndex(t *
 	args.SignersIndexes = nil
 	ret, _ := bp.ProcessBlock(args)
 
-	require.Equal(t, block.DefaultProposerIndex, ret.Proposer)
+	require.Equal(t, block.ProposerIndex, ret.Proposer)
 }
 
 func TestBlockProcessor_ProcessBlock(t *testing.T) {
