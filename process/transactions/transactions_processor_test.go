@@ -322,7 +322,7 @@ func requireProcessedTransactionEqual(
 	require.Equal(t, tx.GetSignature(), processedTx.Signature)
 	require.Equal(t, tx.GetSndUserName(), processedTx.SenderUserName)
 	require.Equal(t, tx.GetRcvUserName(), processedTx.ReceiverUserName)
-	require.Equal(t, processedTx.MiniBlockHash, mbHash)
+	require.Equal(t, mbHash, processedTx.MiniBlockHash)
 	require.Equal(t, hData.headerHash, processedTx.BlockHash)
 	require.Equal(t, int64(hData.header.GetRound()), processedTx.Round)
 	require.Equal(t, int64(hData.header.GetTimeStamp()), processedTx.Timestamp)

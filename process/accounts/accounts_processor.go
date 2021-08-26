@@ -98,7 +98,7 @@ func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct
 }
 
 func (ap *accountsProcessor) processAccount(address string) (*schema.AccountBalanceUpdate, error) {
-	//TODO: This only works as long as covalent indexer is part of elrond binary client.
+	//TODO: This only works as long as covalent indexer is part of elrond node binary.
 	// This needs to be changed, so that account content is given as an input parameter, not loaded.
 	acc, err := ap.accounts.LoadAccount([]byte(address))
 	if err != nil {
