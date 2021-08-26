@@ -27,7 +27,8 @@ type transactionProcessor struct {
 func NewTransactionProcessor(
 	pubKeyConverter core.PubkeyConverter,
 	hasher hashing.Hasher,
-	marshaller marshal.Marshalizer) (*transactionProcessor, error) {
+	marshaller marshal.Marshalizer,
+) (*transactionProcessor, error) {
 	if check.IfNil(pubKeyConverter) {
 		return nil, covalent.ErrNilPubKeyConverter
 	}
@@ -50,7 +51,8 @@ func (txp *transactionProcessor) ProcessTransactions(
 	header data.HeaderHandler,
 	headerHash []byte,
 	bodyHandler data.BodyHandler,
-	transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error) {
+	transactions map[string]data.TransactionHandler,
+) ([]*schema.Transaction, error) {
 
 	body, ok := bodyHandler.(*erdBlock.Body)
 	if !ok {
@@ -77,14 +79,15 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 	transactions map[string]data.TransactionHandler,
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
-	blockHash []byte) ([]*schema.Transaction, error) {
+	blockHash []byte,
+) ([]*schema.Transaction, error) {
 
 	miniBlockHash, err := core.CalculateHash(txp.marshaller, txp.hasher, miniBlock)
 	if err != nil {
 		return nil, err
 	}
 
-	txsInMiniBlock := make([]*schema.Transaction, 0)
+	txsInMiniBlock := make([]*schema.Transaction, 0, len(miniBlock.TxHashes))
 	for _, txHash := range miniBlock.TxHashes {
 		tx, found := findTransactionInPool(txHash, transactions)
 		if !found {
