@@ -1,6 +1,8 @@
 package receipts_test
 
 import (
+	"testing"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
@@ -12,7 +14,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/receipt"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNewReceiptsProcessor(t *testing.T) {
@@ -79,10 +80,10 @@ func requireProcessedReceiptEqual(
 	timestamp uint64,
 	pubKeyConverter core.PubkeyConverter) {
 
-	require.Equal(t, processedReceipt.Hash, []byte(receiptHash))
-	require.Equal(t, processedReceipt.Value, rec.GetValue().Bytes())
-	require.Equal(t, processedReceipt.Sender, utility.EncodePubKey(pubKeyConverter, rec.GetSndAddr()))
-	require.Equal(t, processedReceipt.Data, rec.GetData())
-	require.Equal(t, processedReceipt.TxHash, rec.GetTxHash())
-	require.Equal(t, processedReceipt.Timestamp, int64(timestamp))
+	require.Equal(t, []byte(receiptHash), processedReceipt.Hash)
+	require.Equal(t, rec.GetValue().Bytes(), processedReceipt.Value)
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, rec.GetSndAddr()), processedReceipt.Sender)
+	require.Equal(t, rec.GetData(), processedReceipt.Data)
+	require.Equal(t, rec.GetTxHash(), processedReceipt.TxHash)
+	require.Equal(t, int64(timestamp), processedReceipt.Timestamp)
 }

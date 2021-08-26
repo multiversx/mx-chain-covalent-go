@@ -118,7 +118,8 @@ func (txp *transactionProcessor) convertTransaction(
 	miniBlockHash []byte,
 	blockHash []byte,
 	miniBlock *erdBlock.MiniBlock,
-	header data.HeaderHandler) *schema.Transaction {
+	header data.HeaderHandler,
+) *schema.Transaction {
 
 	return &schema.Transaction{
 		Hash:             txHash,
