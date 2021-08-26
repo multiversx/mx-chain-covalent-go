@@ -62,7 +62,7 @@ func Encode(record avro.AvroRecord) ([]byte, error) {
 }
 
 // Decode tries to decode a data buffer, read it and store it on the input record.
-// If successfully, the record is filled with data from the buffer, otherwise returns may return an error
+// If successfully, the record is filled with data from the buffer, otherwise an error might be returned
 func Decode(record avro.AvroRecord, buffer []byte) error {
 	reader := avro.NewSpecificDatumReader()
 	reader.SetSchema(record.Schema())
