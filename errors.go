@@ -12,10 +12,16 @@ var ErrNilAccountsAdapter = errors.New("received nil input value: accounts adapt
 var ErrBlockBodyAssertion = errors.New("error asserting BodyHandler interface of type block body")
 
 // ErrNilHasher signals that a nil hasher has been provided
-var ErrNilHasher = errors.New("nil hasher provided")
+var ErrNilHasher = errors.New("received nil input value: hasher")
 
 // ErrNilMarshaller signals that a nil marshaller has been provided
-var ErrNilMarshaller = errors.New("nil marshaller provided")
+var ErrNilMarshaller = errors.New("received nil input value: marshaller")
 
 // ErrNilMiniBlockHandler signals that a nil mini block handler has been provided
-var ErrNilMiniBlockHandler = errors.New("nil mini block handler provided")
+var ErrNilMiniBlockHandler = errors.New("received nil input value: mini block handler")
+
+// ErrNilShardCoordinator signals that a shard coordinator input parameter is nil
+var ErrNilShardCoordinator = errors.New("received nil input value: shard coordinator")
+
+// ErrCannotCastAccountHandlerToUserAccount signals an error when trying to cast from AccountHandler to UserAccountHandler
+var ErrCannotCastAccountHandlerToUserAccount = errors.New("cannot cast AccountHandler to UserAccountHandler")
