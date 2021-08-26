@@ -1,7 +1,9 @@
 package utility
 
 import (
+	"bytes"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/elodina/go-avro"
 	"math/big"
 )
 
@@ -36,4 +38,27 @@ func GetBytes(val *big.Int) []byte {
 
 func EncodePubKey(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
 	return []byte(pubKeyConverter.Encode(pubKey))
+}
+
+func Encode(record avro.AvroRecord) ([]byte, error) {
+	writer := avro.NewSpecificDatumWriter()
+	writer.SetSchema(record.Schema())
+
+	buffer := new(bytes.Buffer)
+	encoder := avro.NewBinaryEncoder(buffer)
+
+	err := writer.Write(record, encoder)
+	if err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
+func Decode(record avro.AvroRecord, buffer []byte) error {
+	reader := avro.NewSpecificDatumReader()
+	reader.SetSchema(record.Schema())
+
+	decoder := avro.NewBinaryDecoder(buffer)
+	return reader.Read(record, decoder)
 }
