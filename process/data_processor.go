@@ -37,35 +37,20 @@ func NewDataProcessor(
 // ProcessData converts all covalent necessary data to a specific structure defined by avro schema
 func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
 
-	block, err := dp.blockHandler.ProcessBlock(args.Body)
+	block, err := dp.blockHandler.ProcessBlock(args)
 	if err != nil {
 		return nil, err
 	}
 
-	transactions, err := dp.transactionHandler.ProcessTransactions(args.TransactionsPool.Txs)
+	transactions, err := dp.transactionHandler.ProcessTransactions(args.Header, args.HeaderHash, args.Body, args.TransactionsPool.Txs)
 	if err != nil {
 		return nil, err
 	}
 
-	smartContracts, err := dp.scHandler.ProcessSCs(args.TransactionsPool.Scrs)
-	if err != nil {
-		return nil, err
-	}
-
-	receipts, err := dp.receiptHandler.ProcessReceipts(args.TransactionsPool.Receipts)
-	if err != nil {
-		return nil, err
-	}
-
-	logs, err := dp.logHandler.ProcessLogs(args.TransactionsPool.Logs)
-	if err != nil {
-		return nil, err
-	}
-
-	accountUpdates, err := dp.accountsHandler.ProcessAccounts()
-	if err != nil {
-		return nil, err
-	}
+	smartContracts := dp.scHandler.ProcessSCs(args.TransactionsPool.Scrs, args.Header.GetTimeStamp())
+	receipts := dp.receiptHandler.ProcessReceipts(args.TransactionsPool.Receipts, args.Header.GetTimeStamp())
+	logs := dp.logHandler.ProcessLogs(args.TransactionsPool.Logs)
+	accountUpdates := dp.accountsHandler.ProcessAccounts(transactions, smartContracts, receipts)
 
 	return &schema.BlockResult{
 		Block:        block,

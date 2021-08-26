@@ -40,7 +40,6 @@ type Block struct {
 	Validators            []int64
 	PubKeysBitmap         []byte
 	Size                  int64
-	SizeTxs               int64
 	Timestamp             int64
 	StateRootHash         []byte
 	PrevHash              []byte
@@ -75,21 +74,18 @@ func (o *Block) Schema() avro.Schema {
 }
 
 type MiniBlock struct {
-	Hash              []byte
-	SenderShardID     int32
-	ReceiverShardID   int32
-	SenderBlockHash   []byte
-	ReceiverBlockHash []byte
-	Type              []byte
-	Timestamp         int64
+	Hash            []byte
+	SenderShardID   int32
+	ReceiverShardID int32
+	Type            int32
+	Timestamp       int64
+	TxHashes        [][]byte
 }
 
 func NewMiniBlock() *MiniBlock {
 	return &MiniBlock{
-		Hash:              make([]byte, 32),
-		SenderBlockHash:   make([]byte, 32),
-		ReceiverBlockHash: make([]byte, 32),
-		Type:              []byte{},
+		Hash:     make([]byte, 32),
+		TxHashes: make([][]byte, 0),
 	}
 }
 
@@ -184,7 +180,7 @@ type SCResult struct {
 	Data           []byte
 	PrevTxHash     []byte
 	OriginalTxHash []byte
-	CallType       []byte
+	CallType       int32
 	CodeMetadata   []byte
 	ReturnMessage  []byte
 	Timestamp      int64
@@ -202,7 +198,6 @@ func NewSCResult() *SCResult {
 		Data:           []byte{},
 		PrevTxHash:     make([]byte, 32),
 		OriginalTxHash: make([]byte, 32),
-		CallType:       []byte{},
 		CodeMetadata:   []byte{},
 		ReturnMessage:  []byte{},
 	}
@@ -362,28 +357,19 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                         "type": "int"
                                     },
                                     {
-                                        "name": "SenderBlockHash",
-                                        "type": {
-                                            "type": "fixed",
-                                            "size": 32,
-                                            "name": "hash"
-                                        }
-                                    },
-                                    {
-                                        "name": "ReceiverBlockHash",
-                                        "type": {
-                                            "type": "fixed",
-                                            "size": 32,
-                                            "name": "hash"
-                                        }
-                                    },
-                                    {
                                         "name": "Type",
-                                        "type": "bytes"
+                                        "type": "int"
                                     },
                                     {
                                         "name": "Timestamp",
                                         "type": "long"
+                                    },
+                                    {
+                                        "name": "TxHashes",
+                                        "type": {
+                                            "type": "array",
+                                            "items": "bytes"
+                                        }
                                     }
                                 ]
                             }
@@ -417,10 +403,6 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                     },
                     {
                         "name": "Size",
-                        "type": "long"
-                    },
-                    {
-                        "name": "SizeTxs",
                         "type": "long"
                     },
                     {
@@ -697,7 +679,7 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "CallType",
-                            "type": "bytes"
+                            "type": "int"
                         },
                         {
                             "name": "CodeMetadata",
@@ -907,28 +889,19 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                             "type": "int"
                         },
                         {
-                            "name": "SenderBlockHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
-                            "name": "ReceiverBlockHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
                             "name": "Type",
-                            "type": "bytes"
+                            "type": "int"
                         },
                         {
                             "name": "Timestamp",
                             "type": "long"
+                        },
+                        {
+                            "name": "TxHashes",
+                            "type": {
+                                "type": "array",
+                                "items": "bytes"
+                            }
                         }
                     ]
                 }
@@ -962,10 +935,6 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Size",
-            "type": "long"
-        },
-        {
-            "name": "SizeTxs",
             "type": "long"
         },
         {
@@ -1078,28 +1047,19 @@ var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
             "type": "int"
         },
         {
-            "name": "SenderBlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "ReceiverBlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
             "name": "Type",
-            "type": "bytes"
+            "type": "int"
         },
         {
             "name": "Timestamp",
             "type": "long"
+        },
+        {
+            "name": "TxHashes",
+            "type": {
+                "type": "array",
+                "items": "bytes"
+            }
         }
     ]
 }`)
@@ -1327,7 +1287,7 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "CallType",
-            "type": "bytes"
+            "type": "int"
         },
         {
             "name": "CodeMetadata",
