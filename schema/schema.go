@@ -180,7 +180,7 @@ type SCResult struct {
 	Data           []byte
 	PrevTxHash     []byte
 	OriginalTxHash []byte
-	CallType       []byte
+	CallType       int32
 	CodeMetadata   []byte
 	ReturnMessage  []byte
 	Timestamp      int64
@@ -198,7 +198,6 @@ func NewSCResult() *SCResult {
 		Data:           []byte{},
 		PrevTxHash:     make([]byte, 32),
 		OriginalTxHash: make([]byte, 32),
-		CallType:       []byte{},
 		CodeMetadata:   []byte{},
 		ReturnMessage:  []byte{},
 	}
@@ -680,7 +679,7 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "CallType",
-                            "type": "bytes"
+                            "type": "int"
                         },
                         {
                             "name": "CodeMetadata",
@@ -1288,7 +1287,7 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "CallType",
-            "type": "bytes"
+            "type": "int"
         },
         {
             "name": "CodeMetadata",

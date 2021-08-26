@@ -145,7 +145,7 @@
        {"name": "Data", "type": "bytes"},
        {"name": "PrevTxHash", "type": "hash"},
        {"name": "OriginalTxHash", "type": "hash"},
-       {"name": "CallType", "type": "bytes"},
+       {"name": "CallType", "type": "int"},
        {"name": "CodeMetadata", "type": "bytes"},
        {"name": "ReturnMessage", "type": "bytes"},
        {"name": "Timestamp", "type": "long"}
