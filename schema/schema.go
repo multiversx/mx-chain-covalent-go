@@ -79,11 +79,13 @@ type MiniBlock struct {
 	ReceiverShardID int32
 	Type            int32
 	Timestamp       int64
+	TxHashes        [][]byte
 }
 
 func NewMiniBlock() *MiniBlock {
 	return &MiniBlock{
-		Hash: make([]byte, 32),
+		Hash:     make([]byte, 32),
+		TxHashes: make([][]byte, 0),
 	}
 }
 
@@ -178,7 +180,7 @@ type SCResult struct {
 	Data           []byte
 	PrevTxHash     []byte
 	OriginalTxHash []byte
-	CallType       []byte
+	CallType       int32
 	CodeMetadata   []byte
 	ReturnMessage  []byte
 	Timestamp      int64
@@ -196,7 +198,6 @@ func NewSCResult() *SCResult {
 		Data:           []byte{},
 		PrevTxHash:     make([]byte, 32),
 		OriginalTxHash: make([]byte, 32),
-		CallType:       []byte{},
 		CodeMetadata:   []byte{},
 		ReturnMessage:  []byte{},
 	}
@@ -362,6 +363,13 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                                     {
                                         "name": "Timestamp",
                                         "type": "long"
+                                    },
+                                    {
+                                        "name": "TxHashes",
+                                        "type": {
+                                            "type": "array",
+                                            "items": "bytes"
+                                        }
                                     }
                                 ]
                             }
@@ -671,7 +679,7 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "CallType",
-                            "type": "bytes"
+                            "type": "int"
                         },
                         {
                             "name": "CodeMetadata",
@@ -887,6 +895,13 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
                         {
                             "name": "Timestamp",
                             "type": "long"
+                        },
+                        {
+                            "name": "TxHashes",
+                            "type": {
+                                "type": "array",
+                                "items": "bytes"
+                            }
                         }
                     ]
                 }
@@ -1038,6 +1053,13 @@ var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
         {
             "name": "Timestamp",
             "type": "long"
+        },
+        {
+            "name": "TxHashes",
+            "type": {
+                "type": "array",
+                "items": "bytes"
+            }
         }
     ]
 }`)
@@ -1265,7 +1287,7 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "CallType",
-            "type": "bytes"
+            "type": "int"
         },
         {
             "name": "CodeMetadata",

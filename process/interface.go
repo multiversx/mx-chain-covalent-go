@@ -18,25 +18,38 @@ type MiniBlockHandler interface {
 
 // TransactionHandler defines what a transaction processor shall do
 type TransactionHandler interface {
-	ProcessTransactions(transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error)
+	ProcessTransactions(
+		header data.HeaderHandler,
+		headerHash []byte,
+		bodyHandler data.BodyHandler,
+		transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error)
 }
 
 // SCHandler defines what a smart contract processor shall do
 type SCHandler interface {
-	ProcessSCs(transactions map[string]data.TransactionHandler) ([]*schema.SCResult, error)
+	ProcessSCs(transactions map[string]data.TransactionHandler, timeStamp uint64) []*schema.SCResult
 }
 
 // ReceiptHandler defines what a receipt processor shall do
 type ReceiptHandler interface {
-	ProcessReceipts(transactions map[string]data.TransactionHandler) ([]*schema.Receipt, error)
+	ProcessReceipts(receipts map[string]data.TransactionHandler, timeStamp uint64) []*schema.Receipt
 }
 
 // LogHandler defines what a log processor shall do
 type LogHandler interface {
-	ProcessLogs(logs map[string]data.LogHandler) ([]*schema.Log, error)
+	ProcessLogs(logs map[string]data.LogHandler) []*schema.Log
 }
 
 // AccountsHandler defines what an account processor shall do
 type AccountsHandler interface {
-	ProcessAccounts() ([]*schema.AccountBalanceUpdate, error)
+	ProcessAccounts(
+		processedTxs []*schema.Transaction,
+		processedSCRs []*schema.SCResult,
+		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate
+}
+
+type ShardCoordinator interface {
+	SelfId() uint32
+	ComputeId(address []byte) uint32
+	IsInterfaceNil() bool
 }

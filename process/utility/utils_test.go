@@ -2,6 +2,8 @@ package utility_test
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/stretchr/testify/require"
 	"math/big"
 	"testing"
@@ -44,4 +46,21 @@ func TestGetBytes(t *testing.T) {
 
 	x := big.NewInt(10)
 	require.Equal(t, utility.GetBytes(x), []byte{0xa})
+}
+
+func TestEncodeDecode(t *testing.T) {
+	account := &schema.AccountBalanceUpdate{
+		Address: testscommon.GenerateRandomFixedBytes(62),
+		Balance: big.NewInt(1000).Bytes(),
+		Nonce:   444,
+	}
+
+	buffer, err := utility.Encode(account)
+	require.Nil(t, err)
+
+	decodedAccount := &schema.AccountBalanceUpdate{}
+	err = utility.Decode(decodedAccount, buffer)
+	require.Nil(t, err)
+
+	require.Equal(t, account, decodedAccount)
 }

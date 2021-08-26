@@ -3,8 +3,8 @@ package miniblocks_test
 import (
 	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/block/miniblocks"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
@@ -51,10 +51,12 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
 	header := &block.Header{TimeStamp: 123}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
 		{
+			TxHashes:        [][]byte{[]byte("x"), []byte("y")},
 			ReceiverShardID: 1,
 			SenderShardID:   2,
 			Type:            3},
 		{
+			TxHashes:        [][]byte{[]byte("y"), []byte("z")},
 			ReceiverShardID: 4,
 			SenderShardID:   5,
 			Type:            6},
@@ -65,12 +67,14 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
 	require.Len(t, ret, 2)
 
 	require.Equal(t, ret[0].Hash, []byte("ok"))
+	require.Equal(t, ret[0].TxHashes, [][]byte{[]byte("x"), []byte("y")})
 	require.Equal(t, ret[0].Timestamp, int64(123))
 	require.Equal(t, ret[0].ReceiverShardID, int32(1))
 	require.Equal(t, ret[0].SenderShardID, int32(2))
 	require.Equal(t, ret[0].Type, int32(3))
 
 	require.Equal(t, ret[1].Hash, []byte("ok"))
+	require.Equal(t, ret[1].TxHashes, [][]byte{[]byte("y"), []byte("z")})
 	require.Equal(t, ret[1].Timestamp, int64(123))
 	require.Equal(t, ret[1].ReceiverShardID, int32(4))
 	require.Equal(t, ret[1].SenderShardID, int32(5))
