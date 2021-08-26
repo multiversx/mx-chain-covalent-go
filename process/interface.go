@@ -32,15 +32,24 @@ type SCHandler interface {
 
 // ReceiptHandler defines what a receipt processor shall do
 type ReceiptHandler interface {
-	ProcessReceipts(transactions map[string]data.TransactionHandler) ([]*schema.Receipt, error)
+	ProcessReceipts(receipts map[string]data.TransactionHandler, timeStamp uint64) []*schema.Receipt
 }
 
 // LogHandler defines what a log processor shall do
 type LogHandler interface {
-	ProcessLogs(logs map[string]data.LogHandler) ([]*schema.Log, error)
+	ProcessLogs(logs map[string]data.LogHandler) []*schema.Log
 }
 
 // AccountsHandler defines what an account processor shall do
 type AccountsHandler interface {
-	ProcessAccounts() ([]*schema.AccountBalanceUpdate, error)
+	ProcessAccounts(
+		processedTxs []*schema.Transaction,
+		processedSCRs []*schema.SCResult,
+		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate
+}
+
+type ShardCoordinator interface {
+	SelfId() uint32
+	ComputeId(address []byte) uint32
+	IsInterfaceNil() bool
 }

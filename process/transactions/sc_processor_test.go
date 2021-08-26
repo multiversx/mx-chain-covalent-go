@@ -2,14 +2,17 @@ package transactions_test
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
-	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
+	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/stretchr/testify/require"
-	"math/big"
+	"math/rand"
 	"testing"
 )
 
@@ -40,56 +43,33 @@ func TestNewSCProcessor(t *testing.T) {
 	}
 }
 
-func TestScProcessor_ProcessSCs(t *testing.T) {
+func generateRandomSCR() *smartContractResult.SmartContractResult {
+	return &smartContractResult.SmartContractResult{
+		Nonce:          rand.Uint64(),
+		Value:          testscommon.GenerateRandomBigInt(),
+		RcvAddr:        testscommon.GenerateRandomBytes(),
+		SndAddr:        testscommon.GenerateRandomBytes(),
+		RelayerAddr:    testscommon.GenerateRandomBytes(),
+		RelayedValue:   testscommon.GenerateRandomBigInt(),
+		Code:           testscommon.GenerateRandomBytes(),
+		Data:           testscommon.GenerateRandomBytes(),
+		PrevTxHash:     testscommon.GenerateRandomBytes(),
+		OriginalTxHash: testscommon.GenerateRandomBytes(),
+		GasLimit:       rand.Uint64(),
+		GasPrice:       rand.Uint64(),
+		CallType:       vm.CallType(rand.Int()),
+		CodeMetadata:   testscommon.GenerateRandomBytes(),
+		ReturnMessage:  testscommon.GenerateRandomBytes(),
+		OriginalSender: testscommon.GenerateRandomBytes(),
+	}
+}
+
+func TestScProcessor_ProcessSCs_TwoSCRs_OneNormalTx_ExpectTwoProcessedSCRs(t *testing.T) {
 	scp, _ := transactions.NewSCProcessor(&mock.PubKeyConverterStub{})
 
-	tx1 := &smartContractResult.SmartContractResult{
-		Nonce:          1,
-		Value:          big.NewInt(2),
-		RcvAddr:        []byte("rcv1"),
-		SndAddr:        []byte("snd1"),
-		RelayerAddr:    []byte("rly1"),
-		RelayedValue:   big.NewInt(3),
-		Code:           []byte("code1"),
-		Data:           []byte("data1"),
-		PrevTxHash:     []byte("prevHash1"),
-		OriginalTxHash: []byte("origHash1"),
-		GasLimit:       4,
-		GasPrice:       5,
-		CallType:       6,
-		CodeMetadata:   []byte("codeMeta1"),
-		ReturnMessage:  []byte("retMsg1"),
-		OriginalSender: []byte("origSnd1"),
-	}
-	tx2 := &smartContractResult.SmartContractResult{
-		Nonce:          7,
-		Value:          big.NewInt(8),
-		RcvAddr:        []byte("rcv2"),
-		SndAddr:        []byte("snd2"),
-		RelayerAddr:    []byte("rly2"),
-		RelayedValue:   big.NewInt(9),
-		Code:           []byte("code2"),
-		Data:           []byte("data2"),
-		PrevTxHash:     []byte("prevHash2"),
-		OriginalTxHash: []byte("origHash2"),
-		GasLimit:       10,
-		GasPrice:       11,
-		CallType:       12,
-		CodeMetadata:   []byte("codeMeta2"),
-		ReturnMessage:  []byte("retMsg2"),
-		OriginalSender: []byte("origSnd2"),
-	}
-	tx3 := &transaction.Transaction{
-		Nonce:       9,
-		Value:       big.NewInt(10),
-		RcvAddr:     []byte("rcv3"),
-		SndAddr:     []byte("snd3"),
-		GasLimit:    11,
-		GasPrice:    12,
-		Signature:   []byte("sig3"),
-		SndUserName: nil,
-		RcvUserName: nil,
-	}
+	tx1 := generateRandomSCR()
+	tx2 := generateRandomSCR()
+	tx3 := generateRandomTx()
 
 	txPool := map[string]data.TransactionHandler{
 		"hash1": tx1,
@@ -100,40 +80,33 @@ func TestScProcessor_ProcessSCs(t *testing.T) {
 	ret := scp.ProcessSCs(txPool, 123)
 
 	require.Len(t, ret, 2)
+	requireProcessedSCREqual(t, ret[0], tx1, "hash1", 123, &mock.PubKeyConverterStub{})
+	requireProcessedSCREqual(t, ret[1], tx2, "hash2", 123, &mock.PubKeyConverterStub{})
+}
 
-	require.Equal(t, ret[0].Hash, []byte("hash1"))
-	require.Equal(t, ret[0].Nonce, int64(1))
-	require.Equal(t, ret[0].GasLimit, int64(4))
-	require.Equal(t, ret[0].GasPrice, int64(5))
-	require.Equal(t, ret[0].Value, big.NewInt(2).Bytes())
-	require.Equal(t, ret[0].Sender, []byte("erd1snd1"))
-	require.Equal(t, ret[0].Receiver, []byte("erd1rcv1"))
-	require.Equal(t, ret[0].RelayerAddr, []byte("erd1rly1"))
-	require.Equal(t, ret[0].RelayedValue, big.NewInt(3).Bytes())
-	require.Equal(t, ret[0].Code, []byte("code1"))
-	require.Equal(t, ret[0].Data, []byte("data1"))
-	require.Equal(t, ret[0].PrevTxHash, []byte("prevHash1"))
-	require.Equal(t, ret[0].OriginalTxHash, []byte("origHash1"))
-	require.Equal(t, ret[0].CallType, int32(6))
-	require.Equal(t, ret[0].CodeMetadata, []byte("codeMeta1"))
-	require.Equal(t, ret[0].ReturnMessage, []byte("retMsg1"))
-	require.Equal(t, ret[0].Timestamp, int64(123))
+func requireProcessedSCREqual(
+	t *testing.T,
+	processedSCR *schema.SCResult,
+	scr *smartContractResult.SmartContractResult,
+	hash string,
+	timeStamp uint64,
+	pubKeyConverter core.PubkeyConverter) {
 
-	require.Equal(t, ret[1].Hash, []byte("hash2"))
-	require.Equal(t, ret[1].Nonce, int64(7))
-	require.Equal(t, ret[1].GasLimit, int64(10))
-	require.Equal(t, ret[1].GasPrice, int64(11))
-	require.Equal(t, ret[1].Value, big.NewInt(8).Bytes())
-	require.Equal(t, ret[1].Sender, []byte("erd1snd2"))
-	require.Equal(t, ret[1].Receiver, []byte("erd1rcv2"))
-	require.Equal(t, ret[1].RelayerAddr, []byte("erd1rly2"))
-	require.Equal(t, ret[1].RelayedValue, big.NewInt(9).Bytes())
-	require.Equal(t, ret[1].Code, []byte("code2"))
-	require.Equal(t, ret[1].Data, []byte("data2"))
-	require.Equal(t, ret[1].PrevTxHash, []byte("prevHash2"))
-	require.Equal(t, ret[1].OriginalTxHash, []byte("origHash2"))
-	require.Equal(t, ret[1].CallType, int32(12))
-	require.Equal(t, ret[1].CodeMetadata, []byte("codeMeta2"))
-	require.Equal(t, ret[1].ReturnMessage, []byte("retMsg2"))
-	require.Equal(t, ret[1].Timestamp, int64(123))
+	require.Equal(t, processedSCR.Hash, []byte(hash))
+	require.Equal(t, processedSCR.Nonce, int64(scr.GetNonce()))
+	require.Equal(t, processedSCR.GasLimit, int64(scr.GetGasLimit()))
+	require.Equal(t, processedSCR.GasPrice, int64(scr.GetGasPrice()))
+	require.Equal(t, processedSCR.Value, scr.GetValue().Bytes())
+	require.Equal(t, processedSCR.Sender, utility.EncodePubKey(pubKeyConverter, scr.GetSndAddr()))
+	require.Equal(t, processedSCR.Receiver, utility.EncodePubKey(pubKeyConverter, scr.GetRcvAddr()))
+	require.Equal(t, processedSCR.RelayerAddr, utility.EncodePubKey(pubKeyConverter, scr.GetRelayerAddr()))
+	require.Equal(t, processedSCR.RelayedValue, scr.GetRelayedValue().Bytes())
+	require.Equal(t, processedSCR.Code, scr.GetCode())
+	require.Equal(t, processedSCR.Data, scr.GetData())
+	require.Equal(t, processedSCR.PrevTxHash, scr.GetPrevTxHash())
+	require.Equal(t, processedSCR.OriginalTxHash, scr.GetOriginalTxHash())
+	require.Equal(t, processedSCR.CallType, int32(scr.GetCallType()))
+	require.Equal(t, processedSCR.CodeMetadata, scr.GetCodeMetadata())
+	require.Equal(t, processedSCR.ReturnMessage, scr.GetReturnMessage())
+	require.Equal(t, processedSCR.Timestamp, int64(timeStamp))
 }

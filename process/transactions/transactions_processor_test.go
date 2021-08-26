@@ -3,10 +3,11 @@ package transactions_test
 import (
 	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
@@ -15,9 +16,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	"github.com/stretchr/testify/require"
-	"math/big"
 	"math/rand"
-	"strconv"
 	"testing"
 )
 
@@ -35,27 +34,27 @@ type transactionData struct {
 func generateRandomTx() *transaction.Transaction {
 	return &transaction.Transaction{
 		Nonce:       rand.Uint64(),
-		Value:       big.NewInt(rand.Int63()),
-		RcvAddr:     []byte(strconv.Itoa(rand.Int())),
-		SndAddr:     []byte(strconv.Itoa(rand.Int())),
+		Value:       testscommon.GenerateRandomBigInt(),
+		RcvAddr:     testscommon.GenerateRandomBytes(),
+		SndAddr:     testscommon.GenerateRandomBytes(),
 		GasLimit:    rand.Uint64(),
 		GasPrice:    rand.Uint64(),
-		Signature:   []byte(strconv.Itoa(rand.Int())),
-		SndUserName: []byte(strconv.Itoa(rand.Int())),
-		RcvUserName: []byte(strconv.Itoa(rand.Int())),
+		Signature:   testscommon.GenerateRandomBytes(),
+		SndUserName: testscommon.GenerateRandomBytes(),
+		RcvUserName: testscommon.GenerateRandomBytes(),
 	}
 }
 
 func generateRandomHeaderData() *headerData {
 	return &headerData{
 		header:     &block.Header{Round: rand.Uint64(), TimeStamp: rand.Uint64()},
-		headerHash: []byte(strconv.Itoa(rand.Int())),
+		headerHash: testscommon.GenerateRandomBytes(),
 	}
 }
 
 func generateRandomTxData(headerData *headerData) *transactionData {
 	return &transactionData{
-		txHash:     []byte(strconv.Itoa(rand.Int())),
+		txHash:     testscommon.GenerateRandomBytes(),
 		tx:         generateRandomTx(),
 		headerData: headerData,
 	}

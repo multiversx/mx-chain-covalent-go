@@ -3,8 +3,8 @@ package miniblocks_test
 import (
 	"errors"
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/block/miniblocks"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
