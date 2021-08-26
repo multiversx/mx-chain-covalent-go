@@ -23,7 +23,8 @@ type accountsProcessor struct {
 func NewAccountsProcessor(
 	shardCoordinator process.ShardCoordinator,
 	accounts covalent.AccountsAdapter,
-	pubKeyConverter core.PubkeyConverter) (*accountsProcessor, error) {
+	pubKeyConverter core.PubkeyConverter,
+) (*accountsProcessor, error) {
 
 	if check.IfNil(shardCoordinator) {
 		return nil, covalent.ErrNilShardCoordinator
@@ -46,15 +47,18 @@ func NewAccountsProcessor(
 func (ap *accountsProcessor) ProcessAccounts(
 	processedTxs []*schema.Transaction,
 	processedSCRs []*schema.SCResult,
-	processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate {
+	processedReceipts []*schema.Receipt,
+) []*schema.AccountBalanceUpdate {
 
 	addresses := ap.getAllAddresses(processedTxs, processedSCRs, processedReceipts)
-	accounts := make([]*schema.AccountBalanceUpdate, 0)
+	accounts := make([]*schema.AccountBalanceUpdate, 0, len(addresses))
 
 	for address := range addresses {
 		account, err := ap.processAccount(address)
 		if err != nil || account == nil {
-			log.Warn("cannot get address account", "address", address, "error", err)
+			log.Warn("cannot get address account",
+				"address", utility.EncodePubKey(ap.pubKeyConverter, []byte(address)),
+				"error", err)
 			continue
 		}
 
@@ -94,6 +98,8 @@ func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct
 }
 
 func (ap *accountsProcessor) processAccount(address string) (*schema.AccountBalanceUpdate, error) {
+	//TODO: This only works as long as covalent indexer is part of elrond binary client.
+	// This needs to be changed, so that account content is given as an input parameter, not loaded.
 	acc, err := ap.accounts.LoadAccount([]byte(address))
 	if err != nil {
 		return nil, err

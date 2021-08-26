@@ -10,7 +10,7 @@ type AccountsAdapterStub struct {
 	LoadAccountCalled  func(address []byte) (vmcommon.AccountHandler, error)
 }
 
-// LoadAccount calls a custom load account function if defined, otherwise returns UserAccountStub, nil
+// LoadAccount calls a custom load account function if defined, otherwise returns UserAccountMock, nil
 func (aas *AccountsAdapterStub) LoadAccount(address []byte) (vmcommon.AccountHandler, error) {
 	if aas.LoadAccountCalled != nil {
 		return aas.LoadAccountCalled(address)
