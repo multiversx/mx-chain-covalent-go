@@ -2,6 +2,7 @@ package factory
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
+	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/factory"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
@@ -12,10 +13,11 @@ import (
 // ArgsCovalentIndexerFactory holds all input dependencies required by covalent data indexer factory
 // in order to create new instances
 type ArgsCovalentIndexerFactory struct {
-	PubKeyConverter core.PubkeyConverter
-	Accounts        covalent.AccountsAdapter
-	Hasher          hashing.Hasher
-	Marshaller      marshal.Marshalizer
+	PubKeyConverter  core.PubkeyConverter
+	Accounts         covalent.AccountsAdapter
+	Hasher           hashing.Hasher
+	Marshaller       marshal.Marshalizer
+	ShardCoordinator process.ShardCoordinator
 }
 
 // CreateCovalentIndexer creates a new Driver instance of type covalent data indexer
@@ -34,10 +36,11 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 	}
 
 	argsDataProcessor := &factory.ArgsDataProcessor{
-		PubKeyConvertor: args.PubKeyConverter,
-		Accounts:        args.Accounts,
-		Hasher:          args.Hasher,
-		Marshaller:      args.Marshaller,
+		PubKeyConvertor:  args.PubKeyConverter,
+		Accounts:         args.Accounts,
+		Hasher:           args.Hasher,
+		Marshaller:       args.Marshaller,
+		ShardCoordinator: args.ShardCoordinator,
 	}
 
 	dataProcessor, err := factory.CreateDataProcessor(argsDataProcessor)

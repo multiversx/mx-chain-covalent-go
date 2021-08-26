@@ -2,18 +2,16 @@ package receipts_test
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/receipt"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
-	"math/big"
-	"math/rand"
-	"strconv"
 	"testing"
 )
 
@@ -46,10 +44,10 @@ func TestNewReceiptsProcessor(t *testing.T) {
 
 func generateRandomReceipt() *receipt.Receipt {
 	return &receipt.Receipt{
-		Value:   big.NewInt(rand.Int63()),
-		SndAddr: []byte(strconv.Itoa(rand.Int())),
-		Data:    []byte(strconv.Itoa(rand.Int())),
-		TxHash:  []byte(strconv.Itoa(rand.Int())),
+		Value:   testscommon.GenerateRandomBigInt(),
+		SndAddr: testscommon.GenerateRandomBytes(),
+		Data:    testscommon.GenerateRandomBytes(),
+		TxHash:  testscommon.GenerateRandomBytes(),
 	}
 }
 
