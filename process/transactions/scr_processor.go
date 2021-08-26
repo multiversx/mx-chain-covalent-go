@@ -14,8 +14,8 @@ type scProcessor struct {
 	pubKeyConverter core.PubkeyConverter
 }
 
-// NewSCProcessor creates a new instance of smart contracts processor
-func NewSCProcessor(pubKeyConverter core.PubkeyConverter) (*scProcessor, error) {
+// NewSCResultsProcessor creates a new instance of smart contracts processor
+func NewSCResultsProcessor(pubKeyConverter core.PubkeyConverter) (*scProcessor, error) {
 	if check.IfNil(pubKeyConverter) {
 		return nil, covalent.ErrNilPubKeyConverter
 	}
@@ -23,9 +23,9 @@ func NewSCProcessor(pubKeyConverter core.PubkeyConverter) (*scProcessor, error) 
 	return &scProcessor{pubKeyConverter: pubKeyConverter}, nil
 }
 
-// ProcessSCs converts smart contracts data to a specific structure defined by avro schema
-func (scp *scProcessor) ProcessSCs(transactions map[string]data.TransactionHandler, timeStamp uint64) []*schema.SCResult {
-	allSCRs := make([]*schema.SCResult, 0)
+// ProcessSCRs converts smart contracts data to a specific structure defined by avro schema
+func (scp *scProcessor) ProcessSCRs(transactions map[string]data.TransactionHandler, timeStamp uint64) []*schema.SCResult {
+	allSCRs := make([]*schema.SCResult, 0, len(transactions))
 
 	for currTxHash, currTx := range transactions {
 		currSCR := scp.processSCResult(currTx, currTxHash, timeStamp)

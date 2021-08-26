@@ -9,7 +9,7 @@ type dataProcessor struct {
 	blockHandler       BlockHandler
 	transactionHandler TransactionHandler
 	receiptHandler     ReceiptHandler
-	scHandler          SCHandler
+	scHandler          SCResultsHandler
 	logHandler         LogHandler
 	accountsHandler    AccountsHandler
 }
@@ -18,7 +18,7 @@ type dataProcessor struct {
 func NewDataProcessor(
 	blockHandler BlockHandler,
 	transactionHandler TransactionHandler,
-	scHandler SCHandler,
+	scHandler SCResultsHandler,
 	receiptHandler ReceiptHandler,
 	logHandler LogHandler,
 	accountsHandler AccountsHandler,
@@ -47,16 +47,16 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 		return nil, err
 	}
 
-	smartContracts := dp.scHandler.ProcessSCs(args.TransactionsPool.Scrs, args.Header.GetTimeStamp())
+	smartContractResults := dp.scHandler.ProcessSCRs(args.TransactionsPool.Scrs, args.Header.GetTimeStamp())
 	receipts := dp.receiptHandler.ProcessReceipts(args.TransactionsPool.Receipts, args.Header.GetTimeStamp())
 	logs := dp.logHandler.ProcessLogs(args.TransactionsPool.Logs)
-	accountUpdates := dp.accountsHandler.ProcessAccounts(transactions, smartContracts, receipts)
+	accountUpdates := dp.accountsHandler.ProcessAccounts(transactions, smartContractResults, receipts)
 
 	return &schema.BlockResult{
 		Block:        block,
 		Transactions: transactions,
 		Receipts:     receipts,
-		SCResults:    smartContracts,
+		SCResults:    smartContractResults,
 		Logs:         logs,
 		StateChanges: accountUpdates,
 	}, nil

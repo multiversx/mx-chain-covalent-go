@@ -1,6 +1,9 @@
 package transactions_test
 
 import (
+	"math/rand"
+	"testing"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
@@ -12,8 +15,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/stretchr/testify/require"
-	"math/rand"
-	"testing"
 )
 
 func TestNewSCProcessor(t *testing.T) {
@@ -38,7 +39,7 @@ func TestNewSCProcessor(t *testing.T) {
 	}
 
 	for _, currTest := range tests {
-		_, err := transactions.NewSCProcessor(currTest.args())
+		_, err := transactions.NewSCResultsProcessor(currTest.args())
 		require.Equal(t, currTest.expectedErr, err)
 	}
 }
@@ -65,7 +66,7 @@ func generateRandomSCR() *smartContractResult.SmartContractResult {
 }
 
 func TestScProcessor_ProcessSCs_TwoSCRs_OneNormalTx_ExpectTwoProcessedSCRs(t *testing.T) {
-	scp, _ := transactions.NewSCProcessor(&mock.PubKeyConverterStub{})
+	scp, _ := transactions.NewSCResultsProcessor(&mock.PubKeyConverterStub{})
 
 	tx1 := generateRandomSCR()
 	tx2 := generateRandomSCR()
@@ -77,7 +78,7 @@ func TestScProcessor_ProcessSCs_TwoSCRs_OneNormalTx_ExpectTwoProcessedSCRs(t *te
 		"hash3": tx3,
 	}
 
-	ret := scp.ProcessSCs(txPool, 123)
+	ret := scp.ProcessSCRs(txPool, 123)
 
 	require.Len(t, ret, 2)
 	requireProcessedSCREqual(t, ret[0], tx1, "hash1", 123, &mock.PubKeyConverterStub{})
@@ -92,21 +93,21 @@ func requireProcessedSCREqual(
 	timeStamp uint64,
 	pubKeyConverter core.PubkeyConverter) {
 
-	require.Equal(t, processedSCR.Hash, []byte(hash))
-	require.Equal(t, processedSCR.Nonce, int64(scr.GetNonce()))
-	require.Equal(t, processedSCR.GasLimit, int64(scr.GetGasLimit()))
-	require.Equal(t, processedSCR.GasPrice, int64(scr.GetGasPrice()))
-	require.Equal(t, processedSCR.Value, scr.GetValue().Bytes())
-	require.Equal(t, processedSCR.Sender, utility.EncodePubKey(pubKeyConverter, scr.GetSndAddr()))
-	require.Equal(t, processedSCR.Receiver, utility.EncodePubKey(pubKeyConverter, scr.GetRcvAddr()))
-	require.Equal(t, processedSCR.RelayerAddr, utility.EncodePubKey(pubKeyConverter, scr.GetRelayerAddr()))
-	require.Equal(t, processedSCR.RelayedValue, scr.GetRelayedValue().Bytes())
-	require.Equal(t, processedSCR.Code, scr.GetCode())
-	require.Equal(t, processedSCR.Data, scr.GetData())
-	require.Equal(t, processedSCR.PrevTxHash, scr.GetPrevTxHash())
-	require.Equal(t, processedSCR.OriginalTxHash, scr.GetOriginalTxHash())
-	require.Equal(t, processedSCR.CallType, int32(scr.GetCallType()))
-	require.Equal(t, processedSCR.CodeMetadata, scr.GetCodeMetadata())
-	require.Equal(t, processedSCR.ReturnMessage, scr.GetReturnMessage())
-	require.Equal(t, processedSCR.Timestamp, int64(timeStamp))
+	require.Equal(t, []byte(hash), processedSCR.Hash)
+	require.Equal(t, int64(scr.GetNonce()), processedSCR.Nonce)
+	require.Equal(t, int64(scr.GetGasLimit()), processedSCR.GasLimit)
+	require.Equal(t, int64(scr.GetGasPrice()), processedSCR.GasPrice)
+	require.Equal(t, scr.GetValue().Bytes(), processedSCR.Value)
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, scr.GetSndAddr()), processedSCR.Sender)
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, scr.GetRcvAddr()), processedSCR.Receiver)
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, scr.GetRelayerAddr()), processedSCR.RelayerAddr)
+	require.Equal(t, scr.GetRelayedValue().Bytes(), processedSCR.RelayedValue)
+	require.Equal(t, scr.GetCode(), processedSCR.Code)
+	require.Equal(t, scr.GetData(), processedSCR.Data)
+	require.Equal(t, scr.GetPrevTxHash(), processedSCR.PrevTxHash)
+	require.Equal(t, scr.GetOriginalTxHash(), processedSCR.OriginalTxHash)
+	require.Equal(t, int32(scr.GetCallType()), processedSCR.CallType)
+	require.Equal(t, scr.GetCodeMetadata(), processedSCR.CodeMetadata)
+	require.Equal(t, scr.GetReturnMessage(), processedSCR.ReturnMessage)
+	require.Equal(t, int64(timeStamp), processedSCR.Timestamp)
 }
