@@ -109,38 +109,27 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 	return txsInMiniBlock, nil
 }
 
-func (txp *transactionProcessor) processRewardTransaction(
-	transaction data.TransactionHandler,
+func (txp *transactionProcessor) processTransaction(
+	tx data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
 	blockHash []byte,
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
+	mbType block.Type,
 ) *schema.Transaction {
-	tx, castOk := transaction.(*rewardTx.RewardTx)
-	if !castOk {
+	var ret *schema.Transaction
+
+	switch mbType {
+	case block.TxBlock:
+		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+	case block.RewardsBlock:
+		ret = txp.processRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+	default:
 		return nil
 	}
-	//TODO: ADD DATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-	return &schema.Transaction{
-		Hash:             txHash,
-		MiniBlockHash:    miniBlockHash,
-		BlockHash:        blockHash,
-		Nonce:            0,
-		Round:            int64(tx.GetNonce()),
-		Value:            utility.GetBytes(tx.GetValue()),
-		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
-		Sender:           []byte(fmt.Sprintf("%d", core.MetachainShardId)),
-		ReceiverShard:    int32(miniBlock.ReceiverShardID),
-		SenderShard:      int32(miniBlock.SenderShardID),
-		GasPrice:         0,
-		GasLimit:         0,
-		Data:             tx.GetData(),
-		Signature:        make([]byte, 0),
-		Timestamp:        int64(header.GetTimeStamp()),
-		SenderUserName:   make([]byte, 0),
-		ReceiverUserName: make([]byte, 0),
-	}
+
+	return ret
 }
 
 func (txp *transactionProcessor) processNormalTransaction(
@@ -177,27 +166,38 @@ func (txp *transactionProcessor) processNormalTransaction(
 	}
 }
 
-func (txp *transactionProcessor) processTransaction(
-	tx data.TransactionHandler,
+func (txp *transactionProcessor) processRewardTransaction(
+	transaction data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
 	blockHash []byte,
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
-	mbType block.Type,
 ) *schema.Transaction {
-	var ret *schema.Transaction
-
-	switch mbType {
-	case block.TxBlock:
-		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
-	case block.RewardsBlock:
-		ret = txp.processRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
-	default:
+	tx, castOk := transaction.(*rewardTx.RewardTx)
+	if !castOk {
 		return nil
 	}
 
-	return ret
+	return &schema.Transaction{
+		Hash:             txHash,
+		MiniBlockHash:    miniBlockHash,
+		BlockHash:        blockHash,
+		Nonce:            0,
+		Round:            int64(tx.GetRound()),
+		Value:            utility.GetBytes(tx.GetValue()),
+		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
+		Sender:           []byte(fmt.Sprintf("%d", core.MetachainShardId)),
+		ReceiverShard:    int32(miniBlock.ReceiverShardID),
+		SenderShard:      int32(miniBlock.SenderShardID),
+		GasPrice:         0,
+		GasLimit:         0,
+		Data:             make([]byte, 0),
+		Signature:        make([]byte, 0),
+		Timestamp:        int64(header.GetTimeStamp()),
+		SenderUserName:   make([]byte, 0),
+		ReceiverUserName: make([]byte, 0),
+	}
 }
 
 func getRelevantTransactions(pool *indexer.Pool) map[string]data.TransactionHandler {

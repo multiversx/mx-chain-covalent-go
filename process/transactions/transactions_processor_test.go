@@ -2,6 +2,7 @@ package transactions_test
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"testing"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/rewardTx"
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
@@ -28,7 +30,7 @@ type headerData struct {
 }
 
 type transactionData struct {
-	tx         *transaction.Transaction
+	tx         data.TransactionHandler
 	txHash     []byte
 	headerData *headerData
 }
@@ -48,6 +50,15 @@ func generateRandomTx() *transaction.Transaction {
 	}
 }
 
+func generateRandomRewardTx() *rewardTx.RewardTx {
+	return &rewardTx.RewardTx{
+		Round:   rand.Uint64(),
+		Value:   testscommon.GenerateRandomBigInt(),
+		RcvAddr: testscommon.GenerateRandomBytes(),
+		Epoch:   rand.Uint32(),
+	}
+}
+
 func generateRandomHeaderData() *headerData {
 	return &headerData{
 		header:     &block.Header{Round: rand.Uint64(), TimeStamp: rand.Uint64()},
@@ -59,6 +70,14 @@ func generateRandomTxData(headerData *headerData) *transactionData {
 	return &transactionData{
 		txHash:     testscommon.GenerateRandomBytes(),
 		tx:         generateRandomTx(),
+		headerData: headerData,
+	}
+}
+
+func generateRandomRewardTxData(headerData *headerData) *transactionData {
+	return &transactionData{
+		txHash:     testscommon.GenerateRandomBytes(),
+		tx:         generateRandomRewardTx(),
 		headerData: headerData,
 	}
 }
@@ -104,7 +123,6 @@ func TestNewTransactionProcessor(t *testing.T) {
 
 func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *testing.T) {
 	t.Parallel()
-	//TODO: ADD PARALEL EVERYWHEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 
 	hData := generateRandomHeaderData()
 	txPool := map[string]data.TransactionHandler{}
@@ -120,6 +138,8 @@ func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *tes
 }
 
 func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectZeroProcessedTxs(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 	txData1 := generateRandomTxData(hData)
 
@@ -154,7 +174,9 @@ func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectZeroPr
 	require.Len(t, ret, 0)
 }
 
-func TestTransactionProcessor_ProcessTransactions_OneEmptyTxBlock_ExpectZeroProcessedTxs(t *testing.T) {
+func TestTransactionProcessor_ProcessTransactions_EmptyRelevantBlocks_ExpectZeroProcessedTxs(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
@@ -163,6 +185,11 @@ func TestTransactionProcessor_ProcessTransactions_OneEmptyTxBlock_ExpectZeroProc
 			ReceiverShardID: 1,
 			SenderShardID:   2,
 			Type:            block.TxBlock},
+		{
+			TxHashes:        [][]byte{},
+			ReceiverShardID: 3,
+			SenderShardID:   4,
+			Type:            block.RewardsBlock},
 	},
 	}
 
@@ -174,6 +201,8 @@ func TestTransactionProcessor_ProcessTransactions_OneEmptyTxBlock_ExpectZeroProc
 }
 
 func TestTransactionProcessor_ProcessTransactions_OneTxBlock_TxNotFoundInPool_ExpectZeroProcessedTxs(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
@@ -192,7 +221,30 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_TxNotFoundInPool_Ex
 	require.Len(t, ret, 0)
 }
 
+func TestTransactionProcessor_ProcessTransactions_OneRewardBlock_TxNotFoundInPool_ExpectZeroProcessedTxs(t *testing.T) {
+	t.Parallel()
+
+	hData := generateRandomHeaderData()
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{[]byte("tx not found")},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.RewardsBlock},
+	},
+	}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &indexer.Pool{})
+
+	require.Nil(t, err)
+	require.Len(t, ret, 0)
+}
+
 func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneTx_ExpectOneProcessedTx(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 	txData1 := generateRandomTxData(hData)
 
@@ -219,7 +271,38 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneTx_ExpectOneProc
 	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 }
 
+func TestTransactionProcessor_ProcessTransactions_OneRewardBlock_OneRewardTx_ExpectOneProcessedTx(t *testing.T) {
+	t.Parallel()
+
+	hData := generateRandomHeaderData()
+	txData1 := generateRandomRewardTxData(hData)
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{txData1.txHash},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.RewardsBlock},
+	},
+	}
+
+	txPool := map[string]data.TransactionHandler{
+		string(txData1.txHash): txData1.tx,
+	}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
+
+	require.Len(t, ret, 1)
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+}
+
 func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_ExpectTwoProcessedTxs(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 
 	txData1 := generateRandomTxData(hData)
@@ -252,6 +335,8 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_Expect
 }
 
 func TestTransactionProcessor_ProcessTransactions_TwoTxBlocks_TwoTxs_ExpectTwoProcessedTx(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 
 	txData1 := generateRandomTxData(hData)
@@ -289,6 +374,8 @@ func TestTransactionProcessor_ProcessTransactions_TwoTxBlocks_TwoTxs_ExpectTwoPr
 }
 
 func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneSCRTx_ExpectZeroProcessedTxs(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 	scrHash := []byte("scr tx hash")
 
@@ -315,6 +402,8 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneSCRTx_ExpectZero
 }
 
 func TestTransactionProcessor_ProcessTransactions_OneSCRBlock_OneSCRTx_ExpectZeroProcessedTxs(t *testing.T) {
+	t.Parallel()
+
 	hData := generateRandomHeaderData()
 	scrHash := []byte("scr tx hash")
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
@@ -339,6 +428,49 @@ func TestTransactionProcessor_ProcessTransactions_OneSCRBlock_OneSCRTx_ExpectZer
 	require.Len(t, ret, 0)
 }
 
+func requireNormalTxEqual(
+	t *testing.T,
+	processedTx *schema.Transaction,
+	td *transactionData,
+	miniBlock *block.MiniBlock,
+	pubKeyConverter core.PubkeyConverter,
+	hasher hashing.Hasher,
+	marshaller marshal.Marshalizer) {
+	tx := td.tx.(*transaction.Transaction)
+	hData := td.headerData
+
+	require.Equal(t, int64(tx.GetNonce()), processedTx.Nonce)
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, tx.GetSndAddr()), processedTx.Sender)
+	require.Equal(t, int64(tx.GetGasPrice()), processedTx.GasPrice)
+	require.Equal(t, int64(tx.GetGasLimit()), processedTx.GasLimit)
+	require.Equal(t, tx.GetData(), processedTx.Data)
+	require.Equal(t, tx.GetSignature(), processedTx.Signature)
+	require.Equal(t, tx.GetSndUserName(), processedTx.SenderUserName)
+	require.Equal(t, tx.GetRcvUserName(), processedTx.ReceiverUserName)
+	require.Equal(t, int64(hData.header.GetRound()), processedTx.Round)
+}
+
+func requireRewardTxEqual(
+	t *testing.T,
+	processedTx *schema.Transaction,
+	td *transactionData,
+	miniBlock *block.MiniBlock,
+	pubKeyConverter core.PubkeyConverter,
+	hasher hashing.Hasher,
+	marshaller marshal.Marshalizer) {
+	tx := td.tx.(*rewardTx.RewardTx)
+
+	require.Equal(t, int64(0), processedTx.Nonce)
+	require.Equal(t, []byte(fmt.Sprintf("%d", core.MetachainShardId)), processedTx.Sender)
+	require.Equal(t, int64(0), processedTx.GasPrice)
+	require.Equal(t, int64(0), processedTx.GasLimit)
+	require.Equal(t, []byte{}, processedTx.Data)
+	require.Equal(t, []byte{}, processedTx.Signature)
+	require.Equal(t, []byte{}, processedTx.SenderUserName)
+	require.Equal(t, []byte{}, processedTx.ReceiverUserName)
+	require.Equal(t, int64(tx.GetRound()), processedTx.Round)
+}
+
 func requireProcessedTransactionEqual(
 	t *testing.T,
 	processedTx *schema.Transaction,
@@ -348,25 +480,24 @@ func requireProcessedTransactionEqual(
 	hasher hashing.Hasher,
 	marshaller marshal.Marshalizer) {
 
-	tx := td.tx
-	hData := td.headerData
 	mbHash, _ := core.CalculateHash(marshaller, hasher, miniBlock)
 
 	require.Equal(t, td.txHash, processedTx.Hash)
-	require.Equal(t, int64(tx.GetNonce()), processedTx.Nonce)
-	require.Equal(t, tx.GetValue().Bytes(), processedTx.Value)
-	require.Equal(t, utility.EncodePubKey(pubKeyConverter, tx.GetRcvAddr()), processedTx.Receiver)
-	require.Equal(t, utility.EncodePubKey(pubKeyConverter, tx.GetSndAddr()), processedTx.Sender)
+	require.Equal(t, td.tx.GetValue().Bytes(), processedTx.Value)
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, td.tx.GetRcvAddr()), processedTx.Receiver)
 	require.Equal(t, int32(miniBlock.GetReceiverShardID()), processedTx.ReceiverShard)
 	require.Equal(t, int32(miniBlock.GetSenderShardID()), processedTx.SenderShard)
-	require.Equal(t, int64(tx.GetGasPrice()), processedTx.GasPrice)
-	require.Equal(t, int64(tx.GetGasLimit()), processedTx.GasLimit)
-	require.Equal(t, tx.GetData(), processedTx.Data)
-	require.Equal(t, tx.GetSignature(), processedTx.Signature)
-	require.Equal(t, tx.GetSndUserName(), processedTx.SenderUserName)
-	require.Equal(t, tx.GetRcvUserName(), processedTx.ReceiverUserName)
 	require.Equal(t, mbHash, processedTx.MiniBlockHash)
-	require.Equal(t, hData.headerHash, processedTx.BlockHash)
-	require.Equal(t, int64(hData.header.GetRound()), processedTx.Round)
-	require.Equal(t, int64(hData.header.GetTimeStamp()), processedTx.Timestamp)
+	require.Equal(t, td.headerData.headerHash, processedTx.BlockHash)
+	require.Equal(t, int64(td.headerData.header.GetTimeStamp()), processedTx.Timestamp)
+
+	_, isNormalTx := td.tx.(*transaction.Transaction)
+	if isNormalTx {
+		requireNormalTxEqual(t, processedTx, td, miniBlock, pubKeyConverter, hasher, marshaller)
+	}
+	_, isRewardTx := td.tx.(*rewardTx.RewardTx)
+	if isRewardTx {
+		requireRewardTxEqual(t, processedTx, td, miniBlock, pubKeyConverter, hasher, marshaller)
+	}
+
 }
