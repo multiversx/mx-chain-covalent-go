@@ -1,6 +1,8 @@
 package transactions
 
 import (
+	"fmt"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
@@ -9,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
+	"github.com/ElrondNetwork/elrond-go-core/data/rewardTx"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
@@ -53,7 +56,6 @@ func (txp *transactionProcessor) ProcessTransactions(
 	bodyHandler data.BodyHandler,
 	transactions map[string]data.TransactionHandler,
 ) ([]*schema.Transaction, error) {
-
 	body, ok := bodyHandler.(*erdBlock.Body)
 	if !ok {
 		return nil, covalent.ErrBlockBodyAssertion
@@ -61,11 +63,18 @@ func (txp *transactionProcessor) ProcessTransactions(
 
 	allTxs := make([]*schema.Transaction, 0)
 	for _, currMiniBlock := range body.MiniBlocks {
-		if currMiniBlock.Type != block.TxBlock {
+		var txsInCurrMB []*schema.Transaction
+		var err error
+
+		switch currMiniBlock.Type {
+		case block.TxBlock:
+			txsInCurrMB, err = txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash, block.TxBlock)
+		case block.RewardsBlock:
+			txsInCurrMB, err = txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash, block.RewardsBlock)
+		default:
 			continue
 		}
 
-		txsInCurrMB, err := txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash)
 		if err != nil {
 			return nil, err
 		}
@@ -80,6 +89,7 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
 	blockHash []byte,
+	mbType block.Type,
 ) ([]*schema.Transaction, error) {
 
 	miniBlockHash, err := core.CalculateHash(txp.marshaller, txp.hasher, miniBlock)
@@ -95,7 +105,7 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 			continue
 		}
 
-		convertedTx := txp.convertTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+		convertedTx := txp.convertTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header, mbType)
 		txsInMiniBlock = append(txsInMiniBlock, convertedTx)
 	}
 
@@ -112,14 +122,51 @@ func findTransactionInPool(txHash []byte, transactions map[string]data.Transacti
 	return castedTx, castOk
 }
 
-func (txp *transactionProcessor) convertTransaction(
-	tx *transaction.Transaction,
+func (txp *transactionProcessor) convertRewardTransaction(
+	transaction data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
 	blockHash []byte,
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
 ) *schema.Transaction {
+	tx, castOk := transaction.(*rewardTx.RewardTx)
+	if !castOk {
+		return nil
+	}
+	//TODO: ADD DATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	return &schema.Transaction{
+		Hash:             txHash,
+		MiniBlockHash:    miniBlockHash,
+		BlockHash:        blockHash,
+		Nonce:            0,
+		Round:            int64(tx.GetNonce()),
+		Value:            utility.GetBytes(tx.GetValue()),
+		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
+		Sender:           []byte(fmt.Sprintf("%d", core.MetachainShardId)),
+		ReceiverShard:    int32(miniBlock.ReceiverShardID),
+		SenderShard:      int32(miniBlock.SenderShardID),
+		GasPrice:         0,
+		GasLimit:         0,
+		Signature:        make([]byte, 0),
+		Timestamp:        int64(header.GetTimeStamp()),
+		SenderUserName:   make([]byte, 0),
+		ReceiverUserName: make([]byte, 0),
+	}
+}
+
+func (txp *transactionProcessor) convertNormalTransaction(
+	ntransaction data.TransactionHandler,
+	txHash []byte,
+	miniBlockHash []byte,
+	blockHash []byte,
+	miniBlock *erdBlock.MiniBlock,
+	header data.HeaderHandler,
+) *schema.Transaction {
+	tx, castOk := ntransaction.(*transaction.Transaction)
+	if !castOk {
+		return nil
+	}
 
 	return &schema.Transaction{
 		Hash:             txHash,
@@ -139,4 +186,27 @@ func (txp *transactionProcessor) convertTransaction(
 		SenderUserName:   tx.GetSndUserName(),
 		ReceiverUserName: tx.GetRcvUserName(),
 	}
+}
+
+func (txp *transactionProcessor) convertTransaction(
+	tx *transaction.Transaction,
+	txHash []byte,
+	miniBlockHash []byte,
+	blockHash []byte,
+	miniBlock *erdBlock.MiniBlock,
+	header data.HeaderHandler,
+	mbType block.Type,
+) *schema.Transaction {
+	var ret *schema.Transaction
+
+	switch mbType {
+	case block.TxBlock:
+		ret = txp.convertNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+	case block.RewardsBlock:
+		ret = txp.convertRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+	default:
+		return nil
+	}
+
+	return ret
 }
