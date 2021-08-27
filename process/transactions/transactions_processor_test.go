@@ -41,6 +41,7 @@ func generateRandomTx() *transaction.Transaction {
 		SndAddr:     testscommon.GenerateRandomBytes(),
 		GasLimit:    rand.Uint64(),
 		GasPrice:    rand.Uint64(),
+		Data:        testscommon.GenerateRandomBytes(),
 		Signature:   testscommon.GenerateRandomBytes(),
 		SndUserName: testscommon.GenerateRandomBytes(),
 		RcvUserName: testscommon.GenerateRandomBytes(),
@@ -360,6 +361,7 @@ func requireProcessedTransactionEqual(
 	require.Equal(t, int32(miniBlock.GetSenderShardID()), processedTx.SenderShard)
 	require.Equal(t, int64(tx.GetGasPrice()), processedTx.GasPrice)
 	require.Equal(t, int64(tx.GetGasLimit()), processedTx.GasLimit)
+	require.Equal(t, tx.GetData(), processedTx.Data)
 	require.Equal(t, tx.GetSignature(), processedTx.Signature)
 	require.Equal(t, tx.GetSndUserName(), processedTx.SenderUserName)
 	require.Equal(t, tx.GetRcvUserName(), processedTx.ReceiverUserName)
