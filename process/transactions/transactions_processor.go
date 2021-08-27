@@ -11,6 +11,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
+	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/data/rewardTx"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
@@ -54,13 +55,14 @@ func (txp *transactionProcessor) ProcessTransactions(
 	header data.HeaderHandler,
 	headerHash []byte,
 	bodyHandler data.BodyHandler,
-	transactions map[string]data.TransactionHandler,
-) ([]*schema.Transaction, error) {
+	pool *indexer.Pool,
+) ([]*schema.Transaction, error) { //TODO: MAYBE NEVER RETURN ERROR???????????????????????????????????
 	body, ok := bodyHandler.(*erdBlock.Body)
 	if !ok {
 		return nil, covalent.ErrBlockBodyAssertion
 	}
 
+	transactions := getTransactions(pool)
 	allTxs := make([]*schema.Transaction, 0)
 	for _, currMiniBlock := range body.MiniBlocks {
 		var txsInCurrMB []*schema.Transaction
@@ -99,27 +101,19 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 
 	txsInMiniBlock := make([]*schema.Transaction, 0, len(miniBlock.TxHashes))
 	for _, txHash := range miniBlock.TxHashes {
-		tx, found := findTransactionInPool(txHash, transactions)
-		if !found {
+		tx, isTxInPool := transactions[string(txHash)]
+		if !isTxInPool {
 			log.Warn("transactionProcessor.processTxsFromMiniBlock tx hash not found in tx pool", "hash", txHash)
 			continue
 		}
 
 		convertedTx := txp.convertTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header, mbType)
-		txsInMiniBlock = append(txsInMiniBlock, convertedTx)
+		if convertedTx != nil {
+			txsInMiniBlock = append(txsInMiniBlock, convertedTx)
+		}
 	}
 
 	return txsInMiniBlock, nil
-}
-
-func findTransactionInPool(txHash []byte, transactions map[string]data.TransactionHandler) (*transaction.Transaction, bool) {
-	tx, isInTxPool := transactions[string(txHash)]
-	if !isInTxPool {
-		return nil, false
-	}
-
-	castedTx, castOk := tx.(*transaction.Transaction)
-	return castedTx, castOk
 }
 
 func (txp *transactionProcessor) convertRewardTransaction(
@@ -189,7 +183,7 @@ func (txp *transactionProcessor) convertNormalTransaction(
 }
 
 func (txp *transactionProcessor) convertTransaction(
-	tx *transaction.Transaction,
+	tx data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
 	blockHash []byte,
@@ -209,4 +203,20 @@ func (txp *transactionProcessor) convertTransaction(
 	}
 
 	return ret
+}
+
+func getTransactions(pool *indexer.Pool) map[string]data.TransactionHandler {
+	transactions := make(map[string]data.TransactionHandler, len(pool.Txs)+len(pool.Rewards)+len(pool.Invalid))
+
+	mergeTxsMaps(transactions, pool.Txs)
+	mergeTxsMaps(transactions, pool.Rewards)
+	mergeTxsMaps(transactions, pool.Invalid)
+
+	return transactions
+}
+
+func mergeTxsMaps(dst, src map[string]data.TransactionHandler) {
+	for key, value := range src {
+		dst[key] = value
+	}
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
+	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
@@ -101,12 +102,18 @@ func TestNewTransactionProcessor(t *testing.T) {
 }
 
 func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *testing.T) {
+	t.Parallel()
+	//TODO: ADD PARALEL EVERYWHEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
 	hData := generateRandomHeaderData()
 	txPool := map[string]data.TransactionHandler{}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
 	body := data.BodyHandler(nil)
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
 	require.Equal(t, covalent.ErrBlockBodyAssertion, err)
 }
@@ -114,6 +121,9 @@ func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *tes
 func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(t *testing.T) {
 	hData := generateRandomHeaderData()
 	txPool := map[string]data.TransactionHandler{}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{{Type: block.TxBlock}}}
 
 	errMarshaller := errors.New("err marshaller")
@@ -125,7 +135,7 @@ func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(
 				return nil, errMarshaller
 			},
 		})
-	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
 	require.Equal(t, errMarshaller, err)
 }
@@ -143,7 +153,7 @@ func TestTransactionProcessor_ProcessTransactions_OneEmptyTxBlock_ExpectZeroProc
 	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, map[string]data.TransactionHandler{})
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &indexer.Pool{})
 
 	require.Nil(t, err)
 	require.Len(t, ret, 0)
@@ -162,7 +172,7 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_TxNotFoundInPool_Ex
 	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, map[string]data.TransactionHandler{})
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &indexer.Pool{})
 
 	require.Nil(t, err)
 	require.Len(t, ret, 0)
@@ -182,10 +192,14 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneTx_ExpectOneProc
 	}
 
 	txPool := map[string]data.TransactionHandler{
-		string(txData1.txHash): txData1.tx}
+		string(txData1.txHash): txData1.tx,
+	}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
 	require.Len(t, ret, 1)
 	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
@@ -208,10 +222,14 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_Expect
 
 	txPool := map[string]data.TransactionHandler{
 		string(txData1.txHash): txData1.tx,
-		string(txData2.txHash): txData2.tx}
+		string(txData2.txHash): txData2.tx,
+	}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
 	require.Len(t, ret, 2)
 
@@ -241,10 +259,14 @@ func TestTransactionProcessor_ProcessTransactions_TwoTxBlocks_TwoTxs_ExpectTwoPr
 
 	txPool := map[string]data.TransactionHandler{
 		string(txData1.txHash): txData1.tx,
-		string(txData2.txHash): txData2.tx}
+		string(txData2.txHash): txData2.tx,
+	}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
 	require.Len(t, ret, 2)
 
@@ -266,10 +288,13 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneSCRTx_ExpectZero
 	}
 
 	txPool := map[string]data.TransactionHandler{
-		string(scrHash): &smartContractResult.SmartContractResult{}}
-
+		string(scrHash): &smartContractResult.SmartContractResult{},
+	}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
 	require.Nil(t, err)
 	require.Len(t, ret, 0)
@@ -289,9 +314,12 @@ func TestTransactionProcessor_ProcessTransactions_OneSCRBlock_OneSCRTx_ExpectZer
 
 	txPool := map[string]data.TransactionHandler{
 		string(scrHash): &smartContractResult.SmartContractResult{}}
+	pool := &indexer.Pool{
+		Txs: txPool,
+	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, txPool)
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
 	require.Nil(t, err)
 	require.Len(t, ret, 0)
