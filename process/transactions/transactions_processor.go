@@ -56,7 +56,7 @@ func (txp *transactionProcessor) ProcessTransactions(
 	headerHash []byte,
 	bodyHandler data.BodyHandler,
 	pool *indexer.Pool,
-) ([]*schema.Transaction, error) { //TODO: MAYBE NEVER RETURN ERROR???????????????????????????????????
+) ([]*schema.Transaction, error) {
 	body, ok := bodyHandler.(*erdBlock.Body)
 	if !ok {
 		return nil, covalent.ErrBlockBodyAssertion
@@ -71,7 +71,8 @@ func (txp *transactionProcessor) ProcessTransactions(
 
 		txsInCurrMB, err := txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash, currMiniBlock.Type)
 		if err != nil {
-			return nil, err
+			log.Warn("transactionProcessor.processTxsFromMiniBlock", "error", err)
+			continue
 		}
 		allTxs = append(allTxs, txsInCurrMB...)
 	}

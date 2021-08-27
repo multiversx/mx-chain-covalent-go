@@ -118,13 +118,25 @@ func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *tes
 	require.Equal(t, covalent.ErrBlockBodyAssertion, err)
 }
 
-func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(t *testing.T) {
+func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectZeroProcessedTxs(t *testing.T) {
 	hData := generateRandomHeaderData()
-	txPool := map[string]data.TransactionHandler{}
+	txData1 := generateRandomTxData(hData)
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{txData1.txHash},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.TxBlock},
+	},
+	}
+
+	txPool := map[string]data.TransactionHandler{
+		string(txData1.txHash): txData1.tx,
+	}
 	pool := &indexer.Pool{
 		Txs: txPool,
 	}
-	body := &block.Body{MiniBlocks: []*block.MiniBlock{{Type: block.TxBlock}}}
 
 	errMarshaller := errors.New("err marshaller")
 	txp, _ := transactions.NewTransactionProcessor(
@@ -135,9 +147,10 @@ func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectError(
 				return nil, errMarshaller
 			},
 		})
-	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
-	require.Equal(t, errMarshaller, err)
+	require.Nil(t, err)
+	require.Len(t, ret, 0)
 }
 
 func TestTransactionProcessor_ProcessTransactions_OneEmptyTxBlock_ExpectZeroProcessedTxs(t *testing.T) {
