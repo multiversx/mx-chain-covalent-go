@@ -62,21 +62,14 @@ func (txp *transactionProcessor) ProcessTransactions(
 		return nil, covalent.ErrBlockBodyAssertion
 	}
 
-	transactions := getTransactions(pool)
-	allTxs := make([]*schema.Transaction, 0)
+	transactions := getRelevantTransactions(pool)
+	allTxs := make([]*schema.Transaction, 0, len(transactions))
 	for _, currMiniBlock := range body.MiniBlocks {
-		var txsInCurrMB []*schema.Transaction
-		var err error
-
-		switch currMiniBlock.Type {
-		case block.TxBlock:
-			txsInCurrMB, err = txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash, block.TxBlock)
-		case block.RewardsBlock:
-			txsInCurrMB, err = txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash, block.RewardsBlock)
-		default:
+		if !isMiniBlockTypeRelevant(currMiniBlock) {
 			continue
 		}
 
+		txsInCurrMB, err := txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash, currMiniBlock.Type)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +86,6 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 	blockHash []byte,
 	mbType block.Type,
 ) ([]*schema.Transaction, error) {
-
 	miniBlockHash, err := core.CalculateHash(txp.marshaller, txp.hasher, miniBlock)
 	if err != nil {
 		return nil, err
@@ -101,22 +93,22 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 
 	txsInMiniBlock := make([]*schema.Transaction, 0, len(miniBlock.TxHashes))
 	for _, txHash := range miniBlock.TxHashes {
-		tx, isTxInPool := transactions[string(txHash)]
-		if !isTxInPool {
+		tx, isInPool := transactions[string(txHash)]
+		if !isInPool {
 			log.Warn("transactionProcessor.processTxsFromMiniBlock tx hash not found in tx pool", "hash", txHash)
 			continue
 		}
 
-		convertedTx := txp.convertTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header, mbType)
-		if convertedTx != nil {
-			txsInMiniBlock = append(txsInMiniBlock, convertedTx)
+		processedTx := txp.processTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header, mbType)
+		if processedTx != nil {
+			txsInMiniBlock = append(txsInMiniBlock, processedTx)
 		}
 	}
 
 	return txsInMiniBlock, nil
 }
 
-func (txp *transactionProcessor) convertRewardTransaction(
+func (txp *transactionProcessor) processRewardTransaction(
 	transaction data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
@@ -149,15 +141,15 @@ func (txp *transactionProcessor) convertRewardTransaction(
 	}
 }
 
-func (txp *transactionProcessor) convertNormalTransaction(
-	ntransaction data.TransactionHandler,
+func (txp *transactionProcessor) processNormalTransaction(
+	normalTx data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
 	blockHash []byte,
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
 ) *schema.Transaction {
-	tx, castOk := ntransaction.(*transaction.Transaction)
+	tx, castOk := normalTx.(*transaction.Transaction)
 	if !castOk {
 		return nil
 	}
@@ -182,7 +174,7 @@ func (txp *transactionProcessor) convertNormalTransaction(
 	}
 }
 
-func (txp *transactionProcessor) convertTransaction(
+func (txp *transactionProcessor) processTransaction(
 	tx data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
@@ -195,9 +187,9 @@ func (txp *transactionProcessor) convertTransaction(
 
 	switch mbType {
 	case block.TxBlock:
-		ret = txp.convertNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
 	case block.RewardsBlock:
-		ret = txp.convertRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+		ret = txp.processRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
 	default:
 		return nil
 	}
@@ -205,7 +197,7 @@ func (txp *transactionProcessor) convertTransaction(
 	return ret
 }
 
-func getTransactions(pool *indexer.Pool) map[string]data.TransactionHandler {
+func getRelevantTransactions(pool *indexer.Pool) map[string]data.TransactionHandler {
 	transactions := make(map[string]data.TransactionHandler, len(pool.Txs)+len(pool.Rewards)+len(pool.Invalid))
 
 	mergeTxsMaps(transactions, pool.Txs)
@@ -219,4 +211,8 @@ func mergeTxsMaps(dst, src map[string]data.TransactionHandler) {
 	for key, value := range src {
 		dst[key] = value
 	}
+}
+
+func isMiniBlockTypeRelevant(miniBlock *erdBlock.MiniBlock) bool {
+	return miniBlock.Type == block.TxBlock || miniBlock.Type == block.RewardsBlock
 }
