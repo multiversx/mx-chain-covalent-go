@@ -186,6 +186,11 @@ func TestTransactionProcessor_ProcessTransactions_EmptyRelevantBlocks_ExpectZero
 			ReceiverShardID: 3,
 			SenderShardID:   4,
 			Type:            block.RewardsBlock},
+		{
+			TxHashes:        [][]byte{},
+			ReceiverShardID: 3,
+			SenderShardID:   4,
+			Type:            block.InvalidBlock},
 	},
 	}
 
@@ -196,7 +201,7 @@ func TestTransactionProcessor_ProcessTransactions_EmptyRelevantBlocks_ExpectZero
 	require.Len(t, ret, 0)
 }
 
-func TestTransactionProcessor_ProcessTransactions_TwoBlocks_TxsNotFoundInPool_ExpectZeroProcessedTxs(t *testing.T) {
+func TestTransactionProcessor_ProcessTransactions_ThreeBlocks_TxsNotFoundInPool_ExpectZeroProcessedTxs(t *testing.T) {
 	t.Parallel()
 
 	hData := generateRandomHeaderData()
@@ -212,6 +217,11 @@ func TestTransactionProcessor_ProcessTransactions_TwoBlocks_TxsNotFoundInPool_Ex
 			ReceiverShardID: 1,
 			SenderShardID:   2,
 			Type:            block.RewardsBlock},
+		{
+			TxHashes:        [][]byte{[]byte("tx not found")},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.InvalidBlock},
 	},
 	}
 
@@ -280,12 +290,42 @@ func TestTransactionProcessor_ProcessTransactions_OneRewardBlock_OneRewardTx_Exp
 	requireProcessedTransactionEqual(t, ret[0], rewardTxData, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 }
 
-func TestTransactionProcessor_ProcessTransactions_OneRewardBlock_OneRewardTx_OneTxBlock_OneNormalTx_ExpectTwoProcessedTx(t *testing.T) {
+func TestTransactionProcessor_ProcessTransactions_OneInvalidBlock_OneTx_ExpectOneProcessedTx(t *testing.T) {
+	t.Parallel()
+
+	hData := generateRandomHeaderData()
+	txData1 := generateRandomTxData(hData)
+
+	body := &block.Body{MiniBlocks: []*block.MiniBlock{
+		{
+			TxHashes:        [][]byte{txData1.txHash},
+			ReceiverShardID: 1,
+			SenderShardID:   2,
+			Type:            block.InvalidBlock},
+	},
+	}
+
+	invalidTxPool := map[string]data.TransactionHandler{
+		string(txData1.txHash): txData1.tx,
+	}
+	pool := &indexer.Pool{
+		Invalid: invalidTxPool,
+	}
+
+	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
+
+	require.Len(t, ret, 1)
+	requireProcessedTransactionEqual(t, ret[0], txData1, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+}
+
+func TestTransactionProcessor_ProcessTransactions_ThreeRelevantBlocks_ThreeRelevantTxs_ExpectTwoProcessedTx(t *testing.T) {
 	t.Parallel()
 
 	hData := generateRandomHeaderData()
 	rewardTxData := generateRandomRewardTxData(hData)
 	normalTxData := generateRandomTxData(hData)
+	invalidTxData := generateRandomTxData(hData)
 
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
 		{
@@ -298,6 +338,11 @@ func TestTransactionProcessor_ProcessTransactions_OneRewardBlock_OneRewardTx_One
 			ReceiverShardID: 3,
 			SenderShardID:   4,
 			Type:            block.RewardsBlock},
+		{
+			TxHashes:        [][]byte{invalidTxData.txHash},
+			ReceiverShardID: 3,
+			SenderShardID:   4,
+			Type:            block.InvalidBlock},
 	},
 	}
 
@@ -307,17 +352,22 @@ func TestTransactionProcessor_ProcessTransactions_OneRewardBlock_OneRewardTx_One
 	rewardsPool := map[string]data.TransactionHandler{
 		string(rewardTxData.txHash): rewardTxData.tx,
 	}
+	invalidTxPool := map[string]data.TransactionHandler{
+		string(invalidTxData.txHash): invalidTxData.tx,
+	}
 	pool := &indexer.Pool{
 		Txs:     txPool,
 		Rewards: rewardsPool,
+		Invalid: invalidTxPool,
 	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	ret, _ := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
 
-	require.Len(t, ret, 2)
+	require.Len(t, ret, 3)
 	requireProcessedTransactionEqual(t, ret[0], normalTxData, body.GetMiniBlocks()[0], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 	requireProcessedTransactionEqual(t, ret[1], rewardTxData, body.GetMiniBlocks()[1], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
+	requireProcessedTransactionEqual(t, ret[2], invalidTxData, body.GetMiniBlocks()[2], &mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
 }
 
 func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_ExpectTwoProcessedTxs(t *testing.T) {
