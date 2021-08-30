@@ -125,14 +125,10 @@ func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *tes
 	t.Parallel()
 
 	hData := generateRandomHeaderData()
-	txPool := map[string]data.TransactionHandler{}
-	pool := &indexer.Pool{
-		Txs: txPool,
-	}
 	body := data.BodyHandler(nil)
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, pool)
+	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &indexer.Pool{})
 
 	require.Equal(t, covalent.ErrBlockBodyAssertion, err)
 }
