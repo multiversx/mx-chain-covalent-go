@@ -1,13 +1,19 @@
 package factory
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/factory"
+	ws2 "github.com/ElrondNetwork/covalent-indexer-go/process/ws"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 // ArgsCovalentIndexerFactory holds all input dependencies required by covalent data indexer factory
@@ -49,6 +55,39 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 	if err != nil {
 		return nil, err
 	}
+	x := mux.NewRouter()
+	server := &http.Server{
+		Addr:    "localhost:8080",
+		Handler: x,
+	}
 
-	return covalent.NewCovalentDataIndexer(dataProcessor)
+	ci, err := covalent.NewCovalentDataIndexer(dataProcessor, server)
+	if err != nil {
+		return nil, err
+	}
+
+	x.HandleFunc("d", func(w http.ResponseWriter, r *http.Request) {
+		// We'll need to define an Upgrader
+		// this will require a Read and Write buffer size
+		var upgrader = websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		}
+
+		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+		// upgrade this connection to a WebSocket
+		// connection
+		ws, errUpgrade := upgrader.Upgrade(w, r, nil)
+		if errUpgrade != nil {
+			log.Println(errUpgrade)
+		}
+
+		wss := &ws2.WsSender{
+			Conn: ws,
+		}
+		ci.SetWSSender(wss)
+	})
+
+	return ci, nil
 }

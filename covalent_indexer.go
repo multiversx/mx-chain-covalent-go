@@ -1,20 +1,69 @@
 package covalent
 
 import (
+	"net/http"
+	"sync"
+
+	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/ws"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
+
+var log = logger.GetOrCreate("covalent")
 
 type covalentIndexer struct {
 	processor DataHandler
+	server    *http.Server
+	wss       *ws.WsSender
+	sync.RWMutex
 }
 
 // NewCovalentDataIndexer creates a new instance of covalent data indexer, which implements Driver interface and
 // converts protocol input data to covalent required data
-func NewCovalentDataIndexer(processor DataHandler) (Driver, error) {
-	return &covalentIndexer{
+func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covalentIndexer, error) {
+	ci := &covalentIndexer{
 		processor: processor,
-	}, nil
+		server:    server,
+	}
+
+	go ci.start()
+
+	return ci, nil
+}
+
+func (c *covalentIndexer) SetWSSender(wss *ws.WsSender) {
+	c.Lock()
+	defer c.Unlock()
+	if c.wss != nil {
+		_ = c.wss.Conn.Close()
+	}
+	c.wss = wss
+}
+
+func (c *covalentIndexer) start() {
+	err := c.server.ListenAndServe()
+	if err != nil {
+		log.Error("could not initialize webserver", "error", err.Error())
+	}
+
+}
+
+func (c *covalentIndexer) SendBlockToCovalent(result *schema.BlockResult) {
+	data, err := utility.Encode(result)
+	if err != nil {
+		log.Error("could not encode block result", "error", err)
+	}
+
+	c.RLock()
+	wss := c.wss
+	c.RUnlock()
+
+	if wss != nil {
+		wss.SendMessage(data)
+	}
 }
 
 // SaveBlock saves the block info and converts it in order to be sent to covalent
@@ -27,6 +76,7 @@ func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 	}
 	_ = blockResult
 
+	c.SendBlockToCovalent(blockResult)
 	// 2. Prepare blockResult data to be sent in binary format
 	// 3. Send blockResult binary data to covalent
 }
