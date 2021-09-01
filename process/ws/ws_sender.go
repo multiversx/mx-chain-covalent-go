@@ -9,18 +9,18 @@ import (
 
 var log = logger.GetOrCreate("covalent")
 
-type WsConn interface {
+type WSConn interface {
 	io.Closer
 	ReadMessage() (messageType int, p []byte, err error)
 	WriteMessage(messageType int, data []byte) error
 }
 
-type WsSender struct {
-	Conn WsConn
+type WSSender struct {
+	Conn WSConn
 }
 
-func (wss *WsSender) SendMessage(data []byte) {
-	err := wss.Conn.WriteMessage(websocket.TextMessage, data) //TODO: CHANGE TO BINARY DATA
+func (wss *WSSender) SendMessage(data []byte) {
+	err := wss.Conn.WriteMessage(websocket.BinaryMessage, data)
 	if err != nil {
 		log.Error("could not send message", "message", data, "error", err)
 	}

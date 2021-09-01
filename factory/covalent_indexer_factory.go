@@ -55,10 +55,11 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 	if err != nil {
 		return nil, err
 	}
-	x := mux.NewRouter()
+
+	router := mux.NewRouter()
 	server := &http.Server{
 		Addr:    "localhost:8080",
-		Handler: x,
+		Handler: router,
 	}
 
 	ci, err := covalent.NewCovalentDataIndexer(dataProcessor, server)
@@ -66,7 +67,7 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 		return nil, err
 	}
 
-	x.HandleFunc("d", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("block", func(w http.ResponseWriter, r *http.Request) {
 		// We'll need to define an Upgrader
 		// this will require a Read and Write buffer size
 		var upgrader = websocket.Upgrader{
@@ -76,14 +77,13 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 
 		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-		// upgrade this connection to a WebSocket
-		// connection
+		// upgrade this connection to a WebSocket connection
 		ws, errUpgrade := upgrader.Upgrade(w, r, nil)
 		if errUpgrade != nil {
 			log.Println(errUpgrade)
 		}
 
-		wss := &ws2.WsSender{
+		wss := &ws2.WSSender{
 			Conn: ws,
 		}
 		ci.SetWSSender(wss)

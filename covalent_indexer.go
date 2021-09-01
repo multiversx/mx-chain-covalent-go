@@ -17,7 +17,7 @@ var log = logger.GetOrCreate("covalent")
 type covalentIndexer struct {
 	processor DataHandler
 	server    *http.Server
-	wss       *ws.WsSender
+	wss       *ws.WSSender
 	sync.RWMutex
 }
 
@@ -34,7 +34,7 @@ func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covale
 	return ci, nil
 }
 
-func (c *covalentIndexer) SetWSSender(wss *ws.WsSender) {
+func (c *covalentIndexer) SetWSSender(wss *ws.WSSender) {
 	c.Lock()
 	defer c.Unlock()
 	if c.wss != nil {
@@ -48,7 +48,6 @@ func (c *covalentIndexer) start() {
 	if err != nil {
 		log.Error("could not initialize webserver", "error", err.Error())
 	}
-
 }
 
 func (c *covalentIndexer) SendBlockToCovalent(result *schema.BlockResult) {
@@ -77,8 +76,6 @@ func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 	_ = blockResult
 
 	c.SendBlockToCovalent(blockResult)
-	// 2. Prepare blockResult data to be sent in binary format
-	// 3. Send blockResult binary data to covalent
 }
 
 // RevertIndexedBlock DUMMY
