@@ -35,7 +35,7 @@ type Block struct {
 	Epoch                 int32
 	Hash                  []byte
 	MiniBlocks            []*MiniBlock
-	NotarizedBlocksHashes interface{}
+	NotarizedBlocksHashes [][]byte
 	Proposer              int64
 	Validators            []int64
 	PubKeysBitmap         []byte
@@ -377,7 +377,14 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         "default": null,
                         "type": [
                             "null",
-                            "null"
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "fixed",
+                                    "size": 32,
+                                    "name": "hash"
+                                }
+                            }
                         ]
                     },
                     {
@@ -942,7 +949,14 @@ var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
             "default": null,
             "type": [
                 "null",
-                "null"
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "fixed",
+                        "size": 32,
+                        "name": "hash"
+                    }
+                }
             ]
         },
         {

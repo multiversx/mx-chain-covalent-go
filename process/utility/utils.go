@@ -10,6 +10,10 @@ import (
 
 // StrSliceToBytesSlice outputs the bytes slice representation of a string slice input
 func StrSliceToBytesSlice(in []string) [][]byte {
+	if in == nil {
+		return nil
+	}
+
 	out := make([][]byte, len(in))
 
 	for i := range in {
@@ -22,6 +26,10 @@ func StrSliceToBytesSlice(in []string) [][]byte {
 
 // UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
 func UIntSliceToIntSlice(in []uint64) []int64 {
+	if in == nil {
+		return nil
+	}
+
 	out := make([]int64, len(in))
 
 	for i := range in {

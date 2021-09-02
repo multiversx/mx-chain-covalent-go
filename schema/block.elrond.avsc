@@ -24,8 +24,8 @@
             {"name": "Timestamp", "type": "long"},
             {"name": "TxHashes", "type": {"type": "array", "items": "bytes"}}]
           }}]}},
-       {"name": "NotarizedBlocksHashes", "type": ["null", {",type": ["null",
-         {"type": "array", "items": "hash"}]}]},
+       {"name": "NotarizedBlocksHashes", "type": {"type": ["null", { "type" :
+       "array", "items": "hash"}]}},
        {"name": "Proposer", "type": "long"},
        {"name": "Validators", "type": {"type": "array", "items": "long"}},
        {"name": "PubKeysBitmap", "type": "bytes"},
