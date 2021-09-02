@@ -46,14 +46,16 @@ func (c *covalentIndexer) SetWSSender(wss *ws.WSSender) {
 func (c *covalentIndexer) start() {
 	err := c.server.ListenAndServe()
 	if err != nil {
-		log.Error("could not initialize webserver", "error", err.Error())
+		log.Error("could not initialize webserver", "error", err)
 	}
 }
 
-func (c *covalentIndexer) SendBlockToCovalent(result *schema.BlockResult) {
-	data, err := utility.Encode(result)
+func (c *covalentIndexer) sendBlockResultToCovalent(result *schema.BlockResult) {
+	binaryData, err := utility.Encode(result)
 	if err != nil {
-		log.Error("could not encode block result", "error", err)
+		log.Error("could not encode block result to binary data",
+			"block hash", getBlockHash(result), "error", err)
+		return
 	}
 
 	c.RLock()
@@ -61,21 +63,20 @@ func (c *covalentIndexer) SendBlockToCovalent(result *schema.BlockResult) {
 	c.RUnlock()
 
 	if wss != nil {
-		wss.SendMessage(data)
+		wss.SendMessage(binaryData)
 	}
 }
 
 // SaveBlock saves the block info and converts it in order to be sent to covalent
 func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
-	// TODO this function in future PRs
-	// 1. Process data from args, format it according to avro schema
 	blockResult, err := c.processor.ProcessData(args)
 	if err != nil {
-
+		log.Error("SaveBlock failed. Could not process block",
+			"block hash", getBlockHash(blockResult), "error", err)
+		return
 	}
-	_ = blockResult
 
-	c.SendBlockToCovalent(blockResult)
+	c.sendBlockResultToCovalent(blockResult)
 }
 
 // RevertIndexedBlock DUMMY
@@ -102,4 +103,11 @@ func (c covalentIndexer) Close() error {
 // IsInterfaceNil DUMMY
 func (c covalentIndexer) IsInterfaceNil() bool {
 	return false
+}
+
+func getBlockHash(blockResult *schema.BlockResult) []byte {
+	if blockResult != nil && blockResult.Block != nil && blockResult.Block.Hash != nil {
+		return blockResult.Block.Hash
+	}
+	return []byte(nil)
 }

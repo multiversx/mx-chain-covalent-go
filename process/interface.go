@@ -1,6 +1,8 @@
 package process
 
 import (
+	"io"
+
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
@@ -48,8 +50,16 @@ type AccountsHandler interface {
 		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate
 }
 
+// ShardCoordinator defines what a shard coordinator shall do
 type ShardCoordinator interface {
 	SelfId() uint32
 	ComputeId(address []byte) uint32
 	IsInterfaceNil() bool
+}
+
+// WSConn defines what a websocket shall do
+type WSConn interface {
+	io.Closer
+	ReadMessage() (messageType int, p []byte, err error)
+	WriteMessage(messageType int, data []byte) error
 }

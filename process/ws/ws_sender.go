@@ -1,27 +1,24 @@
 package ws
 
 import (
-	"io"
+	"encoding/hex"
 
+	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/gorilla/websocket"
 )
 
-var log = logger.GetOrCreate("covalent")
+var log = logger.GetOrCreate("covalent/websocket")
 
-type WSConn interface {
-	io.Closer
-	ReadMessage() (messageType int, p []byte, err error)
-	WriteMessage(messageType int, data []byte) error
-}
-
+// WSSender handles sending binary data through websockets
 type WSSender struct {
-	Conn WSConn
+	Conn process.WSConn
 }
 
+// SendMessage sends a data buffer in binary format through a websocket
 func (wss *WSSender) SendMessage(data []byte) {
 	err := wss.Conn.WriteMessage(websocket.BinaryMessage, data)
 	if err != nil {
-		log.Error("could not send message", "message", data, "error", err)
+		log.Error("could not send message", "data", hex.EncodeToString(data), "error", err)
 	}
 }
