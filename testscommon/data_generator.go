@@ -8,7 +8,7 @@ import (
 
 // GenerateRandomFixedBytes generates a random byte slice of a predefined n size
 func GenerateRandomFixedBytes(n int) []byte {
-	ret := make([]byte, n)
+	ret := make([]byte, n, n)
 
 	for i := 0; i < n; i++ {
 		ret[i] = byte(rand.Int())

@@ -31,13 +31,13 @@ func UIntSliceToIntSlice(in []uint64) []int64 {
 	return out
 }
 
-// GetBytes returns the bytes representation of a big int input if not nil, otherwise returns nil
+// GetBytes returns the bytes representation of a big int input if not nil, otherwise returns []byte{}
 func GetBytes(val *big.Int) []byte {
 	if val != nil {
 		return val.Bytes()
 	}
 
-	return nil
+	return big.NewInt(0).Bytes()
 }
 
 // EncodePubKey returns a byte slice of the encoded pubKey input, using a pub key converter
