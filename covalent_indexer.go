@@ -1,6 +1,7 @@
 package covalent
 
 import (
+	"encoding/hex"
 	"net/http"
 	"sync"
 
@@ -60,8 +61,7 @@ func (c *covalentIndexer) start() {
 func (c *covalentIndexer) sendBlockResultToCovalent(result *schema.BlockResult) {
 	binaryData, err := utility.Encode(result)
 	if err != nil {
-		log.Error("could not encode block result to binary data",
-			"block hash", getBlockHash(result), "error", err)
+		log.Error("could not encode block result to binary data", "error", err)
 		return
 	}
 
@@ -70,7 +70,8 @@ func (c *covalentIndexer) sendBlockResultToCovalent(result *schema.BlockResult) 
 	c.RUnlock()
 
 	if wss != nil {
-		wss.SendMessage(binaryData)
+		//TODO: Handle error in next PR
+		_ = wss.SendMessage(binaryData)
 	}
 }
 
@@ -79,8 +80,8 @@ func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 	blockResult, err := c.processor.ProcessData(args)
 	if err != nil {
 		log.Error("SaveBlock failed. Could not process block",
-			"block hash", getBlockHash(blockResult), "error", err)
-		return
+			"error", err, "headerHash", hex.EncodeToString(args.HeaderHash))
+		panic("could not process block, please check log")
 	}
 
 	c.sendBlockResultToCovalent(blockResult)
@@ -117,11 +118,4 @@ func (c covalentIndexer) Close() error {
 // IsInterfaceNil DUMMY
 func (c covalentIndexer) IsInterfaceNil() bool {
 	return false
-}
-
-func getBlockHash(blockResult *schema.BlockResult) []byte {
-	if blockResult != nil && blockResult.Block != nil && blockResult.Block.Hash != nil {
-		return blockResult.Block.Hash
-	}
-	return []byte(nil)
 }

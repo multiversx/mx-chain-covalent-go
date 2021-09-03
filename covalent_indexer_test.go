@@ -153,20 +153,7 @@ func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectDataNotSent(t *test
 			Addr: "localhost:3333",
 		})
 
-	called := atomic.Flag{}
-	called.Unset()
-	wss := &ws.WSSender{
-		Conn: &mock.WSConnStub{
-			WriteMessageCalled: func(messageType int, data []byte) error {
-				called.Set()
-				return nil
-			},
-		},
-	}
-
-	ci.SetWSSender(wss)
-	ci.SaveBlock(nil)
-	require.False(t, called.IsSet())
+	require.Panics(t, func() { ci.SaveBlock(nil) })
 }
 
 func generateRandomValidBlockResult() *schema.BlockResult {
