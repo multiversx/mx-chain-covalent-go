@@ -23,7 +23,7 @@ type covalentIndexer struct {
 
 // NewCovalentDataIndexer creates a new instance of covalent data indexer, which implements Driver interface and
 // converts protocol input data to covalent required data
-func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covalentIndexer, error) {
+func NewCovalentDataIndexer(processor DataHandler, server *http.Server) *covalentIndexer {
 	ci := &covalentIndexer{
 		processor: processor,
 		server:    server,
@@ -31,7 +31,7 @@ func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covale
 
 	go ci.start()
 
-	return ci, nil
+	return ci
 }
 
 func (c *covalentIndexer) SetWSSender(wss *ws.WSSender) {
@@ -97,6 +97,13 @@ func (c covalentIndexer) SaveAccounts(blockTimestamp uint64, acc []data.UserAcco
 
 // Close DUMMY
 func (c covalentIndexer) Close() error {
+	if c.wss != nil && c.wss.Conn != nil {
+		err := c.wss.Conn.Close()
+		log.LogIfError(err)
+	}
+	if c.server != nil {
+		return c.server.Close()
+	}
 	return nil
 }
 
