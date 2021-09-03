@@ -11,7 +11,7 @@ type DataHandlerStub struct {
 
 func (dhs *DataHandlerStub) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
 	if dhs.ProcessDataCalled != nil {
-		return dhs.ProcessData(args)
+		return dhs.ProcessDataCalled(args)
 	}
 	return nil, nil
 }

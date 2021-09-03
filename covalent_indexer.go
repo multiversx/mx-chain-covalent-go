@@ -23,7 +23,14 @@ type covalentIndexer struct {
 
 // NewCovalentDataIndexer creates a new instance of covalent data indexer, which implements Driver interface and
 // converts protocol input data to covalent required data
-func NewCovalentDataIndexer(processor DataHandler, server *http.Server) *covalentIndexer {
+func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covalentIndexer, error) {
+	if processor == nil {
+		return nil, ErrNilDataHandler
+	}
+	if server == nil {
+		return nil, ErrNilHTTPServer
+	}
+
 	ci := &covalentIndexer{
 		processor: processor,
 		server:    server,
@@ -31,7 +38,7 @@ func NewCovalentDataIndexer(processor DataHandler, server *http.Server) *covalen
 
 	go ci.start()
 
-	return ci
+	return ci, nil
 }
 
 func (c *covalentIndexer) SetWSSender(wss *ws.WSSender) {

@@ -25,3 +25,9 @@ var ErrNilShardCoordinator = errors.New("received nil input value: shard coordin
 
 // ErrCannotCastAccountHandlerToUserAccount signals an error when trying to cast from AccountHandler to UserAccountHandler
 var ErrCannotCastAccountHandlerToUserAccount = errors.New("cannot cast AccountHandler to UserAccountHandler")
+
+// ErrNilDataHandler signals that a nil data handler handler has been provided
+var ErrNilDataHandler = errors.New("received nil input value: data handler")
+
+// ErrNilHTTPServer signals that a nil http server has been provided
+var ErrNilHTTPServer = errors.New("received nil input value: http server")

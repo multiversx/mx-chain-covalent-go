@@ -66,7 +66,10 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 		Handler: router,
 	}
 
-	ci := covalent.NewCovalentDataIndexer(dataProcessor, server)
+	ci, err := covalent.NewCovalentDataIndexer(dataProcessor, server)
+	if err != nil {
+		return nil, err
+	}
 
 	routeSendData := router.HandleFunc(args.RouteSendData, func(w http.ResponseWriter, r *http.Request) {
 		var upgrader = websocket.Upgrader{
