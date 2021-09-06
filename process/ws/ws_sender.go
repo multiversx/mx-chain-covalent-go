@@ -2,11 +2,8 @@ package ws
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/gorilla/websocket"
 )
-
-var log = logger.GetOrCreate("covalent/websocket")
 
 // WSSender handles sending binary data through websockets
 type WSSender struct {

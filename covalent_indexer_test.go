@@ -2,8 +2,10 @@ package covalent_test
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/ws"
@@ -154,6 +156,56 @@ func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectDataNotSent(t *test
 		})
 
 	require.Panics(t, func() { ci.SaveBlock(nil) })
+}
+
+func TestCovalentIndexer_SetWSReceiver(t *testing.T) {
+	ci, _ := covalent.NewCovalentDataIndexer(
+		&mock.DataHandlerStub{},
+		&http.Server{
+			Addr: "localhost:8080",
+		})
+	called := atomic.Flag{}
+	called.Unset()
+	wsr := &ws.WSReceiver{
+		Conn: &mock.WSConnStub{
+			WriteMessageCalled: func(messageType int, data []byte) error {
+				called.Set()
+				return nil
+			},
+			ReadMessageCalled: func() (messageType int, p []byte, err error) {
+				return 0, nil, errors.New("")
+			},
+		},
+	}
+
+	wss := &ws.WSSender{
+		Conn: &mock.WSConnStub{
+			WriteMessageCalled: func(messageType int, data []byte) error {
+				called.Set()
+				return nil
+			},
+		},
+	}
+
+	//go func() {
+	//	blockRes := generateRandomValidBlockResult()
+	//		ci.SendBlockResultToCovalent(blockRes)
+	//	require.True(t, called.IsSet())
+	//}()
+	blockRes := generateRandomValidBlockResult()
+	go ci.SendBlockResultToCovalent(blockRes)
+	time.Sleep(4 * time.Second)
+
+	ci.SetWSSender(wss)
+
+	ci.SetWSReceiver(wsr)
+
+	time.Sleep(5 * time.Second)
+
+	ci.SetWSReceiver(wsr)
+
+	fmt.Println("AICI")
+	time.Sleep(100 * time.Second)
 }
 
 func generateRandomValidBlockResult() *schema.BlockResult {
