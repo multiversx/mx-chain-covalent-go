@@ -71,7 +71,7 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 	}
 
 	routeSendData := router.HandleFunc(args.RouteSendData, func(w http.ResponseWriter, r *http.Request) {
-		log.Warn("New connection", "route", args.RouteSendData)
+		log.Debug("new connection", "route", args.RouteSendData)
 		var upgrader = websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -94,7 +94,7 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 	}
 
 	routeAcknowledgeData := router.HandleFunc(args.RouteAcknowledgeData, func(w http.ResponseWriter, r *http.Request) {
-		log.Warn("New connection", "route", args.RouteAcknowledgeData)
+		log.Debug("new connection", "route", args.RouteAcknowledgeData)
 		var upgrader = websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
