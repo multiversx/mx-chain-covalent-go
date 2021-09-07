@@ -6,7 +6,6 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/factory"
-	covalentWS "github.com/ElrondNetwork/covalent-indexer-go/process/ws"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
@@ -85,10 +84,7 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 			return
 		}
 
-		wss := &covalentWS.WSSender{
-			Conn: ws,
-		}
-		ci.SetWSSender(wss)
+		ci.SetWSSender(ws)
 	})
 
 	if routeSendData.GetError() != nil {
@@ -111,10 +107,7 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 			return
 		}
 
-		wsr := &covalentWS.WSReceiver{
-			Conn: ws,
-		}
-		ci.SetWSReceiver(wsr)
+		ci.SetWSReceiver(ws)
 	})
 
 	if routeAcknowledgeData.GetError() != nil {

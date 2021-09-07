@@ -7,9 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/ws"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -18,13 +17,15 @@ import (
 
 var log = logger.GetOrCreate("covalent")
 
+const RetrialTimeoutMS = 50
+
 type covalentIndexer struct {
 	processor        DataHandler
 	server           *http.Server
-	wss              *ws.WSSender
-	mutWss           sync.RWMutex
-	wsr              *ws.WSReceiver
-	mutWsr           sync.RWMutex
+	wss              process.WSConn
+	mutWSS           sync.RWMutex
+	wsr              process.WSConn
+	mutWSR           sync.RWMutex
 	newConnectionWSR chan struct{}
 	newConnectionWSS chan struct{}
 }
@@ -50,106 +51,94 @@ func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covale
 	return ci, nil
 }
 
-func (c *covalentIndexer) SetWSSender(wss *ws.WSSender) {
-	c.mutWss.Lock()
-	if c.wss != nil {
-		_ = c.wss.Conn.Close()
+func (ci *covalentIndexer) SetWSSender(wss process.WSConn) {
+	ci.mutWSS.Lock()
+	if ci.wss != nil {
+		err := ci.wss.Close()
+		log.LogIfError(err)
 	}
-	c.wss = wss
-	c.mutWss.Unlock()
+	ci.wss = wss
+	ci.mutWSS.Unlock()
 
-	c.newConnectionWSS <- struct{}{}
-	log.Error("AM SETAT WSS")
+	ci.newConnectionWSS <- struct{}{}
 }
 
-func (c *covalentIndexer) SetWSReceiver(wsr *ws.WSReceiver) {
-	c.mutWsr.Lock()
-	if c.wsr != nil {
-		_ = c.wsr.Conn.Close()
+func (ci *covalentIndexer) SetWSReceiver(wsr process.WSConn) {
+	ci.mutWSR.Lock()
+	if ci.wsr != nil {
+		err := ci.wsr.Close()
+		log.LogIfError(err)
 	}
-	c.wsr = wsr
-	c.mutWsr.Unlock()
+	ci.wsr = wsr
+	ci.mutWSR.Unlock()
 
-	c.newConnectionWSR <- struct{}{}
-	log.Error("AM SETAT WSR")
+	ci.newConnectionWSR <- struct{}{}
 }
 
-func (c *covalentIndexer) start() {
-	err := c.server.ListenAndServe()
+func (ci *covalentIndexer) getWSS() process.WSConn {
+	ci.mutWSS.RLock()
+	wss := ci.wss
+	ci.mutWSS.RUnlock()
+
+	return wss
+}
+
+func (ci *covalentIndexer) getWSR() process.WSConn {
+	ci.mutWSR.RLock()
+	wsr := ci.wsr
+	ci.mutWSR.RUnlock()
+
+	return wsr
+}
+
+func (ci *covalentIndexer) waitForWSSConnection() {
+	for {
+		select {
+		case <-ci.newConnectionWSS:
+			return
+		}
+	}
+}
+
+func (ci *covalentIndexer) waitForWSRConnection() {
+	for {
+		select {
+		case <-ci.newConnectionWSR:
+			return
+		}
+	}
+}
+
+func (ci *covalentIndexer) start() {
+	err := ci.server.ListenAndServe()
 	if err != nil {
 		log.Error("could not initialize webserver", "error", err)
 	}
 }
 
-func (c *covalentIndexer) sendBlockResultToCovalent(result *schema.BlockResult) {
-	binaryData, err := utility.Encode(result)
-	if err != nil {
-		log.Error("could not encode block result to binary data", "error", err)
-		return
-	}
-
-	c.sendWithRetrial(binaryData, result.Block.Hash)
-}
-
-func (c *covalentIndexer) waitForWSSConnection() {
-	for {
-		select {
-		case <-c.newConnectionWSS:
-			log.Warn("got a new WSS connection")
-			return
-		}
-	}
-}
-
-func (c *covalentIndexer) waitForWSRConnection() {
-	for {
-		select {
-		case <-c.newConnectionWSR:
-			log.Warn("got a new WSS connection")
-			return
-		}
-	}
-}
-
-func (c *covalentIndexer) sendWithRetrial(binaryData []byte, ackData []byte) {
-	//resendTimeout := time.Duration(0)
-	c.mutWss.RLock()
-	wss := c.wss
-	c.mutWss.RUnlock()
-
-	c.mutWsr.RLock()
-	wsr := c.wsr
-	c.mutWsr.RUnlock()
+func (ci *covalentIndexer) sendWithRetrial(data []byte, ackData []byte) {
+	wss := ci.getWSS()
+	wsr := ci.getWSR()
 
 	if wss == nil {
-		c.waitForWSSConnection()
+		ci.waitForWSSConnection()
 	}
 	if wsr == nil {
-		c.waitForWSRConnection()
+		ci.waitForWSRConnection()
 	}
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(time.Millisecond * RetrialTimeoutMS)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ticker.C: //<-time.After(resendTimeout):
-			c.mutWss.RLock()
-			wss = c.wss
-			c.mutWss.RUnlock()
+		case <-ticker.C:
+			wss = ci.getWSS()
+			wsr = ci.getWSR()
 
-			c.mutWsr.RLock()
-			wsr = c.wsr
-			c.mutWsr.RUnlock()
-
-			log.Error("CEASUL INCA TICAIE")
-			if wss == nil || wsr == nil {
-				log.Error("WSR SI WSS INCA SUNT NILE")
-			}
 			if wss != nil && wsr != nil {
-				log.Error("AM INTRAT UNDE WSS SI WSR NU SUNT NIL")
-				msgTypeReceive, errSend, errReceive := c.sendMessageWithAck(binaryData, ackData, wss, wsr)
-				if errSend == nil && errReceive == nil && msgTypeReceive == 0 {
+				dataSent := ci.sendDataWithAcknowledge(data, ackData, wss, wsr)
+				if dataSent {
 					return
 				}
 			}
@@ -157,78 +146,89 @@ func (c *covalentIndexer) sendWithRetrial(binaryData []byte, ackData []byte) {
 	}
 }
 
-func (c *covalentIndexer) sendMessageWithAck(
-	msgToSend []byte,
+func (ci *covalentIndexer) sendDataWithAcknowledge(
+	data []byte,
 	ackData []byte,
-	wss *ws.WSSender,
-	wsr *ws.WSReceiver,
-) (int, error, error) {
-	errSend := wss.SendMessage(msgToSend)
+	wss process.WSConn,
+	wsr process.WSConn,
+) bool {
+	errSend := wss.WriteMessage(websocket.BinaryMessage, data)
 	if errSend != nil {
-		log.Error("GOT A  errSend, waiting for SENDER TO RECONNECT", "errSend", errSend)
-		c.waitForWSSConnection()
+		log.Warn("could not send block data to covalent, waiting for new connection", "error", errSend)
+		ci.waitForWSSConnection()
 	}
 
-	msgType, receivedData, errReadData := wsr.ReadData()
+	msgType, receivedData, errReadData := wsr.ReadMessage()
 	if errReadData != nil {
-		log.Error("GOT A errReadData, waiting for RECEIVER TO RECONNECT", "errReadData", errReadData)
-		c.waitForWSRConnection()
+		log.Warn("could not receive acknowledge data from covalent, waiting for new connection", "error", errReadData)
+		ci.waitForWSRConnection()
 	}
-	log.Error("PE sendMessageWithAck", "errSend", errSend, "msgType", msgType,
-		"receivedData", hex.EncodeToString(receivedData), "errReadData", errReadData)
 
 	if errSend == nil && errReadData == nil && msgType == websocket.BinaryMessage {
-		log.Error("AM TRIMIS CU SUCCES, am primit", "hash", hex.EncodeToString(receivedData))
 		if bytes.Compare(receivedData, ackData) == 0 {
-			log.Error("HASH-URILE SUNT EGALE")
-			return 0, nil, nil
+			return true
 		}
 	}
 
-	return msgType, errSend, errReadData
+	return false
 }
 
 // SaveBlock saves the block info and converts it in order to be sent to covalent
-func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
-	blockResult, err := c.processor.ProcessData(args)
+func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
+	blockResult, err := ci.processor.ProcessData(args)
 	if err != nil {
 		log.Error("SaveBlock failed. Could not process block",
 			"error", err, "headerHash", hex.EncodeToString(args.HeaderHash))
-		panic("could not process block, please check log")
+		panic("could not process block, check log")
 	}
 
-	c.sendBlockResultToCovalent(blockResult)
+	dataToSend, err := utility.Encode(blockResult)
+	if err != nil {
+		log.Error("could not encode block result to binary data", "error", err)
+		panic("could not encode block result, check log")
+	}
+
+	ci.sendWithRetrial(dataToSend, blockResult.Block.Hash)
 }
 
 // RevertIndexedBlock DUMMY
-func (c covalentIndexer) RevertIndexedBlock(header data.HeaderHandler, body data.BodyHandler) {}
+func (ci *covalentIndexer) RevertIndexedBlock(header data.HeaderHandler, body data.BodyHandler) {}
 
 // SaveRoundsInfo DUMMY
-func (c covalentIndexer) SaveRoundsInfo(roundsInfos []*indexer.RoundInfo) {}
+func (ci *covalentIndexer) SaveRoundsInfo(roundsInfos []*indexer.RoundInfo) {}
 
 // SaveValidatorsPubKeys DUMMY
-func (c covalentIndexer) SaveValidatorsPubKeys(validatorsPubKeys map[uint32][][]byte, epoch uint32) {}
+func (ci *covalentIndexer) SaveValidatorsPubKeys(validatorsPubKeys map[uint32][][]byte, epoch uint32) {
+}
 
 // SaveValidatorsRating DUMMY
-func (c covalentIndexer) SaveValidatorsRating(indexID string, infoRating []*indexer.ValidatorRatingInfo) {
+func (ci *covalentIndexer) SaveValidatorsRating(indexID string, infoRating []*indexer.ValidatorRatingInfo) {
 }
 
 // SaveAccounts DUMMY
-func (c covalentIndexer) SaveAccounts(blockTimestamp uint64, acc []data.UserAccountHandler) {}
+func (ci *covalentIndexer) SaveAccounts(blockTimestamp uint64, acc []data.UserAccountHandler) {}
 
 // Close DUMMY
-func (c covalentIndexer) Close() error {
-	if c.wss != nil && c.wss.Conn != nil {
-		err := c.wss.Conn.Close()
+func (ci *covalentIndexer) Close() error {
+	wss := ci.getWSS()
+	wsr := ci.getWSR()
+
+	if wss != nil {
+		err := wss.Close()
 		log.LogIfError(err)
 	}
-	if c.server != nil {
-		return c.server.Close()
+	if wsr != nil {
+		err := wsr.Close()
+		log.LogIfError(err)
+	}
+
+	if ci.server != nil {
+		return ci.server.Close()
 	}
 	return nil
 }
 
 // IsInterfaceNil DUMMY
-func (c covalentIndexer) IsInterfaceNil() bool {
-	return false
+func (ci *covalentIndexer) IsInterfaceNil() bool {
+	return ci == nil
 }
