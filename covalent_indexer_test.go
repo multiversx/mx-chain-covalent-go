@@ -55,6 +55,7 @@ func TestCovalentIndexer_SetWSSender_SetTwoConsecutiveWebSockets_ExpectFirstOneC
 		},
 	)
 	defer ci.Close()
+
 	called1 := atomic.Flag{}
 	called1.Unset()
 
@@ -134,8 +135,6 @@ func TestCovalentIndexer_SetWSReceiver_SetTwoConsecutiveWebSockets_ExpectFirstOn
 	time.Sleep(time.Millisecond * covalent.RetrialTimeoutMS)
 	require.True(t, called1.IsSet())
 	require.False(t, called2.IsSet())
-
-	_ = ci.Close()
 }
 
 func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectPanic(t *testing.T) {
@@ -234,20 +233,20 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 		})
 	defer ci.Close()
 
-	wssCalledCt := 0
+	wssCalledCt := atomic.Counter{}
 	wss := &mock.WSConnStub{
 		WriteMessageCalled: func(messageType int, data []byte) error {
-			wssCalledCt++
+			wssCalledCt.Increment()
 			return nil
 		},
 	}
 
-	wsrCalledCt := 0
+	wsrCalledCt := atomic.Counter{}
 	wsr := &mock.WSConnStub{
 		ReadMessageCalled: func() (messageType int, p []byte, err error) {
-			wsrCalledCt++
+			wsrCalledCt.Increment()
 			// After 4 consecutive failed acknowledged messages, send the correct ack data
-			if wsrCalledCt == 4 {
+			if wsrCalledCt.Get() == 4 {
 				return websocket.BinaryMessage, blockRes.Block.Hash, nil
 			}
 			return websocket.BinaryMessage, []byte{0x1}, nil
@@ -258,14 +257,14 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 		ci.SaveBlock(nil)
 
 		// Expect data is sent/received 4 times (until a correct ack msg is sent) after WSS & WSR are set
-		require.Equal(t, wssCalledCt, 4)
-		require.Equal(t, wsrCalledCt, 4)
+		require.Equal(t, wssCalledCt.Get(), int64(4))
+		require.Equal(t, wsrCalledCt.Get(), int64(4))
 	}()
 
 	time.Sleep(time.Millisecond * 200)
 	// Expect no data is sent/received until WSS & WSR are set
-	require.Equal(t, wssCalledCt, 0)
-	require.Equal(t, wsrCalledCt, 0)
+	require.Equal(t, wssCalledCt.Get(), int64(0))
+	require.Equal(t, wsrCalledCt.Get(), int64(0))
 
 	go ci.SetWSSender(wss)
 	go ci.SetWSReceiver(wsr)
@@ -286,35 +285,35 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 		})
 	defer ci.Close()
 
-	wssCalledCt := 0
+	wssCalledCt := atomic.Counter{}
 	wss := &mock.WSConnStub{
 		WriteMessageCalled: func(messageType int, data []byte) error {
-			wssCalledCt++
+			wssCalledCt.Increment()
 			return nil
 		},
 	}
 
-	wsrCalledCt := 0
+	wsrCalledCt := atomic.Counter{}
 	wsr := &mock.WSConnStub{
 		ReadMessageCalled: func() (messageType int, p []byte, err error) {
-			wsrCalledCt++
+			wsrCalledCt.Increment()
 			return 0, nil, errors.New("read message error")
 		},
 	}
 
-	wsrReconnectedCalledCt := 0
+	wsrReconnectedCalledCt := atomic.Counter{}
 	go func() {
 		ci.SaveBlock(nil)
 
-		require.Equal(t, wssCalledCt, 2)
-		require.Equal(t, wsrCalledCt, 1)
-		require.Equal(t, wsrReconnectedCalledCt, 1)
+		require.Equal(t, int64(2), wssCalledCt.Get())
+		require.Equal(t, int64(1), wsrCalledCt.Get())
+		require.Equal(t, int64(1), wsrReconnectedCalledCt.Get())
 	}()
 
 	time.Sleep(time.Millisecond * 200)
-	require.Equal(t, wssCalledCt, 0)
-	require.Equal(t, wsrCalledCt, 0)
-	require.Equal(t, wsrReconnectedCalledCt, 0)
+	require.Equal(t, int64(0), wssCalledCt.Get())
+	require.Equal(t, int64(0), wsrCalledCt.Get())
+	require.Equal(t, int64(0), wsrReconnectedCalledCt.Get())
 
 	go ci.SetWSSender(wss)
 	go ci.SetWSReceiver(wsr)
@@ -322,7 +321,7 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 
 	wsrReconnected := &mock.WSConnStub{
 		ReadMessageCalled: func() (messageType int, p []byte, err error) {
-			wsrReconnectedCalledCt++
+			wsrReconnectedCalledCt.Increment()
 			return websocket.BinaryMessage, blockRes.Block.Hash, nil
 		},
 	}
@@ -345,22 +344,22 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 		})
 	defer ci.Close()
 
-	wssCalledCt1 := 0
+	wssCalledCt1 := atomic.Counter{}
 	wss1 := &mock.WSConnStub{
 		WriteMessageCalled: func(messageType int, data []byte) error {
-			wssCalledCt1++
-			if wssCalledCt1 == 2 {
+			wssCalledCt1.Increment()
+			if wssCalledCt1.Get() == 2 {
 				return errors.New("write message error")
 			}
 			return nil
 		},
 	}
 
-	wsrCalledCt1 := 0
+	wsrCalledCt1 := atomic.Counter{}
 	wsr1 := &mock.WSConnStub{
 		ReadMessageCalled: func() (messageType int, p []byte, err error) {
-			wsrCalledCt1++
-			if wsrCalledCt1 == 3 {
+			wsrCalledCt1.Increment()
+			if wsrCalledCt1.Get() == 3 {
 				return websocket.BinaryMessage, blockRes.Block.Hash, nil
 			}
 			return websocket.BinaryMessage, []byte{0x1}, nil
@@ -373,14 +372,14 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 	go func() {
 		ci.SaveBlock(nil)
 
-		require.Equal(t, wssCalledCt1, 2)
-		require.Equal(t, wsrCalledCt1, 3)
-		require.True(t, wss2Called.IsSet(), true)
+		require.Equal(t, int64(2), wssCalledCt1.Get())
+		require.Equal(t, int64(3), wsrCalledCt1.Get())
+		require.True(t, wss2Called.IsSet())
 	}()
 
 	time.Sleep(time.Millisecond * 200)
-	require.Equal(t, wssCalledCt1, 0)
-	require.Equal(t, wsrCalledCt1, 0)
+	require.Equal(t, int64(0), wssCalledCt1.Get())
+	require.Equal(t, int64(0), wsrCalledCt1.Get())
 	require.False(t, wss2Called.IsSet())
 
 	go ci.SetWSSender(wss1)
