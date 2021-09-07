@@ -192,21 +192,21 @@ func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 }
 
 // RevertIndexedBlock DUMMY
-func (ci *covalentIndexer) RevertIndexedBlock(header data.HeaderHandler, body data.BodyHandler) {}
+func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) {}
 
 // SaveRoundsInfo DUMMY
-func (ci *covalentIndexer) SaveRoundsInfo(roundsInfos []*indexer.RoundInfo) {}
+func (ci *covalentIndexer) SaveRoundsInfo([]*indexer.RoundInfo) {}
 
 // SaveValidatorsPubKeys DUMMY
-func (ci *covalentIndexer) SaveValidatorsPubKeys(validatorsPubKeys map[uint32][][]byte, epoch uint32) {
+func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) {
 }
 
 // SaveValidatorsRating DUMMY
-func (ci *covalentIndexer) SaveValidatorsRating(indexID string, infoRating []*indexer.ValidatorRatingInfo) {
+func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) {
 }
 
 // SaveAccounts DUMMY
-func (ci *covalentIndexer) SaveAccounts(blockTimestamp uint64, acc []data.UserAccountHandler) {}
+func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) {}
 
 // Close DUMMY
 func (ci *covalentIndexer) Close() error {
