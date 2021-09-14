@@ -1,6 +1,8 @@
 package transactions
 
 import (
+	"fmt"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
@@ -9,6 +11,8 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
+	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/rewardTx"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
@@ -51,23 +55,24 @@ func (txp *transactionProcessor) ProcessTransactions(
 	header data.HeaderHandler,
 	headerHash []byte,
 	bodyHandler data.BodyHandler,
-	transactions map[string]data.TransactionHandler,
+	pool *indexer.Pool,
 ) ([]*schema.Transaction, error) {
-
 	body, ok := bodyHandler.(*erdBlock.Body)
 	if !ok {
 		return nil, covalent.ErrBlockBodyAssertion
 	}
 
-	allTxs := make([]*schema.Transaction, 0)
+	allTxs := make([]*schema.Transaction, 0, len(pool.Txs)+len(pool.Rewards)+len(pool.Invalid))
 	for _, currMiniBlock := range body.MiniBlocks {
-		if currMiniBlock.Type != block.TxBlock {
+		currPool := getRelevantTxPoolBasedOnMBType(currMiniBlock, pool)
+		if currPool == nil {
 			continue
 		}
 
-		txsInCurrMB, err := txp.processTxsFromMiniBlock(transactions, currMiniBlock, header, headerHash)
+		txsInCurrMB, err := txp.processTxsFromMiniBlock(currPool, currMiniBlock, header, headerHash, currMiniBlock.Type)
 		if err != nil {
-			return nil, err
+			log.Warn("transactionProcessor.processTxsFromMiniBlock", "error", err)
+			continue
 		}
 		allTxs = append(allTxs, txsInCurrMB...)
 	}
@@ -80,8 +85,8 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
 	blockHash []byte,
+	mbType block.Type,
 ) ([]*schema.Transaction, error) {
-
 	miniBlockHash, err := core.CalculateHash(txp.marshaller, txp.hasher, miniBlock)
 	if err != nil {
 		return nil, err
@@ -89,37 +94,56 @@ func (txp *transactionProcessor) processTxsFromMiniBlock(
 
 	txsInMiniBlock := make([]*schema.Transaction, 0, len(miniBlock.TxHashes))
 	for _, txHash := range miniBlock.TxHashes {
-		tx, found := findTransactionInPool(txHash, transactions)
-		if !found {
+		tx, isInPool := transactions[string(txHash)]
+		if !isInPool {
 			log.Warn("transactionProcessor.processTxsFromMiniBlock tx hash not found in tx pool", "hash", txHash)
 			continue
 		}
 
-		convertedTx := txp.convertTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
-		txsInMiniBlock = append(txsInMiniBlock, convertedTx)
+		processedTx := txp.processTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header, mbType)
+		if processedTx != nil {
+			txsInMiniBlock = append(txsInMiniBlock, processedTx)
+		}
 	}
 
 	return txsInMiniBlock, nil
 }
 
-func findTransactionInPool(txHash []byte, transactions map[string]data.TransactionHandler) (*transaction.Transaction, bool) {
-	tx, isInTxPool := transactions[string(txHash)]
-	if !isInTxPool {
-		return nil, false
+func (txp *transactionProcessor) processTransaction(
+	tx data.TransactionHandler,
+	txHash []byte,
+	miniBlockHash []byte,
+	blockHash []byte,
+	miniBlock *erdBlock.MiniBlock,
+	header data.HeaderHandler,
+	mbType block.Type,
+) *schema.Transaction {
+	var ret *schema.Transaction
+
+	switch mbType {
+	case block.TxBlock:
+		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+	case block.RewardsBlock:
+		ret = txp.processRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+	default:
+		return nil
 	}
 
-	castedTx, castOk := tx.(*transaction.Transaction)
-	return castedTx, castOk
+	return ret
 }
 
-func (txp *transactionProcessor) convertTransaction(
-	tx *transaction.Transaction,
+func (txp *transactionProcessor) processNormalTransaction(
+	normalTx data.TransactionHandler,
 	txHash []byte,
 	miniBlockHash []byte,
 	blockHash []byte,
 	miniBlock *erdBlock.MiniBlock,
 	header data.HeaderHandler,
 ) *schema.Transaction {
+	tx, castOk := normalTx.(*transaction.Transaction)
+	if !castOk {
+		return nil
+	}
 
 	return &schema.Transaction{
 		Hash:             txHash,
@@ -134,9 +158,59 @@ func (txp *transactionProcessor) convertTransaction(
 		SenderShard:      int32(miniBlock.SenderShardID),
 		GasPrice:         int64(tx.GetGasPrice()),
 		GasLimit:         int64(tx.GetGasLimit()),
+		Data:             tx.GetData(),
 		Signature:        tx.GetSignature(),
 		Timestamp:        int64(header.GetTimeStamp()),
 		SenderUserName:   tx.GetSndUserName(),
 		ReceiverUserName: tx.GetRcvUserName(),
 	}
+}
+
+func (txp *transactionProcessor) processRewardTransaction(
+	transaction data.TransactionHandler,
+	txHash []byte,
+	miniBlockHash []byte,
+	blockHash []byte,
+	miniBlock *erdBlock.MiniBlock,
+	header data.HeaderHandler,
+) *schema.Transaction {
+	tx, castOk := transaction.(*rewardTx.RewardTx)
+	if !castOk {
+		return nil
+	}
+
+	return &schema.Transaction{
+		Hash:             txHash,
+		MiniBlockHash:    miniBlockHash,
+		BlockHash:        blockHash,
+		Nonce:            0,
+		Round:            int64(tx.GetRound()),
+		Value:            utility.GetBytes(tx.GetValue()),
+		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
+		Sender:           []byte(fmt.Sprintf("%d", core.MetachainShardId)),
+		ReceiverShard:    int32(miniBlock.ReceiverShardID),
+		SenderShard:      int32(miniBlock.SenderShardID),
+		GasPrice:         0,
+		GasLimit:         0,
+		Data:             make([]byte, 0),
+		Signature:        make([]byte, 0),
+		Timestamp:        int64(header.GetTimeStamp()),
+		SenderUserName:   make([]byte, 0),
+		ReceiverUserName: make([]byte, 0),
+	}
+}
+
+func getRelevantTxPoolBasedOnMBType(miniBlock *erdBlock.MiniBlock, pool *indexer.Pool) map[string]data.TransactionHandler {
+	var ret map[string]data.TransactionHandler
+
+	switch miniBlock.Type {
+	case block.TxBlock:
+		ret = pool.Txs
+	case block.RewardsBlock:
+		ret = pool.Rewards
+	default:
+		ret = nil
+	}
+
+	return ret
 }

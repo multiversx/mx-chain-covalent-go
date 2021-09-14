@@ -115,6 +115,7 @@
        {"name": "SenderShard", "type": "int"},
        {"name": "GasPrice", "type": "long"},
        {"name": "GasLimit", "type": "long"},
+       {"name": "Data", "type": "bytes"},
        {"name": "Signature", "type": {
          "name": "signature", "type": "fixed", "size": 64}},
        {"name": "Timestamp", "type": "long"},

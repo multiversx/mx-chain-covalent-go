@@ -139,6 +139,7 @@ type Transaction struct {
 	SenderShard      int32
 	GasPrice         int64
 	GasLimit         int64
+	Data             []byte
 	Signature        []byte
 	Timestamp        int64
 	SenderUserName   []byte
@@ -153,6 +154,7 @@ func NewTransaction() *Transaction {
 		Value:            []byte{},
 		Receiver:         make([]byte, 62),
 		Sender:           make([]byte, 62),
+		Data:             []byte{},
 		Signature:        make([]byte, 64),
 		SenderUserName:   []byte{},
 		ReceiverUserName: []byte{},
@@ -568,6 +570,10 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         {
                             "name": "GasLimit",
                             "type": "long"
+                        },
+                        {
+                            "name": "Data",
+                            "type": "bytes"
                         },
                         {
                             "name": "Signature",
@@ -1180,6 +1186,10 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         {
             "name": "GasLimit",
             "type": "long"
+        },
+        {
+            "name": "Data",
+            "type": "bytes"
         },
         {
             "name": "Signature",

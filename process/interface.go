@@ -22,7 +22,7 @@ type TransactionHandler interface {
 		header data.HeaderHandler,
 		headerHash []byte,
 		bodyHandler data.BodyHandler,
-		transactions map[string]data.TransactionHandler) ([]*schema.Transaction, error)
+		pool *indexer.Pool) ([]*schema.Transaction, error)
 }
 
 // SCResultsHandler defines what a smart contract processor shall do
