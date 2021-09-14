@@ -125,6 +125,8 @@ func (txp *transactionProcessor) processTransaction(
 		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
 	case block.RewardsBlock:
 		ret = txp.processRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
+	case block.InvalidBlock:
+		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
 	default:
 		return nil
 	}
@@ -208,6 +210,8 @@ func getRelevantTxPoolBasedOnMBType(miniBlock *erdBlock.MiniBlock, pool *indexer
 		ret = pool.Txs
 	case block.RewardsBlock:
 		ret = pool.Rewards
+	case block.InvalidBlock:
+		ret = pool.Invalid
 	default:
 		ret = nil
 	}
