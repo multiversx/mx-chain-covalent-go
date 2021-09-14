@@ -2,6 +2,8 @@ package miniblocks_test
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/block/miniblocks"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
@@ -9,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNewMiniBlocksProcessor(t *testing.T) {
@@ -27,13 +28,13 @@ func TestNewMiniBlocksProcessor(t *testing.T) {
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer) {
-				return &mock.HasherStub{}, nil
+				return &mock.HasherMock{}, nil
 			},
 			expectedErr: covalent.ErrNilMarshaller,
 		},
 		{
 			args: func() (hashing.Hasher, marshal.Marshalizer) {
-				return &mock.HasherStub{}, &mock.MarshallerStub{}
+				return &mock.HasherMock{}, &mock.MarshallerStub{}
 			},
 			expectedErr: nil,
 		},
@@ -46,7 +47,7 @@ func TestNewMiniBlocksProcessor(t *testing.T) {
 }
 
 func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
-	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
+	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherMock{}, &mock.MarshallerStub{})
 
 	header := &block.Header{TimeStamp: 123}
 	body := &block.Body{MiniBlocks: []*block.MiniBlock{
@@ -66,24 +67,24 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks(t *testing.T) {
 
 	require.Len(t, ret, 2)
 
-	require.Equal(t, ret[0].Hash, []byte("ok"))
-	require.Equal(t, ret[0].TxHashes, [][]byte{[]byte("x"), []byte("y")})
-	require.Equal(t, ret[0].Timestamp, int64(123))
-	require.Equal(t, ret[0].ReceiverShardID, int32(1))
-	require.Equal(t, ret[0].SenderShardID, int32(2))
-	require.Equal(t, ret[0].Type, int32(3))
+	require.Equal(t, []byte("ok"), ret[0].Hash)
+	require.Equal(t, [][]byte{[]byte("x"), []byte("y")}, ret[0].TxHashes)
+	require.Equal(t, int64(123), ret[0].Timestamp)
+	require.Equal(t, int32(1), ret[0].ReceiverShardID)
+	require.Equal(t, int32(2), ret[0].SenderShardID)
+	require.Equal(t, int32(3), ret[0].Type)
 
-	require.Equal(t, ret[1].Hash, []byte("ok"))
-	require.Equal(t, ret[1].TxHashes, [][]byte{[]byte("y"), []byte("z")})
-	require.Equal(t, ret[1].Timestamp, int64(123))
-	require.Equal(t, ret[1].ReceiverShardID, int32(4))
-	require.Equal(t, ret[1].SenderShardID, int32(5))
-	require.Equal(t, ret[1].Type, int32(6))
+	require.Equal(t, []byte("ok"), ret[1].Hash)
+	require.Equal(t, [][]byte{[]byte("y"), []byte("z")}, ret[1].TxHashes)
+	require.Equal(t, int64(123), ret[1].Timestamp)
+	require.Equal(t, int32(4), ret[1].ReceiverShardID)
+	require.Equal(t, int32(5), ret[1].SenderShardID)
+	require.Equal(t, int32(6), ret[1].Type)
 }
 
 func TestMiniBlocksProcessor_ProcessMiniBlocks_InvalidMarshaller_ExpectZeroMBProcessed(t *testing.T) {
 	mbp, _ := miniblocks.NewMiniBlocksProcessor(
-		&mock.HasherStub{},
+		&mock.HasherMock{},
 		&mock.MarshallerStub{
 			MarshalCalled: func(obj interface{}) ([]byte, error) {
 				return nil, errors.New("error marshaller stub")
@@ -104,6 +105,6 @@ func TestMiniBlocksProcessor_ProcessMiniBlocks_InvalidMarshaller_ExpectZeroMBPro
 
 	ret, err := mbp.ProcessMiniBlocks(header, body)
 
-	require.Equal(t, err, nil)
+	require.Nil(t, err)
 	require.Len(t, ret, 0)
 }

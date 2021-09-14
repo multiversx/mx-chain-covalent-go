@@ -1,12 +1,13 @@
 package utility_test
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/stretchr/testify/require"
-	"math/big"
-	"testing"
 )
 
 func TestStrSliceToBytesSlice_DifferentValues(t *testing.T) {
@@ -14,9 +15,9 @@ func TestStrSliceToBytesSlice_DifferentValues(t *testing.T) {
 	out := utility.StrSliceToBytesSlice(in)
 
 	require.Len(t, out, 3)
-	require.Equal(t, out[0], []byte("a"))
-	require.Equal(t, out[1], []byte("b"))
-	require.Equal(t, out[2], []byte("c"))
+	require.Equal(t, []byte("a"), out[0])
+	require.Equal(t, []byte("b"), out[1])
+	require.Equal(t, []byte("c"), out[2])
 }
 
 func TestStrSliceToBytesSlice_EmptyInput(t *testing.T) {
@@ -30,9 +31,9 @@ func TestUIntSliceToIntSlice_DifferentValues(t *testing.T) {
 	out := utility.UIntSliceToIntSlice(in)
 
 	require.Len(t, out, 3)
-	require.Equal(t, out[0], int64(1))
-	require.Equal(t, out[1], int64(2))
-	require.Equal(t, out[2], int64(3))
+	require.Equal(t, int64(1), out[0])
+	require.Equal(t, int64(2), out[1])
+	require.Equal(t, int64(3), out[2])
 }
 
 func TestUIntSliceToIntSlice_EmptyInput(t *testing.T) {
@@ -45,7 +46,7 @@ func TestGetBytes(t *testing.T) {
 	require.Nil(t, utility.GetBytes(nil))
 
 	x := big.NewInt(10)
-	require.Equal(t, utility.GetBytes(x), []byte{0xa})
+	require.Equal(t, []byte{0xa}, utility.GetBytes(x))
 }
 
 func TestEncodeDecode(t *testing.T) {

@@ -2,11 +2,13 @@ package utility
 
 import (
 	"bytes"
+	"math/big"
+
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/elodina/go-avro"
-	"math/big"
 )
 
+// StrSliceToBytesSlice outputs the bytes slice representation of a string slice input
 func StrSliceToBytesSlice(in []string) [][]byte {
 	out := make([][]byte, len(in))
 
@@ -18,6 +20,7 @@ func StrSliceToBytesSlice(in []string) [][]byte {
 	return out
 }
 
+// UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
 func UIntSliceToIntSlice(in []uint64) []int64 {
 	out := make([]int64, len(in))
 
@@ -28,6 +31,7 @@ func UIntSliceToIntSlice(in []uint64) []int64 {
 	return out
 }
 
+// GetBytes returns the bytes representation of a big int input if not nil, otherwise returns nil
 func GetBytes(val *big.Int) []byte {
 	if val != nil {
 		return val.Bytes()
@@ -36,10 +40,12 @@ func GetBytes(val *big.Int) []byte {
 	return nil
 }
 
+// EncodePubKey returns a byte slice of the encoded pubKey input, using a pub key converter
 func EncodePubKey(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
 	return []byte(pubKeyConverter.Encode(pubKey))
 }
 
+// Encode returns a byte slice representing the binary encoding of the input avro record
 func Encode(record avro.AvroRecord) ([]byte, error) {
 	writer := avro.NewSpecificDatumWriter()
 	writer.SetSchema(record.Schema())
@@ -55,6 +61,8 @@ func Encode(record avro.AvroRecord) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+// Decode tries to decode a data buffer, read it and store it on the input record.
+// If successfully, the record is filled with data from the buffer, otherwise an error might be returned
 func Decode(record avro.AvroRecord, buffer []byte) error {
 	reader := avro.NewSpecificDatumReader()
 	reader.SetSchema(record.Schema())

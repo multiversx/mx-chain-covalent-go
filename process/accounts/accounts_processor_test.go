@@ -2,6 +2,10 @@ package accounts_test
 
 import (
 	"errors"
+	"math/big"
+	"strconv"
+	"testing"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
@@ -11,9 +15,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
 	"github.com/stretchr/testify/require"
-	"math/big"
-	"strconv"
-	"testing"
 )
 
 func TestNewAccountsProcessor(t *testing.T) {
@@ -92,7 +93,7 @@ func TestAccountsProcessor_ProcessAccounts_InvalidLoadAccount_ExpectZeroAccounts
 func TestAccountsProcessor_ProcessAccounts_NotInSameShard_ExpectZeroAccounts(t *testing.T) {
 	ap, _ := accounts.NewAccountsProcessor(
 		&mock.ShardCoordinatorMock{SelfID: 4},
-		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountStub{}},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
 		&mock.PubKeyConverterStub{})
 
 	tx := &schema.Transaction{
@@ -106,7 +107,7 @@ func TestAccountsProcessor_ProcessAccounts_NotInSameShard_ExpectZeroAccounts(t *
 func TestAccountsProcessor_ProcessAccounts_FourAddresses_TwoIdentical_ExpectTwoAccounts(t *testing.T) {
 	ap, _ := accounts.NewAccountsProcessor(
 		&mock.ShardCoordinatorMock{},
-		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountStub{}},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
 		&mock.PubKeyConverterStub{})
 
 	tx1 := &schema.Transaction{
@@ -120,16 +121,16 @@ func TestAccountsProcessor_ProcessAccounts_FourAddresses_TwoIdentical_ExpectTwoA
 
 	require.Len(t, ret, 2)
 	for idx, account := range ret {
-		require.Equal(t, account.Address, []byte("erd1addr"+strconv.Itoa(idx)))
-		require.Equal(t, account.Balance, big.NewInt(int64(idx+1)).Bytes())
-		require.Equal(t, account.Nonce, int64(idx+1))
+		require.Equal(t, []byte("erd1addr"+strconv.Itoa(idx)), account.Address)
+		require.Equal(t, big.NewInt(int64(idx+1)).Bytes(), account.Balance)
+		require.Equal(t, int64(idx+1), account.Nonce)
 	}
 }
 
 func TestAccountsProcessor_ProcessAccounts_SevenAddresses_ExpectSevenAccounts(t *testing.T) {
 	ap, _ := accounts.NewAccountsProcessor(
 		&mock.ShardCoordinatorMock{},
-		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountStub{}},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
 		&mock.PubKeyConverterStub{})
 
 	tx1 := &schema.Transaction{
@@ -157,8 +158,8 @@ func TestAccountsProcessor_ProcessAccounts_SevenAddresses_ExpectSevenAccounts(t 
 
 	require.Len(t, ret, 7)
 	for idx, account := range ret {
-		require.Equal(t, account.Address, []byte("erd1addr"+strconv.Itoa(idx)))
-		require.Equal(t, account.Balance, big.NewInt(int64(idx+1)).Bytes())
-		require.Equal(t, account.Nonce, int64(idx+1))
+		require.Equal(t, []byte("erd1addr"+strconv.Itoa(idx)), account.Address)
+		require.Equal(t, big.NewInt(int64(idx+1)).Bytes(), account.Balance)
+		require.Equal(t, int64(idx+1), account.Nonce)
 	}
 }

@@ -3,6 +3,9 @@ package block_test
 import (
 	"encoding/json"
 	"errors"
+	"math/big"
+	"testing"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/block"
@@ -15,8 +18,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	"github.com/stretchr/testify/require"
-	"math/big"
-	"testing"
 )
 
 func TestBlockProcessor_NewBlockProcessor(t *testing.T) {
@@ -84,8 +85,7 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 
 	for _, currTest := range tests {
 		bp, _ := block.NewBlockProcessor(
-			&mock.MarshallerStub{
-				MarshalCalled: currTest.Marshaller},
+			&mock.MarshallerStub{MarshalCalled: currTest.Marshaller},
 			&mock.MiniBlockHandlerStub{})
 
 		args := getInitializedArgs(false)
@@ -96,14 +96,14 @@ func TestBlockProcessor_ProcessBlock_InvalidBodyAndHeaderMarshaller_ExpectProces
 }
 
 func TestBlockProcessor_ProcessBlock_InvalidBody_ExpectErrBlockBodyAssertion(t *testing.T) {
-	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherStub{}, &mock.MarshallerStub{})
+	mbp, _ := miniblocks.NewMiniBlocksProcessor(&mock.HasherMock{}, &mock.MarshallerStub{})
 	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, mbp)
 
 	args := getInitializedArgs(false)
 	args.Body = nil
 	_, err := bp.ProcessBlock(args)
 
-	require.Equal(t, err, covalent.ErrBlockBodyAssertion)
+	require.Equal(t, covalent.ErrBlockBodyAssertion, err)
 }
 
 func TestNewBlockProcessor_ProcessBlock_InvalidMBHandler_ExpectErr(t *testing.T) {
@@ -119,7 +119,7 @@ func TestNewBlockProcessor_ProcessBlock_InvalidMBHandler_ExpectErr(t *testing.T)
 	args := getInitializedArgs(false)
 	_, err := bp.ProcessBlock(args)
 
-	require.Equal(t, err, errMBHandler)
+	require.Equal(t, errMBHandler, err)
 }
 
 func TestNewBlockProcessor_ProcessBlock_NoSigners_ExpectDefaultProposerIndex(t *testing.T) {
@@ -129,7 +129,7 @@ func TestNewBlockProcessor_ProcessBlock_NoSigners_ExpectDefaultProposerIndex(t *
 	args.SignersIndexes = nil
 	ret, _ := bp.ProcessBlock(args)
 
-	require.Equal(t, ret.Proposer, block.DefaultProposerIndex)
+	require.Equal(t, block.ProposerIndex, ret.Proposer)
 }
 
 func TestBlockProcessor_ProcessBlock(t *testing.T) {
@@ -139,22 +139,22 @@ func TestBlockProcessor_ProcessBlock(t *testing.T) {
 	args := getInitializedArgs(false)
 	ret, _ := bp.ProcessBlock(args)
 
-	require.Equal(t, ret.Nonce, int64(args.Header.GetNonce()))
-	require.Equal(t, ret.Round, int64(args.Header.GetRound()))
-	require.Equal(t, ret.Epoch, int32(args.Header.GetEpoch()))
-	require.Equal(t, ret.Hash, args.HeaderHash)
-	require.Equal(t, ret.NotarizedBlocksHashes, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes))
-	require.Equal(t, ret.Proposer, int64(args.SignersIndexes[0]))
-	require.Equal(t, ret.Validators, utility.UIntSliceToIntSlice(args.SignersIndexes))
-	require.Equal(t, ret.PubKeysBitmap, args.Header.GetPubKeysBitmap())
-	require.Equal(t, ret.Size, int64(485))
-	require.Equal(t, ret.Timestamp, int64(args.Header.GetTimeStamp()))
-	require.Equal(t, ret.StateRootHash, args.Header.GetRootHash())
-	require.Equal(t, ret.PrevHash, args.Header.GetPrevHash())
-	require.Equal(t, ret.ShardID, int32(args.Header.GetShardID()))
-	require.Equal(t, ret.TxCount, int32(args.Header.GetTxCount()))
-	require.Equal(t, ret.AccumulatedFees, args.Header.GetAccumulatedFees().Bytes())
-	require.Equal(t, ret.DeveloperFees, args.Header.GetDeveloperFees().Bytes())
+	require.Equal(t, int64(args.Header.GetNonce()), ret.Nonce)
+	require.Equal(t, int64(args.Header.GetRound()), ret.Round)
+	require.Equal(t, int32(args.Header.GetEpoch()), ret.Epoch)
+	require.Equal(t, args.HeaderHash, ret.Hash)
+	require.Equal(t, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes), ret.NotarizedBlocksHashes)
+	require.Equal(t, int64(args.SignersIndexes[0]), ret.Proposer)
+	require.Equal(t, utility.UIntSliceToIntSlice(args.SignersIndexes), ret.Validators)
+	require.Equal(t, args.Header.GetPubKeysBitmap(), ret.PubKeysBitmap)
+	require.Equal(t, int64(485), ret.Size)
+	require.Equal(t, int64(args.Header.GetTimeStamp()), ret.Timestamp)
+	require.Equal(t, args.Header.GetRootHash(), ret.StateRootHash)
+	require.Equal(t, args.Header.GetPrevHash(), ret.PrevHash)
+	require.Equal(t, int32(args.Header.GetShardID()), ret.ShardID)
+	require.Equal(t, int32(args.Header.GetTxCount()), ret.TxCount)
+	require.Equal(t, args.Header.GetAccumulatedFees().Bytes(), ret.AccumulatedFees)
+	require.Equal(t, args.Header.GetDeveloperFees().Bytes(), ret.DeveloperFees)
 
 	require.Equal(t, ret.EpochStartInfo, (*schema.EpochStartInfo)(nil))
 }
@@ -166,32 +166,32 @@ func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	args := getInitializedArgs(true)
 	ret, _ := bp.ProcessBlock(args)
 
-	require.Equal(t, ret.Nonce, int64(args.Header.GetNonce()))
-	require.Equal(t, ret.Round, int64(args.Header.GetRound()))
-	require.Equal(t, ret.Epoch, int32(args.Header.GetEpoch()))
-	require.Equal(t, ret.Hash, args.HeaderHash)
-	require.Equal(t, ret.NotarizedBlocksHashes, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes))
-	require.Equal(t, ret.Proposer, int64(args.SignersIndexes[0]))
-	require.Equal(t, ret.Validators, utility.UIntSliceToIntSlice(args.SignersIndexes))
-	require.Equal(t, ret.PubKeysBitmap, args.Header.GetPubKeysBitmap())
-	require.Equal(t, ret.Timestamp, int64(args.Header.GetTimeStamp()))
-	require.Equal(t, ret.StateRootHash, args.Header.GetRootHash())
-	require.Equal(t, ret.PrevHash, args.Header.GetPrevHash())
-	require.Equal(t, ret.ShardID, int32(args.Header.GetShardID()))
-	require.Equal(t, ret.TxCount, int32(args.Header.GetTxCount()))
-	require.Equal(t, ret.AccumulatedFees, args.Header.GetAccumulatedFees().Bytes())
-	require.Equal(t, ret.DeveloperFees, args.Header.GetDeveloperFees().Bytes())
+	require.Equal(t, int64(args.Header.GetNonce()), ret.Nonce)
+	require.Equal(t, int64(args.Header.GetRound()), ret.Round)
+	require.Equal(t, int32(args.Header.GetEpoch()), ret.Epoch)
+	require.Equal(t, args.HeaderHash, ret.Hash)
+	require.Equal(t, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes), ret.NotarizedBlocksHashes)
+	require.Equal(t, int64(args.SignersIndexes[0]), ret.Proposer)
+	require.Equal(t, utility.UIntSliceToIntSlice(args.SignersIndexes), ret.Validators)
+	require.Equal(t, args.Header.GetPubKeysBitmap(), ret.PubKeysBitmap)
+	require.Equal(t, int64(args.Header.GetTimeStamp()), ret.Timestamp)
+	require.Equal(t, args.Header.GetRootHash(), ret.StateRootHash)
+	require.Equal(t, args.Header.GetPrevHash(), ret.PrevHash)
+	require.Equal(t, int32(args.Header.GetShardID()), ret.ShardID)
+	require.Equal(t, int32(args.Header.GetTxCount()), ret.TxCount)
+	require.Equal(t, args.Header.GetAccumulatedFees().Bytes(), ret.AccumulatedFees)
+	require.Equal(t, args.Header.GetDeveloperFees().Bytes(), ret.DeveloperFees)
 
 	metaBlockEconomics := args.Header.(*erdBlock.MetaBlock).GetEpochStart().Economics
 
-	require.Equal(t, ret.EpochStartInfo.TotalSupply, metaBlockEconomics.TotalSupply.Bytes())
-	require.Equal(t, ret.EpochStartInfo.TotalToDistribute, metaBlockEconomics.TotalToDistribute.Bytes())
-	require.Equal(t, ret.EpochStartInfo.TotalNewlyMinted, metaBlockEconomics.TotalNewlyMinted.Bytes())
-	require.Equal(t, ret.EpochStartInfo.RewardsPerBlock, metaBlockEconomics.RewardsPerBlock.Bytes())
-	require.Equal(t, ret.EpochStartInfo.RewardsForProtocolSustainability, metaBlockEconomics.RewardsForProtocolSustainability.Bytes())
-	require.Equal(t, ret.EpochStartInfo.NodePrice, metaBlockEconomics.NodePrice.Bytes())
-	require.Equal(t, ret.EpochStartInfo.PrevEpochStartRound, int32(metaBlockEconomics.PrevEpochStartRound))
-	require.Equal(t, ret.EpochStartInfo.PrevEpochStartHash, metaBlockEconomics.PrevEpochStartHash)
+	require.Equal(t, metaBlockEconomics.TotalSupply.Bytes(), ret.EpochStartInfo.TotalSupply)
+	require.Equal(t, metaBlockEconomics.TotalToDistribute.Bytes(), ret.EpochStartInfo.TotalToDistribute)
+	require.Equal(t, metaBlockEconomics.TotalNewlyMinted.Bytes(), ret.EpochStartInfo.TotalNewlyMinted)
+	require.Equal(t, metaBlockEconomics.RewardsPerBlock.Bytes(), ret.EpochStartInfo.RewardsPerBlock)
+	require.Equal(t, metaBlockEconomics.RewardsForProtocolSustainability.Bytes(), ret.EpochStartInfo.RewardsForProtocolSustainability)
+	require.Equal(t, metaBlockEconomics.NodePrice.Bytes(), ret.EpochStartInfo.NodePrice)
+	require.Equal(t, int32(metaBlockEconomics.PrevEpochStartRound), ret.EpochStartInfo.PrevEpochStartRound)
+	require.Equal(t, metaBlockEconomics.PrevEpochStartHash, ret.EpochStartInfo.PrevEpochStartHash)
 }
 
 func TestBlockProcessor_ProcessMetaBlock_NotStartOfEpochBlock_ExpectNilEpochStartInfo(t *testing.T) {
@@ -204,7 +204,7 @@ func TestBlockProcessor_ProcessMetaBlock_NotStartOfEpochBlock_ExpectNilEpochStar
 		Header: metaBlockHeader,
 		Body:   &erdBlock.Body{}})
 
-	require.Equal(t, ret.EpochStartInfo, (*schema.EpochStartInfo)(nil))
+	require.Equal(t, (*schema.EpochStartInfo)(nil), ret.EpochStartInfo)
 }
 
 func getInitializedArgs(metaBlock bool) *indexer.ArgsSaveBlockData {

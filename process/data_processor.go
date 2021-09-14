@@ -9,7 +9,7 @@ type dataProcessor struct {
 	blockHandler       BlockHandler
 	transactionHandler TransactionHandler
 	receiptHandler     ReceiptHandler
-	scHandler          SCHandler
+	scHandler          SCResultsHandler
 	logHandler         LogHandler
 	accountsHandler    AccountsHandler
 }
@@ -18,7 +18,7 @@ type dataProcessor struct {
 func NewDataProcessor(
 	blockHandler BlockHandler,
 	transactionHandler TransactionHandler,
-	scHandler SCHandler,
+	scHandler SCResultsHandler,
 	receiptHandler ReceiptHandler,
 	logHandler LogHandler,
 	accountsHandler AccountsHandler,
@@ -36,28 +36,37 @@ func NewDataProcessor(
 
 // ProcessData converts all covalent necessary data to a specific structure defined by avro schema
 func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+	pool := getPool(args)
 
 	block, err := dp.blockHandler.ProcessBlock(args)
 	if err != nil {
 		return nil, err
 	}
 
-	transactions, err := dp.transactionHandler.ProcessTransactions(args.Header, args.HeaderHash, args.Body, args.TransactionsPool.Txs)
+	transactions, err := dp.transactionHandler.ProcessTransactions(args.Header, args.HeaderHash, args.Body, pool.Txs)
 	if err != nil {
 		return nil, err
 	}
 
-	smartContracts := dp.scHandler.ProcessSCs(args.TransactionsPool.Scrs, args.Header.GetTimeStamp())
-	receipts := dp.receiptHandler.ProcessReceipts(args.TransactionsPool.Receipts, args.Header.GetTimeStamp())
-	logs := dp.logHandler.ProcessLogs(args.TransactionsPool.Logs)
-	accountUpdates := dp.accountsHandler.ProcessAccounts(transactions, smartContracts, receipts)
+	smartContractResults := dp.scHandler.ProcessSCRs(pool.Scrs, args.Header.GetTimeStamp())
+	receipts := dp.receiptHandler.ProcessReceipts(pool.Receipts, args.Header.GetTimeStamp())
+	logs := dp.logHandler.ProcessLogs(pool.Logs)
+	accountUpdates := dp.accountsHandler.ProcessAccounts(transactions, smartContractResults, receipts)
 
 	return &schema.BlockResult{
 		Block:        block,
 		Transactions: transactions,
 		Receipts:     receipts,
-		SCResults:    smartContracts,
+		SCResults:    smartContractResults,
 		Logs:         logs,
 		StateChanges: accountUpdates,
 	}, nil
+}
+
+func getPool(args *indexer.ArgsSaveBlockData) *indexer.Pool {
+	pool := &indexer.Pool{}
+	if args.TransactionsPool != nil {
+		pool = args.TransactionsPool
+	}
+	return pool
 }

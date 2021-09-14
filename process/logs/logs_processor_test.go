@@ -1,6 +1,8 @@
 package logs_test
 
 import (
+	"testing"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/logs"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
@@ -12,7 +14,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNewLogsProcessor(t *testing.T) {
@@ -138,8 +139,8 @@ func requireProcessedLogEqual(
 	hash string,
 	pubKeyConverter core.PubkeyConverter) {
 
-	require.Equal(t, processedLog.ID, []byte(hash))
-	require.Equal(t, processedLog.Address, utility.EncodePubKey(pubKeyConverter, log.GetAddress()))
+	require.Equal(t, []byte(hash), processedLog.ID)
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, log.GetAddress()), processedLog.Address)
 
 	notNilEvents := getNotNilEvents(log.GetEvents())
 	for idx, currEvent := range notNilEvents {
@@ -148,7 +149,7 @@ func requireProcessedLogEqual(
 }
 
 func getNotNilEvents(events []*transaction.Event) []*transaction.Event {
-	ret := make([]*transaction.Event, 0)
+	ret := make([]*transaction.Event, 0, len(events))
 
 	for _, event := range events {
 		if !check.IfNil(event) {
@@ -165,8 +166,8 @@ func requireProcessedEventEqual(
 	event *transaction.Event,
 	pubKeyConverter core.PubkeyConverter) {
 
-	require.Equal(t, processedEvent.Address, utility.EncodePubKey(pubKeyConverter, event.GetAddress()))
-	require.Equal(t, processedEvent.Identifier, event.GetIdentifier())
-	require.Equal(t, processedEvent.Topics, event.GetTopics())
-	require.Equal(t, processedEvent.Data, event.GetData())
+	require.Equal(t, utility.EncodePubKey(pubKeyConverter, event.GetAddress()), processedEvent.Address)
+	require.Equal(t, event.GetIdentifier(), processedEvent.Identifier)
+	require.Equal(t, event.GetTopics(), processedEvent.Topics)
+	require.Equal(t, event.GetData(), processedEvent.Data)
 }

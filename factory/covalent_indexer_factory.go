@@ -13,6 +13,8 @@ import (
 // ArgsCovalentIndexerFactory holds all input dependencies required by covalent data indexer factory
 // in order to create new instances
 type ArgsCovalentIndexerFactory struct {
+	Enabled          bool
+	URL              string
 	PubKeyConverter  core.PubkeyConverter
 	Accounts         covalent.AccountsAdapter
 	Hasher           hashing.Hasher

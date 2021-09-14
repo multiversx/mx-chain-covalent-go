@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// GenerateRandomFixedBytes generates a random byte slice of a predefined n size
 func GenerateRandomFixedBytes(n int) []byte {
 	ret := make([]byte, n)
 
@@ -16,10 +17,12 @@ func GenerateRandomFixedBytes(n int) []byte {
 	return ret
 }
 
+// GenerateRandomBytes generates a random byte slice
 func GenerateRandomBytes() []byte {
 	return []byte(strconv.Itoa(rand.Int()))
 }
 
+// GenerateRandomBigInt generates a random big.Int
 func GenerateRandomBigInt() *big.Int {
 	return big.NewInt(rand.Int63())
 }
