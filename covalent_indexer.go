@@ -88,23 +88,24 @@ func (c *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 }
 
 // RevertIndexedBlock DUMMY
-func (c covalentIndexer) RevertIndexedBlock(header data.HeaderHandler, body data.BodyHandler) {}
+func (c *covalentIndexer) RevertIndexedBlock(header data.HeaderHandler, body data.BodyHandler) {}
 
 // SaveRoundsInfo DUMMY
-func (c covalentIndexer) SaveRoundsInfo(roundsInfos []*indexer.RoundInfo) {}
+func (c *covalentIndexer) SaveRoundsInfo(roundsInfos []*indexer.RoundInfo) {}
 
 // SaveValidatorsPubKeys DUMMY
-func (c covalentIndexer) SaveValidatorsPubKeys(validatorsPubKeys map[uint32][][]byte, epoch uint32) {}
+func (c *covalentIndexer) SaveValidatorsPubKeys(validatorsPubKeys map[uint32][][]byte, epoch uint32) {
+}
 
 // SaveValidatorsRating DUMMY
-func (c covalentIndexer) SaveValidatorsRating(indexID string, infoRating []*indexer.ValidatorRatingInfo) {
+func (c *covalentIndexer) SaveValidatorsRating(indexID string, infoRating []*indexer.ValidatorRatingInfo) {
 }
 
 // SaveAccounts DUMMY
-func (c covalentIndexer) SaveAccounts(blockTimestamp uint64, acc []data.UserAccountHandler) {}
+func (c *covalentIndexer) SaveAccounts(blockTimestamp uint64, acc []data.UserAccountHandler) {}
 
 // Close DUMMY
-func (c covalentIndexer) Close() error {
+func (c *covalentIndexer) Close() error {
 	if c.wss != nil && c.wss.Conn != nil {
 		err := c.wss.Conn.Close()
 		log.LogIfError(err)
@@ -116,6 +117,6 @@ func (c covalentIndexer) Close() error {
 }
 
 // IsInterfaceNil DUMMY
-func (c covalentIndexer) IsInterfaceNil() bool {
+func (c *covalentIndexer) IsInterfaceNil() bool {
 	return false
 }
