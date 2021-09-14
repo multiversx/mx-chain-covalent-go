@@ -208,7 +208,7 @@ func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRati
 // SaveAccounts DUMMY
 func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) {}
 
-// Close DUMMY
+// Close closes websocket connections(if they exist) as well as the server which listens for new connections
 func (ci *covalentIndexer) Close() error {
 	wss := ci.getWSS()
 	wsr := ci.getWSR()
