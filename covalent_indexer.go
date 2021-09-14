@@ -104,7 +104,7 @@ func (c *covalentIndexer) SaveValidatorsRating(indexID string, infoRating []*ind
 // SaveAccounts DUMMY
 func (c *covalentIndexer) SaveAccounts(blockTimestamp uint64, acc []data.UserAccountHandler) {}
 
-// Close DUMMY
+// Close closes websocket connections(if they exist) as well as the server which listens for new connections
 func (c *covalentIndexer) Close() error {
 	if c.wss != nil && c.wss.Conn != nil {
 		err := c.wss.Conn.Close()
