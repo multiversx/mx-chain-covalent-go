@@ -77,18 +77,16 @@ func (ci *covalentIndexer) SetWSReceiver(wsr process.WSConn) {
 
 func (ci *covalentIndexer) getWSS() process.WSConn {
 	ci.mutWSS.RLock()
-	wss := ci.wss
-	ci.mutWSS.RUnlock()
+	defer ci.mutWSS.RUnlock()
 
-	return wss
+	return ci.wss
 }
 
 func (ci *covalentIndexer) getWSR() process.WSConn {
 	ci.mutWSR.RLock()
-	wsr := ci.wsr
-	ci.mutWSR.RUnlock()
+	defer ci.mutWSR.RUnlock()
 
-	return wsr
+	return ci.wsr
 }
 
 func (ci *covalentIndexer) waitForWSSConnection() {

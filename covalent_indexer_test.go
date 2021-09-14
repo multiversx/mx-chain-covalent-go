@@ -57,10 +57,7 @@ func TestCovalentIndexer_SetWSSender_SetTwoConsecutiveWebSockets_ExpectFirstOneC
 	defer ci.Close()
 
 	called1 := atomic.Flag{}
-	called1.Unset()
-
 	called2 := atomic.Flag{}
-	called2.Unset()
 
 	wss1 := &mock.WSConnStub{
 		CloseCalled: func() error {
@@ -102,10 +99,7 @@ func TestCovalentIndexer_SetWSReceiver_SetTwoConsecutiveWebSockets_ExpectFirstOn
 	defer ci.Close()
 
 	called1 := atomic.Flag{}
-	called1.Unset()
-
 	called2 := atomic.Flag{}
-	called2.Unset()
 
 	wss1 := &mock.WSConnStub{
 		CloseCalled: func() error {
@@ -184,7 +178,6 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 	defer ci.Close()
 
 	wssCalled := atomic.Flag{}
-	wssCalled.Unset()
 	wss := &mock.WSConnStub{
 		WriteMessageCalled: func(messageType int, data []byte) error {
 			wssCalled.Set()
@@ -193,7 +186,6 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 	}
 
 	wsrCalled := atomic.Flag{}
-	wsrCalled.Unset()
 	wsr := &mock.WSConnStub{
 		ReadMessageCalled: func() (messageType int, p []byte, err error) {
 			wsrCalled.Set()
@@ -367,7 +359,6 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 	}
 
 	wss2Called := atomic.Flag{}
-	wss2Called.Unset()
 
 	go func() {
 		ci.SaveBlock(nil)
