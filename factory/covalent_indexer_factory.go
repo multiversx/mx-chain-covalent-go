@@ -6,7 +6,6 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/factory"
-	covalentWS "github.com/ElrondNetwork/covalent-indexer-go/process/ws"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
@@ -72,6 +71,7 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 	}
 
 	routeSendData := router.HandleFunc(args.RouteSendData, func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("new connection", "route", args.RouteSendData)
 		var upgrader = websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -84,14 +84,34 @@ func CreateCovalentIndexer(args *ArgsCovalentIndexerFactory) (covalent.Driver, e
 			return
 		}
 
-		wss := &covalentWS.WSSender{
-			Conn: ws,
-		}
-		ci.SetWSSender(wss)
+		ci.SetWSSender(ws)
 	})
 
 	if routeSendData.GetError() != nil {
 		log.Error("websocket router failed to handle send data",
+			"route", routeSendData.GetName(),
+			"error", routeSendData.GetError())
+	}
+
+	routeAcknowledgeData := router.HandleFunc(args.RouteAcknowledgeData, func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("new connection", "route", args.RouteAcknowledgeData)
+		var upgrader = websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		}
+		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+		ws, errUpgrade := upgrader.Upgrade(w, r, nil)
+		if errUpgrade != nil {
+			log.Warn("could not upgrade http connection to websocket", "error", errUpgrade)
+			return
+		}
+
+		ci.SetWSReceiver(ws)
+	})
+
+	if routeAcknowledgeData.GetError() != nil {
+		log.Error("websocket router failed to acknowledge sent data",
 			"route", routeSendData.GetName(),
 			"error", routeSendData.GetError())
 	}
