@@ -194,11 +194,11 @@ func (txp *transactionProcessor) processRewardTransaction(
 		SenderShard:      int32(miniBlock.SenderShardID),
 		GasPrice:         0,
 		GasLimit:         0,
-		Data:             make([]byte, 0),
-		Signature:        make([]byte, 0),
+		Data:             nil,
+		Signature:        nil,
 		Timestamp:        int64(header.GetTimeStamp()),
-		SenderUserName:   make([]byte, 0),
-		ReceiverUserName: make([]byte, 0),
+		SenderUserName:   nil,
+		ReceiverUserName: nil,
 	}
 }
 

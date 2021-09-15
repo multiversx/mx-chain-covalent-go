@@ -10,6 +10,10 @@ import (
 
 // StrSliceToBytesSlice outputs the bytes slice representation of a string slice input
 func StrSliceToBytesSlice(in []string) [][]byte {
+	if in == nil {
+		return nil
+	}
+
 	out := make([][]byte, len(in))
 
 	for i := range in {
@@ -22,6 +26,10 @@ func StrSliceToBytesSlice(in []string) [][]byte {
 
 // UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
 func UIntSliceToIntSlice(in []uint64) []int64 {
+	if in == nil {
+		return nil
+	}
+
 	out := make([]int64, len(in))
 
 	for i := range in {
@@ -31,13 +39,13 @@ func UIntSliceToIntSlice(in []uint64) []int64 {
 	return out
 }
 
-// GetBytes returns the bytes representation of a big int input if not nil, otherwise returns nil
+// GetBytes returns the bytes representation of a big int input if not nil, otherwise returns []byte{}
 func GetBytes(val *big.Int) []byte {
 	if val != nil {
 		return val.Bytes()
 	}
 
-	return nil
+	return big.NewInt(0).Bytes()
 }
 
 // EncodePubKey returns a byte slice of the encoded pubKey input, using a pub key converter

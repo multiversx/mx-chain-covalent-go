@@ -2,6 +2,7 @@ package process
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
 
@@ -64,9 +65,17 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 }
 
 func getPool(args *indexer.ArgsSaveBlockData) *indexer.Pool {
-	pool := &indexer.Pool{}
+	pool := &indexer.Pool{
+		Txs:      make(map[string]data.TransactionHandler),
+		Scrs:     make(map[string]data.TransactionHandler),
+		Rewards:  make(map[string]data.TransactionHandler),
+		Invalid:  make(map[string]data.TransactionHandler),
+		Receipts: make(map[string]data.TransactionHandler),
+		Logs:     make(map[string]data.LogHandler),
+	}
 	if args.TransactionsPool != nil {
 		pool = args.TransactionsPool
 	}
+
 	return pool
 }

@@ -567,10 +567,10 @@ func requireRewardTxEqual(
 	require.Equal(t, []byte(fmt.Sprintf("%d", core.MetachainShardId)), processedTx.Sender)
 	require.Equal(t, int64(0), processedTx.GasPrice)
 	require.Equal(t, int64(0), processedTx.GasLimit)
-	require.Equal(t, []byte{}, processedTx.Data)
-	require.Equal(t, []byte{}, processedTx.Signature)
-	require.Equal(t, []byte{}, processedTx.SenderUserName)
-	require.Equal(t, []byte{}, processedTx.ReceiverUserName)
+	require.Equal(t, []byte(nil), processedTx.Data)
+	require.Equal(t, []byte(nil), processedTx.Signature)
+	require.Equal(t, []byte(nil), processedTx.SenderUserName)
+	require.Equal(t, []byte(nil), processedTx.ReceiverUserName)
 	require.Equal(t, int64(tx.GetRound()), processedTx.Round)
 }
 
