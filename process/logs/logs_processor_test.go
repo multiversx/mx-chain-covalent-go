@@ -10,9 +10,9 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
-	"github.com/ElrondNetwork/elrond-go-logger/check"
 	"github.com/stretchr/testify/require"
 )
 
