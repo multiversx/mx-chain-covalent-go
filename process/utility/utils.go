@@ -2,6 +2,8 @@ package utility
 
 import (
 	"bytes"
+	"encoding/hex"
+	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
@@ -22,6 +24,26 @@ func StrSliceToBytesSlice(in []string) [][]byte {
 	}
 
 	return out
+}
+
+// HexSliceToByteSlice outputs a decoded byte slice representation of a hex string encoded slice input
+func HexSliceToByteSlice(in []string) ([][]byte, error) {
+	if in == nil {
+		return nil, nil
+	}
+	out := make([][]byte, len(in))
+
+	for i := range in {
+		tmp, err := hex.DecodeString(in[i])
+		if err != nil {
+			return nil, err
+		}
+
+		out[i] = make([]byte, len(in[i])/2)
+		out[i] = tmp
+	}
+
+	return out, nil
 }
 
 // UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
@@ -77,4 +99,12 @@ func Decode(record avro.AvroRecord, buffer []byte) error {
 
 	decoder := avro.NewBinaryDecoder(buffer)
 	return reader.Read(record, decoder)
+}
+
+// MetaChainShardAddress returns core.MetachainShardId as a 62 byte array address(by padding with zeros).
+// This is needed, since all addresses from avro schema are required to be 62 fixed byte array
+func MetaChainShardAddress() []byte {
+	ret := make([]byte, 62)
+	copy(ret, fmt.Sprintf("%d", core.MetachainShardId))
+	return ret
 }

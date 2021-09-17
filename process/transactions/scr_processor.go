@@ -43,6 +43,11 @@ func (scp *scProcessor) processSCResult(tx data.TransactionHandler, txHash strin
 		return nil
 	}
 
+	var relayerAddress []byte
+	if len(scrTx.GetRelayerAddr()) > 0 {
+		relayerAddress = utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetRelayerAddr())
+	}
+
 	return &schema.SCResult{
 		Hash:           []byte(txHash),
 		Nonce:          int64(scrTx.GetNonce()),
@@ -51,7 +56,7 @@ func (scp *scProcessor) processSCResult(tx data.TransactionHandler, txHash strin
 		Value:          utility.GetBytes(scrTx.GetValue()),
 		Sender:         utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetSndAddr()),
 		Receiver:       utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetRcvAddr()),
-		RelayerAddr:    utility.EncodePubKey(scp.pubKeyConverter, scrTx.GetRelayerAddr()),
+		RelayerAddr:    relayerAddress,
 		RelayedValue:   utility.GetBytes(scrTx.GetRelayedValue()),
 		Code:           scrTx.GetCode(),
 		Data:           scrTx.GetData(),

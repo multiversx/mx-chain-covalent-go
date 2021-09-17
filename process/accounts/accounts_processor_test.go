@@ -2,6 +2,7 @@ package accounts_test
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 	"strconv"
 	"testing"
@@ -9,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
@@ -105,60 +107,134 @@ func TestAccountsProcessor_ProcessAccounts_NotInSameShard_ExpectZeroAccounts(t *
 }
 
 func TestAccountsProcessor_ProcessAccounts_FourAddresses_TwoIdentical_ExpectTwoAccounts(t *testing.T) {
+	addresses := generateAddresses(2)
 	ap, _ := accounts.NewAccountsProcessor(
 		&mock.ShardCoordinatorMock{},
 		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
 		&mock.PubKeyConverterStub{})
 
 	tx1 := &schema.Transaction{
-		Receiver: []byte("adr1"),
-		Sender:   []byte("adr2")}
+		Sender:   addresses[0],
+		Receiver: addresses[1],
+	}
 	tx2 := &schema.Transaction{
-		Receiver: []byte("adr2"),
-		Sender:   []byte("adr1")}
+		Sender:   addresses[1],
+		Receiver: addresses[0],
+	}
 
 	ret := ap.ProcessAccounts([]*schema.Transaction{tx1, tx2}, []*schema.SCResult{}, []*schema.Receipt{})
 
 	require.Len(t, ret, 2)
-	for idx, account := range ret {
-		require.Equal(t, []byte("erd1addr"+strconv.Itoa(idx)), account.Address)
-		require.Equal(t, big.NewInt(int64(idx+1)).Bytes(), account.Balance)
-		require.Equal(t, int64(idx+1), account.Nonce)
-	}
+	checkProcessedAccounts(t, addresses, ret)
+}
+
+func TestAccountsProcessor_ProcessAccounts_OneAddress_OneMetaChainShardAddress_ExpectOneAccount(t *testing.T) {
+	ap, _ := accounts.NewAccountsProcessor(
+		&mock.ShardCoordinatorMock{},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
+		&mock.PubKeyConverterStub{})
+
+	tx := &schema.Transaction{
+		Receiver: []byte("adr1"),
+		Sender:   utility.MetaChainShardAddress()}
+
+	ret := ap.ProcessAccounts([]*schema.Transaction{tx}, []*schema.SCResult{}, []*schema.Receipt{})
+
+	require.Len(t, ret, 1)
+	require.Equal(t, []byte("adr1"), ret[0].Address)
+	require.Equal(t, big.NewInt(int64(1)).Bytes(), ret[0].Balance)
+	require.Equal(t, int64(1), ret[0].Nonce)
+}
+
+func TestAccountsProcessor_ProcessAccounts_TwoAddresses_OneInvalidBech32_ExpectOneAccount(t *testing.T) {
+	invalidAddress := "adr_invalid"
+	errPubKeyDecode := errors.New("error invalid address")
+
+	ap, _ := accounts.NewAccountsProcessor(
+		&mock.ShardCoordinatorMock{},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
+		&mock.PubKeyConverterStub{
+			DecodeCalled: func(humanReadable string) ([]byte, error) {
+				if humanReadable == invalidAddress {
+					return nil, errPubKeyDecode
+				}
+				return make([]byte, 0), nil
+			},
+		})
+
+	tx := &schema.Transaction{
+		Receiver: []byte("adr1"),
+		Sender:   []byte(invalidAddress)}
+
+	ret := ap.ProcessAccounts([]*schema.Transaction{tx}, []*schema.SCResult{}, []*schema.Receipt{})
+
+	require.Len(t, ret, 1)
+	require.Equal(t, []byte("adr1"), ret[0].Address)
+	require.Equal(t, big.NewInt(int64(1)).Bytes(), ret[0].Balance)
+	require.Equal(t, int64(1), ret[0].Nonce)
 }
 
 func TestAccountsProcessor_ProcessAccounts_SevenAddresses_ExpectSevenAccounts(t *testing.T) {
+	addresses := generateAddresses(7)
+
 	ap, _ := accounts.NewAccountsProcessor(
 		&mock.ShardCoordinatorMock{},
 		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
 		&mock.PubKeyConverterStub{})
 
 	tx1 := &schema.Transaction{
-		Receiver: []byte("r1tx1"),
-		Sender:   []byte("s1tx1"),
+		Receiver: addresses[0],
+		Sender:   addresses[1],
 	}
 	tx2 := &schema.Transaction{
-		Receiver: []byte("r1tx2"),
-		Sender:   []byte("s1tx2"),
+		Sender:   addresses[2],
+		Receiver: addresses[3],
 	}
 	txs := []*schema.Transaction{tx1, tx2}
 
 	scr := &schema.SCResult{
-		Receiver: []byte("r1scr1"),
-		Sender:   []byte("s1scr1"),
+		Sender:   addresses[4],
+		Receiver: addresses[5],
 	}
 	scrs := []*schema.SCResult{scr}
 
 	receipt := &schema.Receipt{
-		Sender: []byte("s1receipt1"),
+		Sender: addresses[6],
 	}
 	receipts := []*schema.Receipt{receipt}
 
 	ret := ap.ProcessAccounts(txs, scrs, receipts)
 
 	require.Len(t, ret, 7)
-	for idx, account := range ret {
-		require.Equal(t, []byte("erd1addr"+strconv.Itoa(idx)), account.Address)
+	checkProcessedAccounts(t, addresses, ret)
+}
+
+func generateAddresses(n int) [][]byte {
+	addresses := make([][]byte, n)
+
+	for i := 0; i < n; i++ {
+		addresses[i] = make([]byte, n)
+		addresses[i] = []byte("adr" + strconv.Itoa(i))
+	}
+
+	return addresses
+}
+
+// This function only works if accounts.NewAccountsProcessor is called with
+// &mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}}
+func checkProcessedAccounts(t *testing.T, addresses [][]byte, processedAcc []*schema.AccountBalanceUpdate) {
+	allProcessedAddr := make(map[string]struct{})
+	for i := 0; i < len(processedAcc); i++ {
+		allProcessedAddr[string(processedAcc[i].Address)] = struct{}{}
+	}
+
+	for _, addr := range addresses {
+		if _, exists := allProcessedAddr[string(addr)]; !exists {
+			panic(fmt.Sprintf("%s not processed successfully", addr))
+		}
+	}
+
+	for idx, account := range processedAcc {
 		require.Equal(t, big.NewInt(int64(idx+1)).Bytes(), account.Balance)
 		require.Equal(t, int64(idx+1), account.Nonce)
 	}

@@ -138,12 +138,13 @@ func TestBlockProcessor_ProcessBlock(t *testing.T) {
 	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(false)
 	ret, _ := bp.ProcessBlock(args)
+	expectedNotarizedHeaderHashes, _ := utility.HexSliceToByteSlice(args.NotarizedHeadersHashes)
 
 	require.Equal(t, int64(args.Header.GetNonce()), ret.Nonce)
 	require.Equal(t, int64(args.Header.GetRound()), ret.Round)
 	require.Equal(t, int32(args.Header.GetEpoch()), ret.Epoch)
 	require.Equal(t, args.HeaderHash, ret.Hash)
-	require.Equal(t, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes), ret.NotarizedBlocksHashes)
+	require.Equal(t, expectedNotarizedHeaderHashes, ret.NotarizedBlocksHashes)
 	require.Equal(t, int64(args.SignersIndexes[0]), ret.Proposer)
 	require.Equal(t, utility.UIntSliceToIntSlice(args.SignersIndexes), ret.Validators)
 	require.Equal(t, args.Header.GetPubKeysBitmap(), ret.PubKeysBitmap)
@@ -165,12 +166,13 @@ func TestBlockProcessor_ProcessMetaBlock(t *testing.T) {
 	bp, _ := block.NewBlockProcessor(&mock.MarshallerStub{}, &mock.MiniBlockHandlerStub{})
 	args := getInitializedArgs(true)
 	ret, _ := bp.ProcessBlock(args)
+	expectedNotarizedHeaderHashes, _ := utility.HexSliceToByteSlice(args.NotarizedHeadersHashes)
 
 	require.Equal(t, int64(args.Header.GetNonce()), ret.Nonce)
 	require.Equal(t, int64(args.Header.GetRound()), ret.Round)
 	require.Equal(t, int32(args.Header.GetEpoch()), ret.Epoch)
 	require.Equal(t, args.HeaderHash, ret.Hash)
-	require.Equal(t, utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes), ret.NotarizedBlocksHashes)
+	require.Equal(t, expectedNotarizedHeaderHashes, ret.NotarizedBlocksHashes)
 	require.Equal(t, int64(args.SignersIndexes[0]), ret.Proposer)
 	require.Equal(t, utility.UIntSliceToIntSlice(args.SignersIndexes), ret.Validators)
 	require.Equal(t, args.Header.GetPubKeysBitmap(), ret.PubKeysBitmap)
@@ -221,7 +223,7 @@ func getInitializedArgs(metaBlock bool) *indexer.ArgsSaveBlockData {
 		Body:                   &erdBlock.Body{},
 		Header:                 header,
 		SignersIndexes:         []uint64{1, 2, 3},
-		NotarizedHeadersHashes: []string{"h1", "h2"},
+		NotarizedHeadersHashes: []string{"0a", "1f"},
 		TransactionsPool:       nil,
 	}
 }
