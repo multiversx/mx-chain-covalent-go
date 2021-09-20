@@ -10,22 +10,6 @@ import (
 	"github.com/elodina/go-avro"
 )
 
-// StrSliceToBytesSlice outputs the bytes slice representation of a string slice input
-func StrSliceToBytesSlice(in []string) [][]byte {
-	if in == nil {
-		return nil
-	}
-
-	out := make([][]byte, len(in))
-
-	for i := range in {
-		out[i] = make([]byte, len(in[i]))
-		out[i] = []byte(in[i])
-	}
-
-	return out
-}
-
 // HexSliceToByteSlice outputs a decoded byte slice representation of a hex string encoded slice input
 func HexSliceToByteSlice(in []string) ([][]byte, error) {
 	if in == nil {

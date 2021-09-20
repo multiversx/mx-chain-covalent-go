@@ -10,20 +10,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestStrSliceToBytesSlice_DifferentValues(t *testing.T) {
-	in := []string{"a", "b", "c"}
-	out := utility.StrSliceToBytesSlice(in)
+func TestHexSliceToByteSlice_DifferentValues(t *testing.T) {
+	in := []string{"0a", "0b", "0c"}
+	out, err := utility.HexSliceToByteSlice(in)
+	require.Nil(t, err)
 
 	require.Len(t, out, 3)
-	require.Equal(t, []byte("a"), out[0])
-	require.Equal(t, []byte("b"), out[1])
-	require.Equal(t, []byte("c"), out[2])
+	require.Equal(t, []byte{0xa}, out[0])
+	require.Equal(t, []byte{0xb}, out[1])
+	require.Equal(t, []byte{0xc}, out[2])
 }
 
-func TestStrSliceToBytesSlice_EmptyInput(t *testing.T) {
-	out := utility.StrSliceToBytesSlice([]string{})
+func TestHexSliceToByteSlice_EmptyInput(t *testing.T) {
+	out, err := utility.HexSliceToByteSlice([]string{})
 
+	require.Nil(t, err)
 	require.Len(t, out, 0)
+}
+
+func TestHexSliceToByteSlice_InvalidString_ExpectError(t *testing.T) {
+	in := []string{"0a", "xz", "0c"}
+	out, err := utility.HexSliceToByteSlice(in)
+
+	require.NotNil(t, err)
+	require.Nil(t, out)
 }
 
 func TestUIntSliceToIntSlice_DifferentValues(t *testing.T) {

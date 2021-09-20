@@ -223,9 +223,14 @@ func generateAddresses(n int) [][]byte {
 // This function only works if accounts.NewAccountsProcessor is called with
 // &mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}}
 func checkProcessedAccounts(t *testing.T, addresses [][]byte, processedAcc []*schema.AccountBalanceUpdate) {
+	if len(addresses) != len(processedAcc) {
+		panic("should have the same number of processed accounts as initial addresses")
+	}
+
 	allProcessedAddr := make(map[string]struct{})
-	for i := 0; i < len(processedAcc); i++ {
-		allProcessedAddr[string(processedAcc[i].Address)] = struct{}{}
+
+	for _, currAccount := range processedAcc {
+		allProcessedAddr[string(currAccount.Address)] = struct{}{}
 	}
 
 	for _, addr := range addresses {
