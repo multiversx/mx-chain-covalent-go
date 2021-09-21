@@ -47,6 +47,11 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		return nil, err
 	}
 
+	notarizedBlockHashes, err := utility.HexSliceToByteSlice(args.NotarizedHeadersHashes)
+	if err != nil {
+		return nil, err
+	}
+
 	header := args.Header
 	return &schema.Block{
 		Nonce:                 int64(header.GetNonce()),
@@ -54,7 +59,7 @@ func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema
 		Epoch:                 int32(header.GetEpoch()),
 		Hash:                  args.HeaderHash,
 		MiniBlocks:            miniBlocks,
-		NotarizedBlocksHashes: utility.StrSliceToBytesSlice(args.NotarizedHeadersHashes),
+		NotarizedBlocksHashes: notarizedBlockHashes,
 		Proposer:              getProposerIndex(args.SignersIndexes),
 		Validators:            utility.UIntSliceToIntSlice(args.SignersIndexes),
 		PubKeysBitmap:         header.GetPubKeysBitmap(),

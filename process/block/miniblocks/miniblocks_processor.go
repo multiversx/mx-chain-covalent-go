@@ -12,7 +12,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-var log = logger.GetOrCreate("process/block/miniBlocks/miniBlocksProcessor")
+var log = logger.GetOrCreate("covalent/process/block/miniBlocks/miniBlocksProcessor")
 
 type miniBlocksProcessor struct {
 	hasher     hashing.Hasher

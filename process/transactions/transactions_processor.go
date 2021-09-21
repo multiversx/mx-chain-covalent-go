@@ -1,8 +1,6 @@
 package transactions
 
 import (
-	"fmt"
-
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
@@ -19,7 +17,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-var log = logger.GetOrCreate("process/transactions/transactionProcessor")
+var log = logger.GetOrCreate("covalent/process/transactions/transactionProcessor")
 
 type transactionProcessor struct {
 	hasher          hashing.Hasher
@@ -189,7 +187,7 @@ func (txp *transactionProcessor) processRewardTransaction(
 		Round:            int64(tx.GetRound()),
 		Value:            utility.GetBytes(tx.GetValue()),
 		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
-		Sender:           []byte(fmt.Sprintf("%d", core.MetachainShardId)),
+		Sender:           utility.MetaChainShardAddress(),
 		ReceiverShard:    int32(miniBlock.ReceiverShardID),
 		SenderShard:      int32(miniBlock.SenderShardID),
 		GasPrice:         0,

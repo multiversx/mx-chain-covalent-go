@@ -163,7 +163,7 @@ func (ci *covalentIndexer) sendDataWithAcknowledge(
 	}
 
 	if errSend == nil && errReadData == nil && msgType == websocket.BinaryMessage {
-		if bytes.Compare(receivedData, ackData) == 0 {
+		if bytes.Equal(receivedData, ackData) {
 			return true
 		}
 	}
