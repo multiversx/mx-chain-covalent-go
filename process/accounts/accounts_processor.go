@@ -57,7 +57,7 @@ func (ap *accountsProcessor) ProcessAccounts(
 	for address := range addresses {
 		account, err := ap.processAccount(address)
 		if err != nil || account == nil {
-			log.Warn("cannot get address account", "address", address, "error", err)
+			log.Warn("cannot get account address", "address", address, "error", err)
 			continue
 		}
 
@@ -92,7 +92,7 @@ func (ap *accountsProcessor) getAllAddresses(
 }
 
 func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct{}, address []byte) {
-	if bytes.Compare(address, utility.MetaChainShardAddress()) == 0 {
+	if bytes.Equal(address, utility.MetaChainShardAddress()) {
 		return
 	}
 	if ap.shardCoordinator.SelfId() == ap.shardCoordinator.ComputeId(address) {

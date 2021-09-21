@@ -106,6 +106,56 @@ func TestAccountsProcessor_ProcessAccounts_NotInSameShard_ExpectZeroAccounts(t *
 	require.Len(t, ret, 0)
 }
 
+func TestAccountsProcessor_ProcessAccounts_OneSender_NilReceiver_ExpectOneAccount(t *testing.T) {
+	addresses := generateAddresses(1)
+	ap, _ := accounts.NewAccountsProcessor(
+		&mock.ShardCoordinatorMock{},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
+		&mock.PubKeyConverterStub{
+			DecodeCalled: func(humanReadable string) ([]byte, error) {
+				if len(humanReadable) == 0 {
+					return nil, errors.New("nil address")
+				}
+				return make([]byte, 0), nil
+			},
+		})
+
+	tx := &schema.Transaction{
+		Sender:   addresses[0],
+		Receiver: nil,
+	}
+
+	ret := ap.ProcessAccounts([]*schema.Transaction{tx}, []*schema.SCResult{}, []*schema.Receipt{})
+
+	require.Len(t, ret, 1)
+	checkProcessedAccounts(t, addresses, ret)
+}
+
+func TestAccountsProcessor_ProcessAccounts_NilSender_OneReceiver_ExpectOneAccount(t *testing.T) {
+	addresses := generateAddresses(1)
+	ap, _ := accounts.NewAccountsProcessor(
+		&mock.ShardCoordinatorMock{},
+		&mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}},
+		&mock.PubKeyConverterStub{
+			DecodeCalled: func(humanReadable string) ([]byte, error) {
+				if len(humanReadable) == 0 {
+					return nil, errors.New("nil address")
+				}
+				return make([]byte, 0), nil
+			},
+		})
+
+	tx := &schema.Transaction{
+		Sender:   nil,
+		Receiver: addresses[0],
+	}
+
+	ret := ap.ProcessAccounts([]*schema.Transaction{tx}, []*schema.SCResult{}, []*schema.Receipt{})
+
+	require.Len(t, ret, 1)
+	checkProcessedAccounts(t, addresses, ret)
+}
+
 func TestAccountsProcessor_ProcessAccounts_FourAddresses_TwoIdentical_ExpectTwoAccounts(t *testing.T) {
 	addresses := generateAddresses(2)
 	ap, _ := accounts.NewAccountsProcessor(
@@ -213,7 +263,6 @@ func generateAddresses(n int) [][]byte {
 	addresses := make([][]byte, n)
 
 	for i := 0; i < n; i++ {
-		addresses[i] = make([]byte, n)
 		addresses[i] = []byte("adr" + strconv.Itoa(i))
 	}
 
@@ -223,9 +272,7 @@ func generateAddresses(n int) [][]byte {
 // This function only works if accounts.NewAccountsProcessor is called with
 // &mock.AccountsAdapterStub{UserAccountHandler: &mock.UserAccountMock{}}
 func checkProcessedAccounts(t *testing.T, addresses [][]byte, processedAcc []*schema.AccountBalanceUpdate) {
-	if len(addresses) != len(processedAcc) {
-		panic("should have the same number of processed accounts as initial addresses")
-	}
+	require.Equal(t, len(addresses), len(processedAcc), "should have the same number of processed accounts as initial addresses")
 
 	allProcessedAddr := make(map[string]struct{})
 
@@ -234,9 +281,8 @@ func checkProcessedAccounts(t *testing.T, addresses [][]byte, processedAcc []*sc
 	}
 
 	for _, addr := range addresses {
-		if _, exists := allProcessedAddr[string(addr)]; !exists {
-			panic(fmt.Sprintf("%s not processed successfully", addr))
-		}
+		_, exists := allProcessedAddr[string(addr)]
+		require.True(t, exists, fmt.Sprintf("%s not processed successfully", addr))
 	}
 
 	for idx, account := range processedAcc {

@@ -22,8 +22,6 @@ func HexSliceToByteSlice(in []string) ([][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		out[i] = make([]byte, len(in[i])/2)
 		out[i] = tmp
 	}
 
