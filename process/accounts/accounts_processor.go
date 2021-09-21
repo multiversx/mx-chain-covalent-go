@@ -1,6 +1,8 @@
 package accounts
 
 import (
+	"bytes"
+
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
@@ -11,7 +13,7 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-var log = logger.GetOrCreate("process/accounts")
+var log = logger.GetOrCreate("covalent/process/accounts")
 
 type accountsProcessor struct {
 	shardCoordinator process.ShardCoordinator
@@ -49,16 +51,13 @@ func (ap *accountsProcessor) ProcessAccounts(
 	processedSCRs []*schema.SCResult,
 	processedReceipts []*schema.Receipt,
 ) []*schema.AccountBalanceUpdate {
-
 	addresses := ap.getAllAddresses(processedTxs, processedSCRs, processedReceipts)
 	accounts := make([]*schema.AccountBalanceUpdate, 0, len(addresses))
 
 	for address := range addresses {
 		account, err := ap.processAccount(address)
 		if err != nil || account == nil {
-			log.Warn("cannot get address account",
-				"address", utility.EncodePubKey(ap.pubKeyConverter, []byte(address)),
-				"error", err)
+			log.Warn("cannot get account address", "address", address, "error", err)
 			continue
 		}
 
@@ -71,7 +70,8 @@ func (ap *accountsProcessor) ProcessAccounts(
 func (ap *accountsProcessor) getAllAddresses(
 	processedTxs []*schema.Transaction,
 	processedSCRs []*schema.SCResult,
-	processedReceipts []*schema.Receipt) map[string]struct{} {
+	processedReceipts []*schema.Receipt,
+) map[string]struct{} {
 	addresses := make(map[string]struct{})
 
 	for _, tx := range processedTxs {
@@ -92,6 +92,9 @@ func (ap *accountsProcessor) getAllAddresses(
 }
 
 func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct{}, address []byte) {
+	if bytes.Equal(address, utility.MetaChainShardAddress()) {
+		return
+	}
 	if ap.shardCoordinator.SelfId() == ap.shardCoordinator.ComputeId(address) {
 		addresses[string(address)] = struct{}{}
 	}
@@ -100,7 +103,12 @@ func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct
 func (ap *accountsProcessor) processAccount(address string) (*schema.AccountBalanceUpdate, error) {
 	//TODO: This only works as long as covalent indexer is part of elrond node binary.
 	// This needs to be changed, so that account content is given as an input parameter, not loaded.
-	acc, err := ap.accounts.LoadAccount([]byte(address))
+	pubKey, err := ap.pubKeyConverter.Decode(address)
+	if err != nil {
+		return nil, err
+	}
+
+	acc, err := ap.accounts.LoadAccount(pubKey)
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +117,8 @@ func (ap *accountsProcessor) processAccount(address string) (*schema.AccountBala
 	if !castOk {
 		return nil, covalent.ErrCannotCastAccountHandlerToUserAccount
 	}
-
 	return &schema.AccountBalanceUpdate{
-		Address: utility.EncodePubKey(ap.pubKeyConverter, account.AddressBytes()),
+		Address: []byte(address),
 		Balance: utility.GetBytes(account.GetBalance()),
 		Nonce:   int64(account.GetNonce()),
 	}, nil

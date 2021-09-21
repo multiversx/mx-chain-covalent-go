@@ -2,7 +2,6 @@ package transactions_test
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 	"testing"
 
@@ -564,7 +563,7 @@ func requireRewardTxEqual(
 	processedTx *schema.Transaction,
 	tx *rewardTx.RewardTx) {
 	require.Equal(t, int64(0), processedTx.Nonce)
-	require.Equal(t, []byte(fmt.Sprintf("%d", core.MetachainShardId)), processedTx.Sender)
+	require.Equal(t, utility.MetaChainShardAddress(), processedTx.Sender)
 	require.Equal(t, int64(0), processedTx.GasPrice)
 	require.Equal(t, int64(0), processedTx.GasLimit)
 	require.Equal(t, []byte(nil), processedTx.Data)
