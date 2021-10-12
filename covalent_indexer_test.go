@@ -1,7 +1,6 @@
 package covalent_test
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -151,7 +150,7 @@ func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectPanic(t *testing.T)
 		_ = ci.Close()
 	}()
 
-	require.Panics(t, func() { ci.SaveBlock(context.Background(), nil) })
+	require.Panics(t, func() { ci.SaveBlock(nil) })
 }
 
 func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.T) {
@@ -169,7 +168,7 @@ func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.
 		_ = ci.Close()
 	}()
 
-	require.Panics(t, func() { ci.SaveBlock(context.Background(), nil) })
+	require.Panics(t, func() { ci.SaveBlock(nil) })
 }
 
 func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
@@ -205,7 +204,7 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 	}
 
 	go func() {
-		ci.SaveBlock(context.Background(), nil)
+		ci.SaveBlock(nil)
 
 		// Expect data is sent/received only after WSS & WSR are set
 		require.True(t, wssCalled.IsSet())
@@ -259,7 +258,7 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 	}
 
 	go func() {
-		ci.SaveBlock(context.Background(), nil)
+		ci.SaveBlock(nil)
 
 		// Expect data is sent/received 4 times (until a correct ack msg is sent) after WSS & WSR are set
 		require.Equal(t, wssCalledCt.Get(), int64(4))
@@ -310,7 +309,7 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 
 	wsrReconnectedCalledCt := atomic.Counter{}
 	go func() {
-		ci.SaveBlock(context.Background(), nil)
+		ci.SaveBlock(nil)
 
 		require.Equal(t, int64(2), wssCalledCt.Get())
 		require.Equal(t, int64(1), wsrCalledCt.Get())
@@ -378,7 +377,7 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 	wss2Called := atomic.Flag{}
 
 	go func() {
-		ci.SaveBlock(context.Background(), nil)
+		ci.SaveBlock(nil)
 
 		require.Equal(t, int64(2), wssCalledCt1.Get())
 		require.Equal(t, int64(3), wsrCalledCt1.Get())

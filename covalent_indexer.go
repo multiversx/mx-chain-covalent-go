@@ -2,7 +2,6 @@ package covalent
 
 import (
 	"bytes"
-	"context"
 	"encoding/hex"
 	"net/http"
 	"sync"
@@ -173,7 +172,7 @@ func (ci *covalentIndexer) sendDataWithAcknowledge(
 }
 
 // SaveBlock saves the block info and converts it in order to be sent to covalent
-func (ci *covalentIndexer) SaveBlock(_ context.Context, args *indexer.ArgsSaveBlockData) {
+func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 	blockResult, err := ci.processor.ProcessData(args)
 	if err != nil {
 		log.Error("SaveBlock failed. Could not process block",
@@ -191,25 +190,25 @@ func (ci *covalentIndexer) SaveBlock(_ context.Context, args *indexer.ArgsSaveBl
 }
 
 // RevertIndexedBlock DUMMY
-func (ci *covalentIndexer) RevertIndexedBlock(context.Context, data.HeaderHandler, data.BodyHandler) {
+func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) {
 }
 
 // SaveRoundsInfo DUMMY
-func (ci *covalentIndexer) SaveRoundsInfo(_ context.Context, _ []*indexer.RoundInfo) {}
+func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) {}
 
 // SaveValidatorsPubKeys DUMMY
-func (ci *covalentIndexer) SaveValidatorsPubKeys(context.Context, map[uint32][][]byte, uint32) {
+func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) {
 }
 
 // SaveValidatorsRating DUMMY
-func (ci *covalentIndexer) SaveValidatorsRating(context.Context, string, []*indexer.ValidatorRatingInfo) {
+func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) {
 }
 
 // SaveAccounts DUMMY
-func (ci *covalentIndexer) SaveAccounts(context.Context, uint64, []data.UserAccountHandler) {}
+func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) {}
 
 // FinalizedBlock does nothing
-func (ci *covalentIndexer) FinalizedBlock(_ context.Context, _ []byte) {
+func (ci *covalentIndexer) FinalizedBlock(_ []byte) {
 }
 
 // Close closes websocket connections(if they exist) as well as the server which listens for new connections
