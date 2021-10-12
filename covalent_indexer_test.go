@@ -1,6 +1,7 @@
 package covalent_test
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -54,7 +55,9 @@ func TestCovalentIndexer_SetWSSender_SetTwoConsecutiveWebSockets_ExpectFirstOneC
 			Addr: "localhost:21119",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	called1 := atomic.Flag{}
 	called2 := atomic.Flag{}
@@ -96,7 +99,9 @@ func TestCovalentIndexer_SetWSReceiver_SetTwoConsecutiveWebSockets_ExpectFirstOn
 			Addr: "localhost:21119",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	called1 := atomic.Flag{}
 	called2 := atomic.Flag{}
@@ -142,9 +147,11 @@ func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectPanic(t *testing.T)
 			Addr: "localhost:3333",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
-	require.Panics(t, func() { ci.SaveBlock(nil) })
+	require.Panics(t, func() { ci.SaveBlock(context.Background(), nil) })
 }
 
 func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.T) {
@@ -158,9 +165,11 @@ func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.
 			Addr: "localhost:21119",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
-	require.Panics(t, func() { ci.SaveBlock(nil) })
+	require.Panics(t, func() { ci.SaveBlock(context.Background(), nil) })
 }
 
 func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
@@ -175,7 +184,9 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalled := atomic.Flag{}
 	wss := &mock.WSConnStub{
@@ -194,7 +205,7 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 	}
 
 	go func() {
-		ci.SaveBlock(nil)
+		ci.SaveBlock(context.Background(), nil)
 
 		// Expect data is sent/received only after WSS & WSR are set
 		require.True(t, wssCalled.IsSet())
@@ -223,7 +234,9 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalledCt := atomic.Counter{}
 	wss := &mock.WSConnStub{
@@ -246,7 +259,7 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 	}
 
 	go func() {
-		ci.SaveBlock(nil)
+		ci.SaveBlock(context.Background(), nil)
 
 		// Expect data is sent/received 4 times (until a correct ack msg is sent) after WSS & WSR are set
 		require.Equal(t, wssCalledCt.Get(), int64(4))
@@ -275,7 +288,9 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalledCt := atomic.Counter{}
 	wss := &mock.WSConnStub{
@@ -295,7 +310,7 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 
 	wsrReconnectedCalledCt := atomic.Counter{}
 	go func() {
-		ci.SaveBlock(nil)
+		ci.SaveBlock(context.Background(), nil)
 
 		require.Equal(t, int64(2), wssCalledCt.Get())
 		require.Equal(t, int64(1), wsrCalledCt.Get())
@@ -334,7 +349,9 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalledCt1 := atomic.Counter{}
 	wss1 := &mock.WSConnStub{
@@ -361,7 +378,7 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 	wss2Called := atomic.Flag{}
 
 	go func() {
-		ci.SaveBlock(nil)
+		ci.SaveBlock(context.Background(), nil)
 
 		require.Equal(t, int64(2), wssCalledCt1.Get())
 		require.Equal(t, int64(3), wsrCalledCt1.Get())
