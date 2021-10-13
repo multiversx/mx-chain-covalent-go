@@ -190,10 +190,11 @@ func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 }
 
 // RevertIndexedBlock DUMMY
-func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) {}
+func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) {
+}
 
 // SaveRoundsInfo DUMMY
-func (ci *covalentIndexer) SaveRoundsInfo([]*indexer.RoundInfo) {}
+func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) {}
 
 // SaveValidatorsPubKeys DUMMY
 func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) {
@@ -205,6 +206,10 @@ func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRati
 
 // SaveAccounts DUMMY
 func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) {}
+
+// FinalizedBlock does nothing
+func (ci *covalentIndexer) FinalizedBlock(_ []byte) {
+}
 
 // Close closes websocket connections(if they exist) as well as the server which listens for new connections
 func (ci *covalentIndexer) Close() error {

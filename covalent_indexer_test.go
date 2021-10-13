@@ -54,7 +54,9 @@ func TestCovalentIndexer_SetWSSender_SetTwoConsecutiveWebSockets_ExpectFirstOneC
 			Addr: "localhost:21119",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	called1 := atomic.Flag{}
 	called2 := atomic.Flag{}
@@ -96,7 +98,9 @@ func TestCovalentIndexer_SetWSReceiver_SetTwoConsecutiveWebSockets_ExpectFirstOn
 			Addr: "localhost:21119",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	called1 := atomic.Flag{}
 	called2 := atomic.Flag{}
@@ -142,7 +146,9 @@ func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectPanic(t *testing.T)
 			Addr: "localhost:3333",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	require.Panics(t, func() { ci.SaveBlock(nil) })
 }
@@ -158,7 +164,9 @@ func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.
 			Addr: "localhost:21119",
 		},
 	)
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	require.Panics(t, func() { ci.SaveBlock(nil) })
 }
@@ -175,7 +183,9 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalled := atomic.Flag{}
 	wss := &mock.WSConnStub{
@@ -223,7 +233,9 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalledCt := atomic.Counter{}
 	wss := &mock.WSConnStub{
@@ -275,7 +287,9 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalledCt := atomic.Counter{}
 	wss := &mock.WSConnStub{
@@ -334,7 +348,9 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 		&http.Server{
 			Addr: "localhost:21119",
 		})
-	defer ci.Close()
+	defer func() {
+		_ = ci.Close()
+	}()
 
 	wssCalledCt1 := atomic.Counter{}
 	wss1 := &mock.WSConnStub{
