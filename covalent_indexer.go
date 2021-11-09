@@ -197,19 +197,25 @@ func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandl
 	return nil
 }
 
-// SaveRoundsInfo does nothing
-func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) {}
-
-// SaveValidatorsPubKeys does nothing
-func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) {
+// SaveRoundsInfo returns nil
+func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) error {
+	return nil
 }
 
-// SaveValidatorsRating does nothing
-func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) {
+// SaveValidatorsPubKeys returns nil
+func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) error {
+	return nil
 }
 
-// SaveAccounts does nothing
-func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) {}
+// SaveValidatorsRating returns nil
+func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) error {
+	return nil
+}
+
+// SaveAccounts returns nil
+func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) error {
+	return nil
+}
 
 // FinalizedBlock returns nil
 func (ci *covalentIndexer) FinalizedBlock(_ []byte) error {
@@ -236,7 +242,7 @@ func (ci *covalentIndexer) Close() error {
 	return nil
 }
 
-// IsInterfaceNil DUMMY
+// IsInterfaceNil returns true if there is no value under the interface
 func (ci *covalentIndexer) IsInterfaceNil() bool {
 	return ci == nil
 }

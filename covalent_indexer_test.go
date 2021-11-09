@@ -10,9 +10,11 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,30 +22,35 @@ func TestNewCovalentDataIndexer(t *testing.T) {
 	tests := []struct {
 		args        func() (processor covalent.DataHandler, server *http.Server)
 		expectedErr error
+		isNil       bool
 	}{
 		{
 			args: func() (processor covalent.DataHandler, server *http.Server) {
 				return nil, &http.Server{Addr: "localhost:22111"}
 			},
 			expectedErr: covalent.ErrNilDataHandler,
+			isNil:       true,
 		},
 		{
 			args: func() (processor covalent.DataHandler, server *http.Server) {
 				return &mock.DataHandlerStub{}, nil
 			},
 			expectedErr: covalent.ErrNilHTTPServer,
+			isNil:       true,
 		},
 		{
 			args: func() (processor covalent.DataHandler, server *http.Server) {
 				return &mock.DataHandlerStub{}, &http.Server{Addr: "localhost:22112"}
 			},
 			expectedErr: nil,
+			isNil:       false,
 		},
 	}
 
 	for _, currTest := range tests {
-		_, err := covalent.NewCovalentDataIndexer(currTest.args())
+		instance, err := covalent.NewCovalentDataIndexer(currTest.args())
 		require.Equal(t, currTest.expectedErr, err)
+		require.Equal(t, currTest.isNil, check.IfNil(instance))
 	}
 }
 
@@ -417,4 +424,22 @@ func generateRandomValidBlockResult() *schema.BlockResult {
 	return &schema.BlockResult{
 		Block: block,
 	}
+}
+
+func TestCovalentDataIndexer_UnimplementedFunctions(t *testing.T) {
+	ci, _ := covalent.NewCovalentDataIndexer(
+		&mock.DataHandlerStub{},
+		&http.Server{
+			Addr: "localhost:21119",
+		})
+	defer func() {
+		_ = ci.Close()
+	}()
+
+	assert.Nil(t, ci.RevertIndexedBlock(nil, nil))
+	assert.Nil(t, ci.SaveRoundsInfo(nil))
+	assert.Nil(t, ci.SaveValidatorsPubKeys(nil, 0))
+	assert.Nil(t, ci.SaveValidatorsRating("", nil))
+	assert.Nil(t, ci.SaveAccounts(0, nil))
+	assert.Nil(t, ci.FinalizedBlock(nil))
 }
