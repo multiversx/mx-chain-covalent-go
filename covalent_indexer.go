@@ -172,7 +172,7 @@ func (ci *covalentIndexer) sendDataWithAcknowledge(
 }
 
 // SaveBlock saves the block info and converts it in order to be sent to covalent
-func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
+func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) error {
 	blockResult, err := ci.processor.ProcessData(args)
 	if err != nil {
 		log.Error("SaveBlock failed. Could not process block",
@@ -187,28 +187,33 @@ func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 	}
 
 	ci.sendWithRetrial(dataToSend, blockResult.Block.Hash)
+
+	// TODO next PRs - remove the retrial, it is done by the node
+	return nil
 }
 
-// RevertIndexedBlock DUMMY
-func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) {
+// RevertIndexedBlock returns nil
+func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) error {
+	return nil
 }
 
-// SaveRoundsInfo DUMMY
+// SaveRoundsInfo does nothing
 func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) {}
 
-// SaveValidatorsPubKeys DUMMY
+// SaveValidatorsPubKeys does nothing
 func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) {
 }
 
-// SaveValidatorsRating DUMMY
+// SaveValidatorsRating does nothing
 func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) {
 }
 
-// SaveAccounts DUMMY
+// SaveAccounts does nothing
 func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) {}
 
-// FinalizedBlock does nothing
-func (ci *covalentIndexer) FinalizedBlock(_ []byte) {
+// FinalizedBlock returns nil
+func (ci *covalentIndexer) FinalizedBlock(_ []byte) error {
+	return nil
 }
 
 // Close closes websocket connections(if they exist) as well as the server which listens for new connections

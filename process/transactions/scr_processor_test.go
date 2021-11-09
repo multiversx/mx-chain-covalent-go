@@ -66,6 +66,9 @@ func generateRandomSCR() *smartContractResult.SmartContractResult {
 }
 
 func TestScProcessor_ProcessSCs_TwoSCRs_OneNormalTx_ExpectTwoProcessedSCRs(t *testing.T) {
+	// TODO refactor this test: the processing is done by iterating on a slice and the result is a slice that might,
+	// sometimes, have the transactions in another order
+
 	scp, _ := transactions.NewSCResultsProcessor(&mock.PubKeyConverterStub{})
 
 	tx1 := generateRandomSCR()
