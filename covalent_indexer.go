@@ -32,6 +32,9 @@ type covalentIndexer struct {
 
 // NewCovalentDataIndexer creates a new instance of covalent data indexer, which implements Driver interface and
 // converts protocol input data to covalent required data
+// TODO should refactor as to avoid using *http.Server here. For testing purposes we should use httptest.Server
+// Reason: all unit tests might fail, if for example, the machine that the tests run onto can not open the hardcoded port
+// written in the tests (might have it already open by another process)
 func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covalentIndexer, error) {
 	if processor == nil {
 		return nil, ErrNilDataHandler
