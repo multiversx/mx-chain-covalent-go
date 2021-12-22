@@ -29,7 +29,7 @@ func (lp *logsProcessor) ProcessLogs(logs []*data.LogData) []*schema.Log {
 	allLogs := make([]*schema.Log, 0, len(logs))
 
 	for _, currLog := range logs {
-		processedLog := lp.processLog(*currLog)
+		processedLog := lp.processLog(currLog)
 		if processedLog != nil {
 			allLogs = append(allLogs, processedLog)
 		}
@@ -38,8 +38,8 @@ func (lp *logsProcessor) ProcessLogs(logs []*data.LogData) []*schema.Log {
 	return allLogs
 }
 
-func (lp *logsProcessor) processLog(logData data.LogData) *schema.Log {
-	if check.IfNil(logData.LogHandler) {
+func (lp *logsProcessor) processLog(logData *data.LogData) *schema.Log {
+	if logData == nil || check.IfNil(logData.LogHandler) {
 		return nil
 	}
 
