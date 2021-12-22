@@ -26,11 +26,11 @@ func NewLogsProcessor(pubKeyConverter core.PubkeyConverter) (*logsProcessor, err
 }
 
 // ProcessLogs converts logs data to a specific structure defined by avro schema
-func (lp *logsProcessor) ProcessLogs(logs []indexer.LogData) []*schema.Log {
+func (lp *logsProcessor) ProcessLogs(logs []*indexer.LogData) []*schema.Log {
 	allLogs := make([]*schema.Log, 0, len(logs))
 
 	for _, currLog := range logs {
-		processedLog := lp.processLog(currLog)
+		processedLog := lp.processLog(*currLog)
 		if processedLog != nil {
 			allLogs = append(allLogs, processedLog)
 		}
