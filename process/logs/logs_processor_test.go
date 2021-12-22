@@ -11,7 +11,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
 )
@@ -46,7 +46,7 @@ func TestNewLogsProcessor(t *testing.T) {
 func TestLogsProcessor_ProcessLogs_OneNilLog_ExpectZeroProcessedLogs(t *testing.T) {
 	lp, _ := logs.NewLogsProcessor(&mock.PubKeyConverterStub{})
 
-	logsAndEvents := []*indexer.LogData{
+	logsAndEvents := []*data.LogData{
 		{
 			TxHash:     "hash1",
 			LogHandler: nil,
@@ -65,7 +65,7 @@ func TestLogsProcessor_ProcessLogs_OneLog_NoEvent_ExpectOneProcessedLogsAndZeroE
 		Address: testscommon.GenerateRandomBytes(),
 		Events:  []*transaction.Event{},
 	}
-	logsAndEvents := []*indexer.LogData{
+	logsAndEvents := []*data.LogData{
 		{
 			TxHash:     "hash1",
 			LogHandler: log,
@@ -87,7 +87,7 @@ func TestLogsProcessor_ProcessLogs_OneLog_OneEvent_ExpectOneProcessedLogAndOneEv
 		Events:  []*transaction.Event{event},
 	}
 
-	logsAndEvents := []*indexer.LogData{
+	logsAndEvents := []*data.LogData{
 		{
 			TxHash:     "hash1",
 			LogHandler: log,
@@ -117,7 +117,7 @@ func TestLogsProcessor_ProcessLogs_ThreeLogs_FourEvents_ExpectTwoProcessedLogsAn
 		Events:  []*transaction.Event{event3},
 	}
 
-	logsAndEvents := []*indexer.LogData{
+	logsAndEvents := []*data.LogData{
 		{
 			TxHash:     "hash1",
 			LogHandler: log1,

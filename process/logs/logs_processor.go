@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
 
 type logsProcessor struct {
@@ -26,7 +25,7 @@ func NewLogsProcessor(pubKeyConverter core.PubkeyConverter) (*logsProcessor, err
 }
 
 // ProcessLogs converts logs data to a specific structure defined by avro schema
-func (lp *logsProcessor) ProcessLogs(logs []*indexer.LogData) []*schema.Log {
+func (lp *logsProcessor) ProcessLogs(logs []*data.LogData) []*schema.Log {
 	allLogs := make([]*schema.Log, 0, len(logs))
 
 	for _, currLog := range logs {
@@ -39,7 +38,7 @@ func (lp *logsProcessor) ProcessLogs(logs []*indexer.LogData) []*schema.Log {
 	return allLogs
 }
 
-func (lp *logsProcessor) processLog(logData indexer.LogData) *schema.Log {
+func (lp *logsProcessor) processLog(logData data.LogData) *schema.Log {
 	if check.IfNil(logData.LogHandler) {
 		return nil
 	}
