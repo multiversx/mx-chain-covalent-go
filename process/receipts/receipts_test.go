@@ -52,6 +52,7 @@ func generateRandomReceipt() *receipt.Receipt {
 	}
 }
 
+// TODO: fix this test as it fails randomly
 func TestReceiptsProcessor_ProcessReceipts_TwoReceipts_OneNormalTx_ExpectTwoProcessedReceipts(t *testing.T) {
 	rp, _ := receipts.NewReceiptsProcessor(&mock.PubKeyConverterStub{})
 
