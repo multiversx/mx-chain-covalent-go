@@ -25,11 +25,11 @@ func NewLogsProcessor(pubKeyConverter core.PubkeyConverter) (*logsProcessor, err
 }
 
 // ProcessLogs converts logs data to a specific structure defined by avro schema
-func (lp *logsProcessor) ProcessLogs(logs map[string]data.LogHandler) []*schema.Log {
+func (lp *logsProcessor) ProcessLogs(logs []*data.LogData) []*schema.Log {
 	allLogs := make([]*schema.Log, 0, len(logs))
 
-	for currHash, currLog := range logs {
-		processedLog := lp.processLog(currHash, currLog)
+	for _, currLog := range logs {
+		processedLog := lp.processLog(currLog)
 		if processedLog != nil {
 			allLogs = append(allLogs, processedLog)
 		}
@@ -38,15 +38,15 @@ func (lp *logsProcessor) ProcessLogs(logs map[string]data.LogHandler) []*schema.
 	return allLogs
 }
 
-func (lp *logsProcessor) processLog(hash string, log data.LogHandler) *schema.Log {
-	if check.IfNil(log) {
+func (lp *logsProcessor) processLog(logData *data.LogData) *schema.Log {
+	if logData == nil || check.IfNil(logData.LogHandler) {
 		return nil
 	}
 
 	return &schema.Log{
-		ID:      []byte(hash),
-		Address: utility.EncodePubKey(lp.pubKeyConverter, log.GetAddress()),
-		Events:  lp.processEvents(log.GetLogEvents()),
+		ID:      []byte(logData.TxHash),
+		Address: utility.EncodePubKey(lp.pubKeyConverter, logData.LogHandler.GetAddress()),
+		Events:  lp.processEvents(logData.LogHandler.GetLogEvents()),
 	}
 }
 

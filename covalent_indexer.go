@@ -32,6 +32,9 @@ type covalentIndexer struct {
 
 // NewCovalentDataIndexer creates a new instance of covalent data indexer, which implements Driver interface and
 // converts protocol input data to covalent required data
+// TODO should refactor as to avoid using *http.Server here. For testing purposes we should use httptest.Server
+// Reason: all unit tests might fail, if for example, the machine that the tests run onto can not open the hardcoded port
+// written in the tests (might have it already open by another process)
 func NewCovalentDataIndexer(processor DataHandler, server *http.Server) (*covalentIndexer, error) {
 	if processor == nil {
 		return nil, ErrNilDataHandler
@@ -172,7 +175,7 @@ func (ci *covalentIndexer) sendDataWithAcknowledge(
 }
 
 // SaveBlock saves the block info and converts it in order to be sent to covalent
-func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
+func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) error {
 	blockResult, err := ci.processor.ProcessData(args)
 	if err != nil {
 		log.Error("SaveBlock failed. Could not process block",
@@ -187,28 +190,39 @@ func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) {
 	}
 
 	ci.sendWithRetrial(dataToSend, blockResult.Block.Hash)
+
+	// TODO next PRs - remove the retrial, it is done by the node
+	return nil
 }
 
-// RevertIndexedBlock DUMMY
-func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) {
+// RevertIndexedBlock returns nil
+func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) error {
+	return nil
 }
 
-// SaveRoundsInfo DUMMY
-func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) {}
-
-// SaveValidatorsPubKeys DUMMY
-func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) {
+// SaveRoundsInfo returns nil
+func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) error {
+	return nil
 }
 
-// SaveValidatorsRating DUMMY
-func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) {
+// SaveValidatorsPubKeys returns nil
+func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) error {
+	return nil
 }
 
-// SaveAccounts DUMMY
-func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) {}
+// SaveValidatorsRating returns nil
+func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) error {
+	return nil
+}
 
-// FinalizedBlock does nothing
-func (ci *covalentIndexer) FinalizedBlock(_ []byte) {
+// SaveAccounts returns nil
+func (ci *covalentIndexer) SaveAccounts(uint64, []data.UserAccountHandler) error {
+	return nil
+}
+
+// FinalizedBlock returns nil
+func (ci *covalentIndexer) FinalizedBlock(_ []byte) error {
+	return nil
 }
 
 // Close closes websocket connections(if they exist) as well as the server which listens for new connections
@@ -231,7 +245,7 @@ func (ci *covalentIndexer) Close() error {
 	return nil
 }
 
-// IsInterfaceNil DUMMY
+// IsInterfaceNil returns true if there is no value under the interface
 func (ci *covalentIndexer) IsInterfaceNil() bool {
 	return ci == nil
 }
