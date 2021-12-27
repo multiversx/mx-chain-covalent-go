@@ -10,9 +10,11 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
+	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/gorilla/websocket"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,30 +22,35 @@ func TestNewCovalentDataIndexer(t *testing.T) {
 	tests := []struct {
 		args        func() (processor covalent.DataHandler, server *http.Server)
 		expectedErr error
+		isNil       bool
 	}{
 		{
 			args: func() (processor covalent.DataHandler, server *http.Server) {
 				return nil, &http.Server{Addr: "localhost:22111"}
 			},
 			expectedErr: covalent.ErrNilDataHandler,
+			isNil:       true,
 		},
 		{
 			args: func() (processor covalent.DataHandler, server *http.Server) {
 				return &mock.DataHandlerStub{}, nil
 			},
 			expectedErr: covalent.ErrNilHTTPServer,
+			isNil:       true,
 		},
 		{
 			args: func() (processor covalent.DataHandler, server *http.Server) {
 				return &mock.DataHandlerStub{}, &http.Server{Addr: "localhost:22112"}
 			},
 			expectedErr: nil,
+			isNil:       false,
 		},
 	}
 
 	for _, currTest := range tests {
-		_, err := covalent.NewCovalentDataIndexer(currTest.args())
+		instance, err := covalent.NewCovalentDataIndexer(currTest.args())
 		require.Equal(t, currTest.expectedErr, err)
+		require.Equal(t, currTest.isNil, check.IfNil(instance))
 	}
 }
 
@@ -150,7 +157,7 @@ func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectPanic(t *testing.T)
 		_ = ci.Close()
 	}()
 
-	require.Panics(t, func() { ci.SaveBlock(nil) })
+	require.Panics(t, func() { _ = ci.SaveBlock(nil) })
 }
 
 func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.T) {
@@ -168,7 +175,7 @@ func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.
 		_ = ci.Close()
 	}()
 
-	require.Panics(t, func() { ci.SaveBlock(nil) })
+	require.Panics(t, func() { _ = ci.SaveBlock(nil) })
 }
 
 func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
@@ -204,11 +211,12 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 	}
 
 	go func() {
-		ci.SaveBlock(nil)
+		err := ci.SaveBlock(nil)
 
 		// Expect data is sent/received only after WSS & WSR are set
 		require.True(t, wssCalled.IsSet())
 		require.True(t, wsrCalled.IsSet())
+		require.Nil(t, err)
 	}()
 
 	time.Sleep(time.Millisecond * 200)
@@ -258,11 +266,12 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 	}
 
 	go func() {
-		ci.SaveBlock(nil)
+		err := ci.SaveBlock(nil)
 
 		// Expect data is sent/received 4 times (until a correct ack msg is sent) after WSS & WSR are set
 		require.Equal(t, wssCalledCt.Get(), int64(4))
 		require.Equal(t, wsrCalledCt.Get(), int64(4))
+		require.Nil(t, err)
 	}()
 
 	time.Sleep(time.Millisecond * 200)
@@ -309,11 +318,12 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 
 	wsrReconnectedCalledCt := atomic.Counter{}
 	go func() {
-		ci.SaveBlock(nil)
+		err := ci.SaveBlock(nil)
 
 		require.Equal(t, int64(2), wssCalledCt.Get())
 		require.Equal(t, int64(1), wsrCalledCt.Get())
 		require.Equal(t, int64(1), wsrReconnectedCalledCt.Get())
+		require.Nil(t, err)
 	}()
 
 	time.Sleep(time.Millisecond * 200)
@@ -377,11 +387,12 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 	wss2Called := atomic.Flag{}
 
 	go func() {
-		ci.SaveBlock(nil)
+		err := ci.SaveBlock(nil)
 
 		require.Equal(t, int64(2), wssCalledCt1.Get())
 		require.Equal(t, int64(3), wsrCalledCt1.Get())
 		require.True(t, wss2Called.IsSet())
+		require.Nil(t, err)
 	}()
 
 	time.Sleep(time.Millisecond * 200)
@@ -413,4 +424,22 @@ func generateRandomValidBlockResult() *schema.BlockResult {
 	return &schema.BlockResult{
 		Block: block,
 	}
+}
+
+func TestCovalentDataIndexer_UnimplementedFunctions(t *testing.T) {
+	ci, _ := covalent.NewCovalentDataIndexer(
+		&mock.DataHandlerStub{},
+		&http.Server{
+			Addr: "localhost:21119",
+		})
+	defer func() {
+		_ = ci.Close()
+	}()
+
+	assert.Nil(t, ci.RevertIndexedBlock(nil, nil))
+	assert.Nil(t, ci.SaveRoundsInfo(nil))
+	assert.Nil(t, ci.SaveValidatorsPubKeys(nil, 0))
+	assert.Nil(t, ci.SaveValidatorsRating("", nil))
+	assert.Nil(t, ci.SaveAccounts(0, nil))
+	assert.Nil(t, ci.FinalizedBlock(nil))
 }
