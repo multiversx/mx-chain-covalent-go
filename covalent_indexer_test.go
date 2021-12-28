@@ -10,9 +10,9 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
+	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
-	"github.com/ElrondNetwork/elrond-vm-common/atomic"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -70,14 +70,14 @@ func TestCovalentIndexer_SetWSSender_SetTwoConsecutiveWebSockets_ExpectFirstOneC
 
 	wss1 := &mock.WSConnStub{
 		CloseCalled: func() error {
-			called1.Set()
+			_ = called1.SetReturningPrevious()
 			return nil
 		},
 	}
 
 	wss2 := &mock.WSConnStub{
 		CloseCalled: func() error {
-			called2.Set()
+			_ = called2.SetReturningPrevious()
 			return nil
 		},
 	}
@@ -114,14 +114,14 @@ func TestCovalentIndexer_SetWSReceiver_SetTwoConsecutiveWebSockets_ExpectFirstOn
 
 	wss1 := &mock.WSConnStub{
 		CloseCalled: func() error {
-			called1.Set()
+			_ = called1.SetReturningPrevious()
 			return nil
 		},
 	}
 
 	wss2 := &mock.WSConnStub{
 		CloseCalled: func() error {
-			called2.Set()
+			_ = called2.SetReturningPrevious()
 			return nil
 		},
 	}
@@ -197,7 +197,7 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 	wssCalled := atomic.Flag{}
 	wss := &mock.WSConnStub{
 		WriteMessageCalled: func(messageType int, data []byte) error {
-			wssCalled.Set()
+			_ = wssCalled.SetReturningPrevious()
 			return nil
 		},
 	}
@@ -205,7 +205,7 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 	wsrCalled := atomic.Flag{}
 	wsr := &mock.WSConnStub{
 		ReadMessageCalled: func() (messageType int, p []byte, err error) {
-			wsrCalled.Set()
+			_ = wsrCalled.SetReturningPrevious()
 			return websocket.BinaryMessage, blockRes.Block.Hash, nil
 		},
 	}
@@ -406,7 +406,7 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 
 	wss2 := &mock.WSConnStub{
 		WriteMessageCalled: func(messageType int, data []byte) error {
-			wss2Called.Set()
+			_ = wss2Called.SetReturningPrevious()
 			return nil
 		},
 	}
