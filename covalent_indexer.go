@@ -187,7 +187,6 @@ func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) error {
 
 	ci.sendWithRetrial(dataToSend, blockResult.Block.Hash)
 
-	// TODO next PRs - remove the retrial, it is done by the node
 	return nil
 }
 
