@@ -52,7 +52,7 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 	smartContractResults := dp.scHandler.ProcessSCRs(pool.Scrs, args.Header.GetTimeStamp())
 	receipts := dp.receiptHandler.ProcessReceipts(pool.Receipts, args.Header.GetTimeStamp())
 	logs := dp.logHandler.ProcessLogs(pool.Logs)
-	accountUpdates := dp.accountsHandler.ProcessAccounts(transactions, smartContractResults, receipts)
+	accountUpdates := dp.accountsHandler.ProcessAccounts(args.AlteredAccounts, transactions, smartContractResults, receipts)
 
 	return &schema.BlockResult{
 		Block:        block,

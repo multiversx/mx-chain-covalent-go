@@ -45,6 +45,7 @@ type LogHandler interface {
 // AccountsHandler defines what an account processor shall do
 type AccountsHandler interface {
 	ProcessAccounts(
+		alteredAccounts map[string]*indexer.AlteredAccount,
 		processedTxs []*schema.Transaction,
 		processedSCRs []*schema.SCResult,
 		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate

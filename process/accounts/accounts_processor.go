@@ -2,14 +2,15 @@ package accounts
 
 import (
 	"bytes"
+	"fmt"
+	"math/big"
 
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/data"
+	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
@@ -17,36 +18,22 @@ var log = logger.GetOrCreate("covalent/process/accounts")
 
 type accountsProcessor struct {
 	shardCoordinator process.ShardCoordinator
-	pubKeyConverter  core.PubkeyConverter
-	accounts         covalent.AccountsAdapter
 }
 
 // NewAccountsProcessor creates a new instance of accounts processor
-func NewAccountsProcessor(
-	shardCoordinator process.ShardCoordinator,
-	accounts covalent.AccountsAdapter,
-	pubKeyConverter core.PubkeyConverter,
-) (*accountsProcessor, error) {
-
+func NewAccountsProcessor(shardCoordinator process.ShardCoordinator) (*accountsProcessor, error) {
 	if check.IfNil(shardCoordinator) {
 		return nil, covalent.ErrNilShardCoordinator
 	}
-	if check.IfNil(accounts) {
-		return nil, covalent.ErrNilAccountsAdapter
-	}
-	if check.IfNil(pubKeyConverter) {
-		return nil, covalent.ErrNilPubKeyConverter
-	}
 
 	return &accountsProcessor{
-		accounts:         accounts,
-		pubKeyConverter:  pubKeyConverter,
 		shardCoordinator: shardCoordinator,
 	}, nil
 }
 
 // ProcessAccounts converts accounts data to a specific structure defined by avro schema
 func (ap *accountsProcessor) ProcessAccounts(
+	alteredAccounts map[string]*indexer.AlteredAccount,
 	processedTxs []*schema.Transaction,
 	processedSCRs []*schema.SCResult,
 	processedReceipts []*schema.Receipt,
@@ -55,7 +42,7 @@ func (ap *accountsProcessor) ProcessAccounts(
 	accounts := make([]*schema.AccountBalanceUpdate, 0, len(addresses))
 
 	for address := range addresses {
-		account, err := ap.processAccount(address)
+		account, err := ap.processAccount(address, alteredAccounts)
 		if err != nil || account == nil {
 			log.Warn("cannot get account address", "address", address, "error", err)
 			continue
@@ -100,26 +87,33 @@ func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct
 	}
 }
 
-func (ap *accountsProcessor) processAccount(address string) (*schema.AccountBalanceUpdate, error) {
-	//TODO: This only works as long as covalent indexer is part of elrond node binary.
-	// This needs to be changed, so that account content is given as an input parameter, not loaded.
-	pubKey, err := ap.pubKeyConverter.Decode(address)
-	if err != nil {
-		return nil, err
+func (ap *accountsProcessor) processAccount(
+	address string,
+	alteredAccounts map[string]*indexer.AlteredAccount,
+) (*schema.AccountBalanceUpdate, error) {
+	if alteredAccounts == nil {
+		return nil, covalent.ErrNilAlteredAccounts
 	}
 
-	acc, err := ap.accounts.LoadAccount(pubKey)
-	if err != nil {
-		return nil, err
+	acc, ok := alteredAccounts[address]
+	if !ok {
+		return nil, fmt.Errorf("%w while extracting %s from altered accounts", covalent.ErrAccountNotFound, address)
 	}
 
-	account, castOk := acc.(data.UserAccountHandler)
-	if !castOk {
-		return nil, covalent.ErrCannotCastAccountHandlerToUserAccount
+	userBalance := acc.Balance
+	if len(userBalance) == 0 {
+		userBalance = "0"
 	}
+
+	balanceBI := big.NewInt(0)
+	balanceBI, ok = balanceBI.SetString(userBalance, 10)
+	if !ok {
+		return nil, fmt.Errorf("%w for address %s with balance %s", covalent.ErrCannotCreateBigIntFromString, address, acc.Balance)
+	}
+
 	return &schema.AccountBalanceUpdate{
 		Address: []byte(address),
-		Balance: utility.GetBytes(account.GetBalance()),
-		Nonce:   int64(account.GetNonce()),
+		Balance: utility.GetBytes(balanceBI),
+		Nonce:   int64(acc.Nonce),
 	}, nil
 }
