@@ -43,7 +43,7 @@ func (ap *accountsProcessor) ProcessAccounts(
 
 	for address := range addresses {
 		account, err := ap.processAccount(address, alteredAccounts)
-		if err != nil || account == nil {
+		if err != nil {
 			log.Warn("cannot get account address", "address", address, "error", err)
 			continue
 		}
@@ -96,7 +96,7 @@ func (ap *accountsProcessor) processAccount(
 	}
 
 	acc, ok := alteredAccounts[address]
-	if !ok {
+	if !ok || acc == nil {
 		return nil, fmt.Errorf("%w while extracting %s from altered accounts", covalent.ErrAccountNotFound, address)
 	}
 
@@ -105,8 +105,7 @@ func (ap *accountsProcessor) processAccount(
 		userBalance = "0"
 	}
 
-	balanceBI := big.NewInt(0)
-	balanceBI, ok = balanceBI.SetString(userBalance, 10)
+	balanceBI, ok := big.NewInt(0).SetString(userBalance, 10)
 	if !ok {
 		return nil, fmt.Errorf("%w for address %s with balance %s", covalent.ErrCannotCreateBigIntFromString, address, acc.Balance)
 	}

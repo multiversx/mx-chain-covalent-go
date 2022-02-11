@@ -117,18 +117,17 @@ func TestAccountsProcessor_ProcessAccounts_FourAddresses_TwoIdentical_ExpectTwoA
 func TestAccountsProcessor_ProcessAccounts_OneAddress_OneMetaChainShardAddress_ExpectOneAccount(t *testing.T) {
 	ap, _ := accounts.NewAccountsProcessor(&mock.ShardCoordinatorMock{})
 
+	addresses := generateAddresses(1)
 	tx := &schema.Transaction{
-		Receiver: []byte("adr1"),
+		Receiver: []byte("adr0"),
 		Sender:   utility.MetaChainShardAddress(),
 	}
 
-	alteredAccounts := prepareAlteredAccounts([][]byte{[]byte("adr1")})
+	alteredAccounts := prepareAlteredAccounts(addresses)
 	ret := ap.ProcessAccounts(alteredAccounts, []*schema.Transaction{tx}, []*schema.SCResult{}, []*schema.Receipt{})
 
 	require.Len(t, ret, 1)
-	require.Equal(t, []byte("adr1"), ret[0].Address)
-	require.Equal(t, big.NewInt(int64(1)).Bytes(), ret[0].Balance)
-	require.Equal(t, int64(1), ret[0].Nonce)
+	checkProcessedAccounts(t, addresses, ret)
 }
 
 func TestAccountsProcessor_ProcessAccounts_SevenAddresses_ExpectSevenAccounts(t *testing.T) {
@@ -164,6 +163,27 @@ func TestAccountsProcessor_ProcessAccounts_SevenAddresses_ExpectSevenAccounts(t 
 	checkProcessedAccounts(t, addresses, ret)
 }
 
+func TestAccountsProcessor_ProcessAccounts(t *testing.T) {
+	t.Parallel()
+
+	ap, _ := accounts.NewAccountsProcessor(&mock.ShardCoordinatorMock{})
+
+	alteredAccountsMap := map[string]*indexer.AlteredAccount{
+		"adr0": {
+			Balance: "",
+		},
+	}
+
+	tx1 := &schema.Transaction{
+		Receiver: []byte("adr0"),
+	}
+
+	res := ap.ProcessAccounts(alteredAccountsMap, []*schema.Transaction{tx1}, []*schema.SCResult{}, []*schema.Receipt{})
+
+	require.Len(t, res, 1)
+	require.Equal(t, big.NewInt(0).Bytes(), res[0].Balance)
+}
+
 func generateAddresses(n int) [][]byte {
 	addresses := make([][]byte, n)
 
@@ -179,16 +199,16 @@ func prepareAlteredAccounts(addresses [][]byte) map[string]*indexer.AlteredAccou
 
 	for idx, addr := range addresses {
 		mapToRet[string(addr)] = &indexer.AlteredAccount{
-			Balance: big.NewInt(0).SetInt64(int64(idx + 1)).String(),
-			Nonce:   big.NewInt(0).SetInt64(int64(idx + 1)).Uint64(),
+			Balance: big.NewInt(0).SetInt64(int64(idx)).String(),
+			Nonce:   big.NewInt(0).SetInt64(int64(idx)).Uint64(),
 		}
 	}
 
 	return mapToRet
 }
 
-// This function relies on the order of the addresses according to generateAddresses(). for example, adr1 need to have
-// a balance of 2 and a nonce of 2
+// This function relies on the order of the addresses according to generateAddresses(). for example, adr1 needs to have
+// a balance of 1 and a nonce of 1
 func checkProcessedAccounts(t *testing.T, addresses [][]byte, processedAcc []*schema.AccountBalanceUpdate) {
 	require.Equal(t, len(addresses), len(processedAcc), "should have the same number of processed accounts as initial addresses")
 
@@ -207,7 +227,7 @@ func checkProcessedAccounts(t *testing.T, addresses [][]byte, processedAcc []*sc
 		addrIdxStr := strings.Split(string(account.Address), "adr")[1] //adr0 => "0"
 		addrIdxBI, _ := big.NewInt(0).SetString(addrIdxStr, 10)
 		addrIdx := addrIdxBI.Int64()
-		require.Equal(t, big.NewInt(addrIdx+1).Bytes(), account.Balance)
-		require.Equal(t, addrIdx+1, account.Nonce)
+		require.Equal(t, big.NewInt(addrIdx).Bytes(), account.Balance)
+		require.Equal(t, addrIdx, account.Nonce)
 	}
 }
