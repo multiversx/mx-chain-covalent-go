@@ -163,7 +163,7 @@ func TestAccountsProcessor_ProcessAccounts_SevenAddresses_ExpectSevenAccounts(t 
 	checkProcessedAccounts(t, addresses, ret)
 }
 
-func TestAccountsProcessor_ProcessAccounts(t *testing.T) {
+func TestAccountsProcessor_ProcessAccounts_EmptyAlteredAccountBalance(t *testing.T) {
 	t.Parallel()
 
 	ap, _ := accounts.NewAccountsProcessor(&mock.ShardCoordinatorMock{})
