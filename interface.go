@@ -6,10 +6,12 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 )
 
+// DataHandler defines the behaviour of a component that is able to process the data of a block
 type DataHandler interface {
 	ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error)
 }
 
+// Driver defines the behaviour of an outport driver that should handle the saving or processing of data resulted from node
 type Driver interface {
 	SaveBlock(args *indexer.ArgsSaveBlockData) error
 	RevertIndexedBlock(header data.HeaderHandler, body data.BodyHandler) error
