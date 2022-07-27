@@ -1,7 +1,6 @@
 package receipts_test
 
 import (
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"math/big"
 	"testing"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
+	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/data/receipt"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
