@@ -66,11 +66,11 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 
 func getPool(args *indexer.ArgsSaveBlockData) *indexer.Pool {
 	pool := &indexer.Pool{
-		Txs:      make(map[string]data.TransactionHandler),
-		Scrs:     make(map[string]data.TransactionHandler),
-		Rewards:  make(map[string]data.TransactionHandler),
-		Invalid:  make(map[string]data.TransactionHandler),
-		Receipts: make(map[string]data.TransactionHandler),
+		Txs:      make(map[string]data.TransactionHandlerWithGasUsedAndFee),
+		Scrs:     make(map[string]data.TransactionHandlerWithGasUsedAndFee),
+		Rewards:  make(map[string]data.TransactionHandlerWithGasUsedAndFee),
+		Invalid:  make(map[string]data.TransactionHandlerWithGasUsedAndFee),
+		Receipts: make(map[string]data.TransactionHandlerWithGasUsedAndFee),
 		Logs:     make([]*data.LogData, 0),
 	}
 	if args.TransactionsPool != nil {
