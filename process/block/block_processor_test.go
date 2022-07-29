@@ -15,7 +15,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 	"github.com/stretchr/testify/require"
 )
@@ -202,14 +202,14 @@ func TestBlockProcessor_ProcessMetaBlock_NotStartOfEpochBlock_ExpectNilEpochStar
 	metaBlockHeader := getInitializedMetaBlockHeader()
 	metaBlockHeader.EpochStart.LastFinalizedHeaders = nil
 
-	ret, _ := bp.ProcessBlock(&indexer.ArgsSaveBlockData{
+	ret, _ := bp.ProcessBlock(&outport.ArgsSaveBlockData{
 		Header: metaBlockHeader,
 		Body:   &erdBlock.Body{}})
 
 	require.Equal(t, (*schema.EpochStartInfo)(nil), ret.EpochStartInfo)
 }
 
-func getInitializedArgs(metaBlock bool) *indexer.ArgsSaveBlockData {
+func getInitializedArgs(metaBlock bool) *outport.ArgsSaveBlockData {
 	var header data.HeaderHandler
 
 	if metaBlock {
@@ -218,7 +218,7 @@ func getInitializedArgs(metaBlock bool) *indexer.ArgsSaveBlockData {
 		header = getInitialisedBlockHeader()
 	}
 
-	return &indexer.ArgsSaveBlockData{
+	return &outport.ArgsSaveBlockData{
 		HeaderHash:             []byte("header hash"),
 		Body:                   &erdBlock.Body{},
 		Header:                 header,

@@ -12,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core/atomic"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -145,7 +145,7 @@ func TestCovalentIndexer_SetWSReceiver_SetTwoConsecutiveWebSockets_ExpectFirstOn
 func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectPanic(t *testing.T) {
 	ci, _ := covalent.NewCovalentDataIndexer(
 		&mock.DataHandlerStub{
-			ProcessDataCalled: func(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+			ProcessDataCalled: func(args *outport.ArgsSaveBlockData) (*schema.BlockResult, error) {
 				return nil, errors.New("local error")
 			},
 		},
@@ -163,7 +163,7 @@ func TestCovalentIndexer_SaveBlock_ErrorProcessingData_ExpectPanic(t *testing.T)
 func TestCovalentIndexer_SaveBlock_ErrorEncodingBlockRes_ExpectPanic(t *testing.T) {
 	ci, _ := covalent.NewCovalentDataIndexer(
 		&mock.DataHandlerStub{
-			ProcessDataCalled: func(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+			ProcessDataCalled: func(args *outport.ArgsSaveBlockData) (*schema.BlockResult, error) {
 				return nil, nil
 			},
 		},
@@ -183,7 +183,7 @@ func TestCovalentIndexer_SaveBlock_ExpectSuccess(t *testing.T) {
 
 	ci, _ := covalent.NewCovalentDataIndexer(
 		&mock.DataHandlerStub{
-			ProcessDataCalled: func(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+			ProcessDataCalled: func(args *outport.ArgsSaveBlockData) (*schema.BlockResult, error) {
 				return blockRes, nil
 			},
 		},
@@ -234,7 +234,7 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgedDataFourTimes_ExpectSuccessA
 
 	ci, _ := covalent.NewCovalentDataIndexer(
 		&mock.DataHandlerStub{
-			ProcessDataCalled: func(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+			ProcessDataCalled: func(args *outport.ArgsSaveBlockData) (*schema.BlockResult, error) {
 				return blockRes, nil
 			},
 		},
@@ -289,7 +289,7 @@ func TestCovalentIndexer_SaveBlock_ErrorAcknowledgeData_ReconnectedWSR_ExpectMes
 
 	ci, _ := covalent.NewCovalentDataIndexer(
 		&mock.DataHandlerStub{
-			ProcessDataCalled: func(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+			ProcessDataCalled: func(args *outport.ArgsSaveBlockData) (*schema.BlockResult, error) {
 				return blockRes, nil
 			},
 		},
@@ -351,7 +351,7 @@ func TestCovalentIndexer_SaveBlock_WrongAcknowledgeThreeTimes_ErrorSendingBlockT
 
 	ci, _ := covalent.NewCovalentDataIndexer(
 		&mock.DataHandlerStub{
-			ProcessDataCalled: func(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+			ProcessDataCalled: func(args *outport.ArgsSaveBlockData) (*schema.BlockResult, error) {
 				return blockRes, nil
 			},
 		},

@@ -12,7 +12,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/data/receipt"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
@@ -62,9 +62,9 @@ func TestReceiptsProcessor_ProcessReceipts_TwoReceipts_OneNormalTx_ExpectTwoProc
 	receipt2 := generateRandomReceipt()
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		"hash1": indexer.NewTransactionHandlerWithGasAndFee(receipt1, 0, big.NewInt(0)),
-		"hash2": indexer.NewTransactionHandlerWithGasAndFee(receipt2, 0, big.NewInt(0)),
-		"hash3": indexer.NewTransactionHandlerWithGasAndFee(&transaction.Transaction{}, 0, big.NewInt(0)),
+		"hash1": outport.NewTransactionHandlerWithGasAndFee(receipt1, 0, big.NewInt(0)),
+		"hash2": outport.NewTransactionHandlerWithGasAndFee(receipt2, 0, big.NewInt(0)),
+		"hash3": outport.NewTransactionHandlerWithGasAndFee(&transaction.Transaction{}, 0, big.NewInt(0)),
 	}
 
 	ret := rp.ProcessReceipts(txPool, 123)

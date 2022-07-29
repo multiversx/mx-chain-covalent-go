@@ -9,7 +9,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/data/rewardTx"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/hashing"
@@ -53,7 +53,7 @@ func (txp *transactionProcessor) ProcessTransactions(
 	header data.HeaderHandler,
 	headerHash []byte,
 	bodyHandler data.BodyHandler,
-	pool *indexer.Pool,
+	pool *outport.Pool,
 ) ([]*schema.Transaction, error) {
 	body, ok := bodyHandler.(*erdBlock.Body)
 	if !ok {
@@ -200,7 +200,7 @@ func (txp *transactionProcessor) processRewardTransaction(
 	}
 }
 
-func getRelevantTxPoolBasedOnMBType(miniBlock *erdBlock.MiniBlock, pool *indexer.Pool) map[string]data.TransactionHandlerWithGasUsedAndFee {
+func getRelevantTxPoolBasedOnMBType(miniBlock *erdBlock.MiniBlock, pool *outport.Pool) map[string]data.TransactionHandlerWithGasUsedAndFee {
 	var ret map[string]data.TransactionHandlerWithGasUsedAndFee
 
 	switch miniBlock.Type {

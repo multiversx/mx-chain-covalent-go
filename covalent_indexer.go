@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/gorilla/websocket"
 )
@@ -175,7 +175,7 @@ func (ci *covalentIndexer) sendDataWithAcknowledge(
 }
 
 // SaveBlock saves the block info and converts it in order to be sent to covalent
-func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) error {
+func (ci *covalentIndexer) SaveBlock(args *outport.ArgsSaveBlockData) error {
 	blockResult, err := ci.processor.ProcessData(args)
 	if err != nil {
 		log.Error("SaveBlock failed. Could not process block",
@@ -196,27 +196,27 @@ func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) error {
 }
 
 // RevertIndexedBlock returns nil
-func (ci *covalentIndexer) RevertIndexedBlock(data.HeaderHandler, data.BodyHandler) error {
+func (ci *covalentIndexer) RevertIndexedBlock(_ data.HeaderHandler, _ data.BodyHandler) error {
 	return nil
 }
 
 // SaveRoundsInfo returns nil
-func (ci *covalentIndexer) SaveRoundsInfo(_ []*indexer.RoundInfo) error {
+func (ci *covalentIndexer) SaveRoundsInfo(_ []*outport.RoundInfo) error {
 	return nil
 }
 
 // SaveValidatorsPubKeys returns nil
-func (ci *covalentIndexer) SaveValidatorsPubKeys(map[uint32][][]byte, uint32) error {
+func (ci *covalentIndexer) SaveValidatorsPubKeys(_ map[uint32][][]byte, _ uint32) error {
 	return nil
 }
 
 // SaveValidatorsRating returns nil
-func (ci *covalentIndexer) SaveValidatorsRating(string, []*indexer.ValidatorRatingInfo) error {
+func (ci *covalentIndexer) SaveValidatorsRating(_ string, _ []*outport.ValidatorRatingInfo) error {
 	return nil
 }
 
 // SaveAccounts returns nil
-func (ci *covalentIndexer) SaveAccounts(uint64, map[string]*indexer.AlteredAccount) error {
+func (ci *covalentIndexer) SaveAccounts(_ uint64, _ map[string]*outport.AlteredAccount) error {
 	return nil
 }
 

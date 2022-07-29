@@ -3,7 +3,7 @@ package process
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 )
 
 type dataProcessor struct {
@@ -36,7 +36,7 @@ func NewDataProcessor(
 }
 
 // ProcessData converts all covalent necessary data to a specific structure defined by avro schema
-func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error) {
+func (dp *dataProcessor) ProcessData(args *outport.ArgsSaveBlockData) (*schema.BlockResult, error) {
 	pool := getPool(args)
 
 	block, err := dp.blockHandler.ProcessBlock(args)
@@ -64,8 +64,8 @@ func (dp *dataProcessor) ProcessData(args *indexer.ArgsSaveBlockData) (*schema.B
 	}, nil
 }
 
-func getPool(args *indexer.ArgsSaveBlockData) *indexer.Pool {
-	pool := &indexer.Pool{
+func getPool(args *outport.ArgsSaveBlockData) *outport.Pool {
+	pool := &outport.Pool{
 		Txs:      make(map[string]data.TransactionHandlerWithGasUsedAndFee),
 		Scrs:     make(map[string]data.TransactionHandlerWithGasUsedAndFee),
 		Rewards:  make(map[string]data.TransactionHandlerWithGasUsedAndFee),

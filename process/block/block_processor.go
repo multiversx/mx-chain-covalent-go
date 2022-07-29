@@ -9,7 +9,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/marshal"
 )
 
@@ -36,7 +36,7 @@ func NewBlockProcessor(marshaller marshal.Marshalizer, mbHandler process.MiniBlo
 }
 
 // ProcessBlock converts block data to a specific structure defined by avro schema
-func (bp *blockProcessor) ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error) {
+func (bp *blockProcessor) ProcessBlock(args *outport.ArgsSaveBlockData) (*schema.Block, error) {
 	blockSizeInBytes, err := bp.computeBlockSize(args.Header, args.Body)
 	if err != nil {
 		return nil, err

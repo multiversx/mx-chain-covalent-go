@@ -14,7 +14,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,7 +52,7 @@ func TestAccountsProcessor_ProcessAccounts_NotInSameShard_ExpectZeroAccounts(t *
 	tx := &schema.Transaction{
 		Receiver: testscommon.GenerateRandomBytes(),
 		Sender:   testscommon.GenerateRandomBytes()}
-	ret := ap.ProcessAccounts(map[string]*indexer.AlteredAccount{}, []*schema.Transaction{tx}, []*schema.SCResult{}, []*schema.Receipt{})
+	ret := ap.ProcessAccounts(map[string]*outport.AlteredAccount{}, []*schema.Transaction{tx}, []*schema.SCResult{}, []*schema.Receipt{})
 
 	require.Len(t, ret, 0)
 }
@@ -66,7 +66,7 @@ func TestAccountsProcessor_ProcessAccounts_OneSender_NilReceiver_ExpectOneAccoun
 		Receiver: nil,
 	}
 
-	alteredAccounts := map[string]*indexer.AlteredAccount{
+	alteredAccounts := map[string]*outport.AlteredAccount{
 		string(addresses[0]): {},
 	}
 
@@ -168,7 +168,7 @@ func TestAccountsProcessor_ProcessAccounts_EmptyAlteredAccountBalance(t *testing
 
 	ap, _ := accounts.NewAccountsProcessor(&mock.ShardCoordinatorMock{})
 
-	alteredAccountsMap := map[string]*indexer.AlteredAccount{
+	alteredAccountsMap := map[string]*outport.AlteredAccount{
 		"adr0": {
 			Balance: "",
 		},
@@ -194,11 +194,11 @@ func generateAddresses(n int) [][]byte {
 	return addresses
 }
 
-func prepareAlteredAccounts(addresses [][]byte) map[string]*indexer.AlteredAccount {
-	mapToRet := make(map[string]*indexer.AlteredAccount)
+func prepareAlteredAccounts(addresses [][]byte) map[string]*outport.AlteredAccount {
+	mapToRet := make(map[string]*outport.AlteredAccount)
 
 	for idx, addr := range addresses {
-		mapToRet[string(addr)] = &indexer.AlteredAccount{
+		mapToRet[string(addr)] = &outport.AlteredAccount{
 			Balance: big.NewInt(0).SetInt64(int64(idx)).String(),
 			Nonce:   big.NewInt(0).SetInt64(int64(idx)).Uint64(),
 		}

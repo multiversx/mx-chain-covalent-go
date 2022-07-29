@@ -1,7 +1,6 @@
 package transactions_test
 
 import (
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"math/big"
 	"math/rand"
 	"testing"
@@ -14,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/stretchr/testify/require"
@@ -78,9 +78,9 @@ func TestScProcessor_ProcessSCs_TwoSCRs_OneNormalTx_ExpectTwoProcessedSCRs(t *te
 	tx3 := generateRandomTx()
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		"hash1": indexer.NewTransactionHandlerWithGasAndFee(tx1, 0, big.NewInt(0)),
-		"hash2": indexer.NewTransactionHandlerWithGasAndFee(tx2, 0, big.NewInt(0)),
-		"hash3": indexer.NewTransactionHandlerWithGasAndFee(tx3, 0, big.NewInt(0)),
+		"hash1": outport.NewTransactionHandlerWithGasAndFee(tx1, 0, big.NewInt(0)),
+		"hash2": outport.NewTransactionHandlerWithGasAndFee(tx2, 0, big.NewInt(0)),
+		"hash3": outport.NewTransactionHandlerWithGasAndFee(tx3, 0, big.NewInt(0)),
 	}
 
 	ret := scp.ProcessSCRs(txPool, 123)

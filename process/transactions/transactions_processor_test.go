@@ -15,7 +15,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/block"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/data/rewardTx"
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
@@ -128,7 +128,7 @@ func TestTransactionProcessor_ProcessTransactions_InvalidBody_ExpectError(t *tes
 	body := data.BodyHandler(nil)
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &indexer.Pool{})
+	_, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &outport.Pool{})
 
 	require.Equal(t, covalent.ErrBlockBodyAssertion, err)
 }
@@ -149,9 +149,9 @@ func TestTransactionProcessor_ProcessTransactions_InvalidMarshaller_ExpectZeroPr
 	}
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(txData1.txHash): indexer.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
+		string(txData1.txHash): outport.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Txs: txPool,
 	}
 
@@ -195,7 +195,7 @@ func TestTransactionProcessor_ProcessTransactions_EmptyRelevantBlocks_ExpectZero
 	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &indexer.Pool{})
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &outport.Pool{})
 
 	require.Nil(t, err)
 	require.Len(t, ret, 0)
@@ -226,7 +226,7 @@ func TestTransactionProcessor_ProcessTransactions_ThreeBlocks_TxsNotFoundInPool_
 	}
 
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
-	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &indexer.Pool{})
+	ret, err := txp.ProcessTransactions(hData.header, hData.headerHash, body, &outport.Pool{})
 
 	require.Nil(t, err)
 	require.Len(t, ret, 0)
@@ -248,9 +248,9 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneTx_ExpectOneProc
 	}
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(txData1.txHash): indexer.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
+		string(txData1.txHash): outport.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Txs: txPool,
 	}
 
@@ -277,9 +277,9 @@ func TestTransactionProcessor_ProcessTransactions_OneRewardBlock_OneRewardTx_Exp
 	}
 
 	rewardsPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(rewardTxData.txHash): indexer.NewTransactionHandlerWithGasAndFee(rewardTxData.tx, 0, big.NewInt(0)),
+		string(rewardTxData.txHash): outport.NewTransactionHandlerWithGasAndFee(rewardTxData.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Rewards: rewardsPool,
 	}
 
@@ -306,9 +306,9 @@ func TestTransactionProcessor_ProcessTransactions_OneInvalidBlock_OneTx_ExpectOn
 	}
 
 	invalidTxPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(txData1.txHash): indexer.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
+		string(txData1.txHash): outport.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Invalid: invalidTxPool,
 	}
 
@@ -347,15 +347,15 @@ func TestTransactionProcessor_ProcessTransactions_ThreeRelevantBlocks_ThreeRelev
 	}
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(normalTxData.txHash): indexer.NewTransactionHandlerWithGasAndFee(normalTxData.tx, 0, big.NewInt(0)),
+		string(normalTxData.txHash): outport.NewTransactionHandlerWithGasAndFee(normalTxData.tx, 0, big.NewInt(0)),
 	}
 	rewardsPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(rewardTxData.txHash): indexer.NewTransactionHandlerWithGasAndFee(rewardTxData.tx, 0, big.NewInt(0)),
+		string(rewardTxData.txHash): outport.NewTransactionHandlerWithGasAndFee(rewardTxData.tx, 0, big.NewInt(0)),
 	}
 	invalidTxPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(invalidTxData.txHash): indexer.NewTransactionHandlerWithGasAndFee(invalidTxData.tx, 0, big.NewInt(0)),
+		string(invalidTxData.txHash): outport.NewTransactionHandlerWithGasAndFee(invalidTxData.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Txs:     txPool,
 		Rewards: rewardsPool,
 		Invalid: invalidTxPool,
@@ -388,10 +388,10 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBLock_TwoNormalTxs_Expect
 	}
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(txData1.txHash): indexer.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
-		string(txData2.txHash): indexer.NewTransactionHandlerWithGasAndFee(txData2.tx, 0, big.NewInt(0)),
+		string(txData1.txHash): outport.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
+		string(txData2.txHash): outport.NewTransactionHandlerWithGasAndFee(txData2.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Txs: txPool,
 	}
 
@@ -427,10 +427,10 @@ func TestTransactionProcessor_ProcessTransactions_TwoTxBlocks_TwoTxs_ExpectTwoPr
 	}
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(txData1.txHash): indexer.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
-		string(txData2.txHash): indexer.NewTransactionHandlerWithGasAndFee(txData2.tx, 0, big.NewInt(0)),
+		string(txData1.txHash): outport.NewTransactionHandlerWithGasAndFee(txData1.tx, 0, big.NewInt(0)),
+		string(txData2.txHash): outport.NewTransactionHandlerWithGasAndFee(txData2.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Txs: txPool,
 	}
 
@@ -467,11 +467,11 @@ func TestTransactionProcessor_ProcessTransactions_TwoRewardsBlocks_TwoRewardTxs_
 	}
 
 	rewardsTxPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(rewardTxData1.txHash): indexer.NewTransactionHandlerWithGasAndFee(rewardTxData1.tx, 0, big.NewInt(0)),
-		string(rewardTxData2.txHash): indexer.NewTransactionHandlerWithGasAndFee(rewardTxData2.tx, 0, big.NewInt(0)),
-		string(normalTxData.txHash):  indexer.NewTransactionHandlerWithGasAndFee(normalTxData.tx, 0, big.NewInt(0)),
+		string(rewardTxData1.txHash): outport.NewTransactionHandlerWithGasAndFee(rewardTxData1.tx, 0, big.NewInt(0)),
+		string(rewardTxData2.txHash): outport.NewTransactionHandlerWithGasAndFee(rewardTxData2.tx, 0, big.NewInt(0)),
+		string(normalTxData.txHash):  outport.NewTransactionHandlerWithGasAndFee(normalTxData.tx, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Rewards: rewardsTxPool,
 	}
 
@@ -500,9 +500,9 @@ func TestTransactionProcessor_ProcessTransactions_OneTxBlock_OneSCRTx_ExpectZero
 	}
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(scrHash): indexer.NewTransactionHandlerWithGasAndFee(&smartContractResult.SmartContractResult{}, 0, big.NewInt(0)),
+		string(scrHash): outport.NewTransactionHandlerWithGasAndFee(&smartContractResult.SmartContractResult{}, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Txs: txPool,
 	}
 	txp, _ := transactions.NewTransactionProcessor(&mock.PubKeyConverterStub{}, &mock.HasherMock{}, &mock.MarshallerStub{})
@@ -527,9 +527,9 @@ func TestTransactionProcessor_ProcessTransactions_OneSCRBlock_OneSCRTx_ExpectZer
 	}
 
 	txPool := map[string]data.TransactionHandlerWithGasUsedAndFee{
-		string(scrHash): indexer.NewTransactionHandlerWithGasAndFee(&smartContractResult.SmartContractResult{}, 0, big.NewInt(0)),
+		string(scrHash): outport.NewTransactionHandlerWithGasAndFee(&smartContractResult.SmartContractResult{}, 0, big.NewInt(0)),
 	}
-	pool := &indexer.Pool{
+	pool := &outport.Pool{
 		Txs: txPool,
 	}
 

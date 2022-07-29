@@ -5,12 +5,12 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 )
 
 // BlockHandler defines what a block processor shall do
 type BlockHandler interface {
-	ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error)
+	ProcessBlock(args *outport.ArgsSaveBlockData) (*schema.Block, error)
 }
 
 // MiniBlockHandler defines what a mini blocks processor shall do
@@ -24,7 +24,7 @@ type TransactionHandler interface {
 		header data.HeaderHandler,
 		headerHash []byte,
 		bodyHandler data.BodyHandler,
-		pool *indexer.Pool) ([]*schema.Transaction, error)
+		pool *outport.Pool) ([]*schema.Transaction, error)
 }
 
 // SCResultsHandler defines what a smart contract processor shall do
@@ -45,7 +45,7 @@ type LogHandler interface {
 // AccountsHandler defines what an account processor shall do
 type AccountsHandler interface {
 	ProcessAccounts(
-		alteredAccounts map[string]*indexer.AlteredAccount,
+		alteredAccounts map[string]*outport.AlteredAccount,
 		processedTxs []*schema.Transaction,
 		processedSCRs []*schema.SCResult,
 		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate

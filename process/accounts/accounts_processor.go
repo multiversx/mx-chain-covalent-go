@@ -10,7 +10,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
@@ -33,7 +33,7 @@ func NewAccountsProcessor(shardCoordinator process.ShardCoordinator) (*accountsP
 
 // ProcessAccounts converts accounts data to a specific structure defined by avro schema
 func (ap *accountsProcessor) ProcessAccounts(
-	alteredAccounts map[string]*indexer.AlteredAccount,
+	alteredAccounts map[string]*outport.AlteredAccount,
 	processedTxs []*schema.Transaction,
 	processedSCRs []*schema.SCResult,
 	processedReceipts []*schema.Receipt,
@@ -89,7 +89,7 @@ func (ap *accountsProcessor) addAddressIfInSelfShard(addresses map[string]struct
 
 func (ap *accountsProcessor) processAccount(
 	address string,
-	alteredAccounts map[string]*indexer.AlteredAccount,
+	alteredAccounts map[string]*outport.AlteredAccount,
 ) (*schema.AccountBalanceUpdate, error) {
 	if alteredAccounts == nil {
 		return nil, covalent.ErrNilAlteredAccounts
