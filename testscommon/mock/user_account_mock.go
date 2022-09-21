@@ -37,7 +37,7 @@ func (uas *UserAccountMock) IsInterfaceNil() bool {
 	return uas == nil
 }
 
-// RetrieveValueFromDataTrieTracker -
-func (uas *UserAccountMock) RetrieveValueFromDataTrieTracker([]byte) ([]byte, error) {
+// RetrieveValue -
+func (uas *UserAccountMock) RetrieveValue([]byte) ([]byte, error) {
 	return nil, nil
 }
