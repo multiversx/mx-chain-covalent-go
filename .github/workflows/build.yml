@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main, development, feat/*]
     types: [opened, ready_for_review]
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
