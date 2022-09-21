@@ -13,7 +13,7 @@ const (
 func main() {
 	app := cli.NewApp()
 	app.Name = "Covalent proxy indexer tool"
-	app.Usage = "This is the entry point for covalent proxy indexer tool. It acts as a proxy to fetch hyperblocks from Elrond proxy. It converts hyperblocks data and and provides API calls for covalent in their desired format"
+	app.Usage = "This is the entry point for covalent proxy indexer tool. It acts as a proxy to fetch hyperblocks from Elrond  It converts hyperblocks data and provides API calls for covalent in their desired format"
 	app.Flags = getFlags()
 	app.Authors = []cli.Author{
 		{

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/config"
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/urfave/cli"
 )
@@ -44,8 +44,8 @@ func getFlags() []cli.Flag {
 	}
 }
 
-func getFlagsLogConfig(ctx *cli.Context) config.FLagsLog {
-	return config.FLagsLog{
+func getFlagsLogConfig(ctx *cli.Context) config.FlagsLog {
+	return config.FlagsLog{
 		WorkingDir:       ctx.GlobalString(workingDirectory.Name),
 		LogLevel:         ctx.GlobalString(logLevel.Name),
 		DisableAnsiColor: ctx.GlobalBool(disableAnsiColor.Name),

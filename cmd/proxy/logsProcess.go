@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/config"
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/ElrondNetwork/elrond-go/common/logging"
@@ -17,7 +17,7 @@ const (
 	logFileMaxSizeInMB   = 1024
 )
 
-func attachFileLogger(log logger.Logger, logFilePrefix string, flagsConfig config.FLagsLog) error {
+func attachFileLogger(log logger.Logger, logFilePrefix string, flagsConfig config.FlagsLog) error {
 	var err error
 	if flagsConfig.SaveLogFile {
 		fileLogging, err := logging.NewFileLogging(logging.ArgsFileLogging{
