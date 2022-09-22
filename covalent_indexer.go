@@ -216,7 +216,7 @@ func (ci *covalentIndexer) SaveValidatorsRating(_ string, _ []*outport.Validator
 }
 
 // SaveAccounts returns nil
-func (ci *covalentIndexer) SaveAccounts(_ uint64, _ map[string]*outport.AlteredAccount) error {
+func (ci *covalentIndexer) SaveAccounts(_ uint64, _ map[string]*outport.AlteredAccount, _ uint32) error {
 	return nil
 }
 

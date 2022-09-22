@@ -440,6 +440,6 @@ func TestCovalentDataIndexer_UnimplementedFunctions(t *testing.T) {
 	assert.Nil(t, ci.SaveRoundsInfo(nil))
 	assert.Nil(t, ci.SaveValidatorsPubKeys(nil, 0))
 	assert.Nil(t, ci.SaveValidatorsRating("", nil))
-	assert.Nil(t, ci.SaveAccounts(0, nil))
+	assert.Nil(t, ci.SaveAccounts(0, nil, 0))
 	assert.Nil(t, ci.FinalizedBlock(nil))
 }
