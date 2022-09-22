@@ -1,0 +1,5 @@
+# Proxy port
+Port = 8086
+
+# API path to get hyperBlock from covalent proxy
+HyperBlockPath = "/hyperBlock"
