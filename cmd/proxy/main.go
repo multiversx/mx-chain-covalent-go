@@ -80,7 +80,8 @@ func startProxy(ctx *cli.Context) error {
 }
 
 func createServer(cfg *config.Config) api.HTTPServer {
-	hyperBlockProxy := api.NewHyperBlockProxy(&api.HyperBlockFacade{})
+	hyperBlockFacade := api.NewHyperBlockFacade(80, cfg.ElrondProxyUrl)
+	hyperBlockProxy := api.NewHyperBlockProxy(hyperBlockFacade)
 
 	router := gin.Default()
 	router.GET(fmt.Sprintf("%s/by-nonce/:nonce", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByNonce)

@@ -24,6 +24,11 @@ const (
 	ReturnCodeRequestError ReturnCode = "bad_request"
 )
 
+var options = HyperBlockQueryOptions{
+	WithLogs:     false,
+	WithBalances: false,
+}
+
 type hyperBlockProxy struct {
 	hyperBlockFacade HyperBlockFacadeHandler
 }
@@ -41,12 +46,6 @@ func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 		return
 	}
 
-	options, err := parseHyperblockQueryOptions(c)
-	if err != nil {
-		shared.RespondWithValidationError(c, errors.New("bad url parameter(s)"), err)
-		return
-	}
-
 	blockByNonceResponse, err := hbp.hyperBlockFacade.GetHyperBlockByNonce(nonce, options)
 	if err != nil {
 		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
@@ -54,7 +53,6 @@ func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, blockByNonceResponse)
-
 }
 
 // FetchNonceFromRequest will try to fetch the nonce from the request
@@ -67,17 +65,20 @@ func FetchNonceFromRequest(c *gin.Context) (uint64, error) {
 	return strconv.ParseUint(nonceStr, 10, 64)
 }
 
-func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
+func checkHashFromRequest(c *gin.Context) (string, error) {
 	hash := c.Param("hash")
 	_, err := hex.DecodeString(hash)
 	if err != nil {
-		RespondWithBadRequest(c, errors.New("invalid block hash parameter").Error())
-		return
+		return "", errors.New("invalid block hash parameter")
 	}
 
-	options, err := parseHyperblockQueryOptions(c)
+	return hash, nil
+}
+
+func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
+	hash, err := checkHashFromRequest(c)
 	if err != nil {
-		shared.RespondWithValidationError(c, errors.New("bad url parameter(s)"), err)
+		RespondWithBadRequest(c, errors.New("invalid block hash parameter").Error())
 		return
 	}
 
@@ -88,29 +89,6 @@ func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, blockByHashResponse)
-}
-
-func parseHyperblockQueryOptions(c *gin.Context) (HyperBlockQueryOptions, error) {
-	withLogs, err := parseBoolUrlParam(c, UrlParameterWithLogs)
-	if err != nil {
-		return HyperBlockQueryOptions{}, err
-	}
-
-	options := HyperBlockQueryOptions{WithLogs: withLogs}
-	return options, nil
-}
-
-func parseBoolUrlParam(c *gin.Context, name string) (bool, error) {
-	return parseBoolUrlParamWithDefault(c, name, false)
-}
-
-func parseBoolUrlParamWithDefault(c *gin.Context, name string, defaultValue bool) (bool, error) {
-	param := c.Request.URL.Query().Get(name)
-	if param == "" {
-		return defaultValue, nil
-	}
-
-	return strconv.ParseBool(param)
 }
 
 // RespondWithBadRequest creates a generic response for bad request
@@ -138,6 +116,8 @@ func RespondWith(c *gin.Context, status int, dataField interface{}, error string
 }
 
 const (
-	// UrlParameterWithLogs represents the name of an URL parameter
+	// UrlParameterWithBalances represents the name of an URL parameter to query balances per hyperBlock
+	UrlParameterWithBalances = "withBalances"
+	// UrlParameterWithLogs represents the name of an URL parameter to query logs per hyperBlock
 	UrlParameterWithLogs = "withLogs"
 )

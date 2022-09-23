@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Port           uint32 `toml:"Port"`
 	HyperBlockPath string `toml:"HyperBlockPath"`
+	ElrondProxyUrl string `toml:"ElrondProxyUrl"`
 }
 
 func LoadConfig(tomlFile string) (*Config, error) {
