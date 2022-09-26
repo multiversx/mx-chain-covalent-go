@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var testAvroMarshaller = &utility.AvroMarshaller{}
+
 func TestHexSliceToByteSlice_DifferentValues(t *testing.T) {
 	in := []string{"0a", "0b", "0c"}
 	out, err := utility.HexSliceToByteSlice(in)
@@ -66,11 +68,11 @@ func TestEncodeDecode(t *testing.T) {
 		Nonce:   444,
 	}
 
-	buffer, err := utility.Encode(account)
+	buffer, err := testAvroMarshaller.Encode(account)
 	require.Nil(t, err)
 
 	decodedAccount := &schema.AccountBalanceUpdate{}
-	err = utility.Decode(decodedAccount, buffer)
+	err = testAvroMarshaller.Decode(decodedAccount, buffer)
 	require.Nil(t, err)
 
 	require.Equal(t, account, decodedAccount)
@@ -81,17 +83,17 @@ func TestEncode_Block(t *testing.T) {
 		Hash:          testscommon.GenerateRandomFixedBytes(32),
 		StateRootHash: testscommon.GenerateRandomFixedBytes(32),
 	}
-	_, err := utility.Encode(&block)
+	_, err := testAvroMarshaller.Encode(&block)
 	require.Nil(t, err)
 
 	blockNilHash := block
 	blockNilHash.Hash = nil
-	_, err = utility.Encode(&blockNilHash)
+	_, err = testAvroMarshaller.Encode(&blockNilHash)
 	require.NotNil(t, err)
 
 	blockNilStateRootHash := block
 	blockNilStateRootHash.StateRootHash = nil
-	_, err = utility.Encode(&blockNilStateRootHash)
+	_, err = testAvroMarshaller.Encode(&blockNilStateRootHash)
 	require.NotNil(t, err)
 }
 
@@ -99,18 +101,18 @@ func TestEncode_MiniBlock(t *testing.T) {
 	mb := schema.MiniBlock{
 		Hash: testscommon.GenerateRandomFixedBytes(32),
 	}
-	_, err := utility.Encode(&mb)
+	_, err := testAvroMarshaller.Encode(&mb)
 	require.Nil(t, err)
 
 	mbNilHash := mb
 	mbNilHash.Hash = nil
-	_, err = utility.Encode(&mbNilHash)
+	_, err = testAvroMarshaller.Encode(&mbNilHash)
 	require.NotNil(t, err)
 }
 
 func TestEncode_EpochStartInfo(t *testing.T) {
 	info := schema.EpochStartInfo{}
-	_, err := utility.Encode(&info)
+	_, err := testAvroMarshaller.Encode(&info)
 	require.Nil(t, err)
 }
 
@@ -122,32 +124,32 @@ func TestEncode_Transaction(t *testing.T) {
 		Receiver:      testscommon.GenerateRandomFixedBytes(62),
 		Sender:        testscommon.GenerateRandomFixedBytes(62),
 	}
-	_, err := utility.Encode(&tx)
+	_, err := testAvroMarshaller.Encode(&tx)
 	require.Nil(t, err)
 
 	txNilHash := tx
 	txNilHash.Hash = nil
-	_, err = utility.Encode(&txNilHash)
+	_, err = testAvroMarshaller.Encode(&txNilHash)
 	require.NotNil(t, err)
 
 	txNilMiniBlockHash := tx
 	txNilMiniBlockHash.MiniBlockHash = nil
-	_, err = utility.Encode(&txNilMiniBlockHash)
+	_, err = testAvroMarshaller.Encode(&txNilMiniBlockHash)
 	require.NotNil(t, err)
 
 	txNilBlockHash := tx
 	txNilBlockHash.BlockHash = nil
-	_, err = utility.Encode(&txNilBlockHash)
+	_, err = testAvroMarshaller.Encode(&txNilBlockHash)
 	require.NotNil(t, err)
 
 	txNilReceiver := tx
 	txNilReceiver.Receiver = nil
-	_, err = utility.Encode(&txNilReceiver)
+	_, err = testAvroMarshaller.Encode(&txNilReceiver)
 	require.NotNil(t, err)
 
 	txNilSender := tx
 	txNilSender.Sender = nil
-	_, err = utility.Encode(&txNilSender)
+	_, err = testAvroMarshaller.Encode(&txNilSender)
 	require.NotNil(t, err)
 }
 
@@ -159,32 +161,32 @@ func TestEncode_SCR(t *testing.T) {
 		PrevTxHash:     testscommon.GenerateRandomFixedBytes(32),
 		OriginalTxHash: testscommon.GenerateRandomFixedBytes(32),
 	}
-	_, err := utility.Encode(&scRes)
+	_, err := testAvroMarshaller.Encode(&scRes)
 	require.Nil(t, err)
 
 	scResNilHash := scRes
 	scResNilHash.Hash = nil
-	_, err = utility.Encode(&scResNilHash)
+	_, err = testAvroMarshaller.Encode(&scResNilHash)
 	require.NotNil(t, err)
 
 	scResNilSender := scRes
 	scResNilSender.Sender = nil
-	_, err = utility.Encode(&scResNilSender)
+	_, err = testAvroMarshaller.Encode(&scResNilSender)
 	require.NotNil(t, err)
 
 	scResNilReceiver := scRes
 	scResNilReceiver.Receiver = nil
-	_, err = utility.Encode(&scResNilReceiver)
+	_, err = testAvroMarshaller.Encode(&scResNilReceiver)
 	require.NotNil(t, err)
 
 	scResNilPrevTxHash := scRes
 	scResNilPrevTxHash.PrevTxHash = nil
-	_, err = utility.Encode(&scResNilPrevTxHash)
+	_, err = testAvroMarshaller.Encode(&scResNilPrevTxHash)
 	require.NotNil(t, err)
 
 	scResNilOriginalTxHash := scRes
 	scResNilOriginalTxHash.OriginalTxHash = nil
-	_, err = utility.Encode(&scResNilOriginalTxHash)
+	_, err = testAvroMarshaller.Encode(&scResNilOriginalTxHash)
 	require.NotNil(t, err)
 }
 
@@ -195,32 +197,32 @@ func TestEncode_Receipt(t *testing.T) {
 		TxHash: testscommon.GenerateRandomFixedBytes(32),
 	}
 
-	_, err := utility.Encode(&receipt)
+	_, err := testAvroMarshaller.Encode(&receipt)
 	require.Nil(t, err)
 
 	receiptNilHash := receipt
 	receiptNilHash.Hash = nil
-	_, err = utility.Encode(&receiptNilHash)
+	_, err = testAvroMarshaller.Encode(&receiptNilHash)
 	require.NotNil(t, err)
 
 	receiptNilSender := receipt
 	receiptNilSender.Sender = nil
-	_, err = utility.Encode(&receiptNilSender)
+	_, err = testAvroMarshaller.Encode(&receiptNilSender)
 	require.NotNil(t, err)
 
 	receiptNilTxHash := receipt
 	receiptNilTxHash.TxHash = nil
-	_, err = utility.Encode(&receiptNilTxHash)
+	_, err = testAvroMarshaller.Encode(&receiptNilTxHash)
 	require.NotNil(t, err)
 }
 
 func TestEncode_LogAndEvent(t *testing.T) {
 	log := schema.Event{}
-	_, err := utility.Encode(&log)
+	_, err := testAvroMarshaller.Encode(&log)
 	require.Nil(t, err)
 
 	event := schema.Event{}
-	_, err = utility.Encode(&event)
+	_, err = testAvroMarshaller.Encode(&event)
 	require.Nil(t, err)
 }
 
@@ -228,12 +230,12 @@ func TestEncode_AccountBalanceUpdate(t *testing.T) {
 	acc := schema.AccountBalanceUpdate{
 		Address: testscommon.GenerateRandomFixedBytes(62),
 	}
-	_, err := utility.Encode(&acc)
+	_, err := testAvroMarshaller.Encode(&acc)
 	require.Nil(t, err)
 
 	accNilAddress := acc
 	accNilAddress.Address = nil
-	_, err = utility.Encode(&accNilAddress)
+	_, err = testAvroMarshaller.Encode(&accNilAddress)
 	require.NotNil(t, err)
 }
 
@@ -246,11 +248,11 @@ func TestEncode_BlockResult(t *testing.T) {
 	blockRes := schema.BlockResult{
 		Block: &block,
 	}
-	_, err := utility.Encode(&blockRes)
+	_, err := testAvroMarshaller.Encode(&blockRes)
 	require.Nil(t, err)
 
 	blockResNilBlock := blockRes
 	blockResNilBlock.Block = nil
-	_, err = utility.Encode(&blockResNilBlock)
+	_, err = testAvroMarshaller.Encode(&blockResNilBlock)
 	require.NotNil(t, err)
 }

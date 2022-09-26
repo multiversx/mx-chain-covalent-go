@@ -179,7 +179,8 @@ func (ci *covalentIndexer) SaveBlock(args *indexer.ArgsSaveBlockData) error {
 		panic("could not process block, check log")
 	}
 
-	dataToSend, err := utility.Encode(blockResult)
+	marshaller := &utility.AvroMarshaller{}
+	dataToSend, err := marshaller.Encode(blockResult)
 	if err != nil {
 		log.Error("could not encode block result to binary data", "error", err)
 		panic("could not encode block result, check log")

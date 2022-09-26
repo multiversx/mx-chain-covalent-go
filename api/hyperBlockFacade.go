@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
@@ -39,79 +38,57 @@ func NewHyperBlockFacade(requestTimeoutSec uint64, path string) *HyperBlockFacad
 	}
 }
 
-func (hpf *HyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*schema.BlockResult, error) {
+func (hpf *HyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*HyperblockApiResponse, error) {
 	log.Info("path", "pp", fmt.Sprintf("%s%s/%d", hpf.path, hyperBlockPathByNonce, nonce))
 	pppp := fmt.Sprintf("%s%s/%d", hpf.path, hyperBlockPathByNonce, nonce)
 	path := BuildUrlWithBlockQueryOptions(fmt.Sprintf("%s%s/%d", hpf.path, hyperBlockPathByNonce, nonce), options)
 	log.Info("path", "pp", path)
 	var response HyperblockApiResponse
 
-	_, err := hpf.httpGet(pppp, &response)
+	err := hpf.httpGet(pppp, &response)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Info("respons", "r", response.Data.Hyperblock.PrevBlockHash)
 
-	return &schema.BlockResult{
-		Block: &schema.Block{
-			Nonce:     int64(nonce),
-			Hash:      []byte(response.Data.Hyperblock.Hash),
-			Timestamp: response.Data.Hyperblock.Timestamp.Milliseconds(),
-		},
-	}, nil
+	return &response, nil
 }
-func (hpf *HyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*schema.BlockResult, error) {
+func (hpf *HyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperblockApiResponse, error) {
 	return nil, nil
 }
 
 func (hpf *HyperBlockFacade) httpGet(
 	path string,
 	value *HyperblockApiResponse,
-) (int, error) {
-
-	req, err := http.NewRequest("GET", path, nil)
+) error {
+	resp, err := hpf.httpClient.Get(path)
 	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	userAgent := "Elrond Proxy / 1.0.0 <Requesting data from nodes>"
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", userAgent)
-
-	resp, err := hpf.httpClient.Do(req)
-	if err != nil {
-		return http.StatusNotFound, err
+		return err
 	}
 
 	defer func() {
 		errNotCritical := resp.Body.Close()
 		if errNotCritical != nil {
-			log.Warn("base process GET: close body", "error", errNotCritical.Error())
+			log.Warn("close body", "error", errNotCritical.Error())
 		}
 	}()
 
 	responseBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return err
 	}
-
-	log.Info("response body", "resp", string(responseBodyBytes))
 
 	err = json.Unmarshal(responseBodyBytes, value)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return err
 	}
 
-	log.Info("resp val", "timestamp", value.Data.Hyperblock.Timestamp)
-
-	responseStatusCode := resp.StatusCode
-	if responseStatusCode == http.StatusOK { // everything ok, return status ok and the expected response
-		return responseStatusCode, nil
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(value.Error)
 	}
 
-	// status response not ok, return the error
-	return responseStatusCode, errors.New(string(responseBodyBytes))
+	return nil
 }
 
 // BuildUrlWithBlockQueryOptions builds an URL with block query parameters

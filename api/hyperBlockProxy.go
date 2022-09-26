@@ -2,10 +2,12 @@ package api
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/gin-gonic/gin"
 )
@@ -31,11 +33,19 @@ var options = HyperBlockQueryOptions{
 
 type hyperBlockProxy struct {
 	hyperBlockFacade HyperBlockFacadeHandler
+	processor        covalent.DataHandler
+	marshaller       covalent.AvroMarshaller
 }
 
-func NewHyperBlockProxy(hyperBlockFacade HyperBlockFacadeHandler) *hyperBlockProxy {
+func NewHyperBlockProxy(
+	hyperBlockFacade HyperBlockFacadeHandler,
+	marshaller covalent.AvroMarshaller,
+	blockProcessor covalent.DataHandler,
+) *hyperBlockProxy {
 	return &hyperBlockProxy{
 		hyperBlockFacade: hyperBlockFacade,
+		marshaller:       marshaller,
+		processor:        blockProcessor,
 	}
 }
 
@@ -51,8 +61,41 @@ func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
 		return
 	}
+	//hash, err := hex.DecodeString(blockByNonceResponse.Data.Hyperblock.Hash)
+	//if err != nil {
+	//	shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+	//	return
+	//}
+	_ = blockByNonceResponse
+	x, _ := json.Marshal(blockByNonceResponse)
+	log.Info("dsadsa", "dsada", string(x))
 
-	c.JSON(http.StatusOK, blockByNonceResponse)
+	//blockRes := &schema.BlockResult{
+	//	Block: &schema.Block{
+	//		Hash: hash,
+	//	},
+	//}
+	//rrr, err := utility.Encode(blockRes)
+	//rrr, err := json.Marshal(blockRes)
+
+	//if err != nil {
+	//	shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+	//	return
+	//}
+	blockSchema, err := hbp.processor.ProcessData(nil)
+	if err != nil {
+		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+		return
+	}
+
+	blockSchemaAvroBytes, err := hbp.marshaller.Encode(blockSchema)
+	if err != nil {
+		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+		return
+	}
+
+	shared.RespondWithSuccess(c, blockSchemaAvroBytes)
+	//c.Data(http.StatusOK,"" ,rrr)
 }
 
 // FetchNonceFromRequest will try to fetch the nonce from the request

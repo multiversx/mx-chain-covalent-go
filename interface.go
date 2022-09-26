@@ -5,6 +5,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	vmcommon "github.com/ElrondNetwork/elrond-vm-common"
+	"github.com/elodina/go-avro"
 )
 
 type DataHandler interface {
@@ -31,4 +32,9 @@ type AccountsAdapter interface {
 type HttpServer interface {
 	ListenAndServe() error
 	Close() error
+}
+
+type AvroMarshaller interface {
+	Encode(record avro.AvroRecord) ([]byte, error)
+	Decode(record avro.AvroRecord, buffer []byte) error
 }
