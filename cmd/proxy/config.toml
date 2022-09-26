@@ -7,3 +7,6 @@ HyperBlockPath = "/hyperBlock"
 
 # ElrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
 ElrondProxyUrl = "https://gateway.elrond.com"
+
+# RequestTimeoutSec represents the maximum number of seconds a request can last until throwing an error
+RequestTimeOutSec = 80

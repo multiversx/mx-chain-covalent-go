@@ -5,7 +5,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 )
 
-// HyperBlockApiResponse is a response holding a block
+// HyperBlockApiResponse is the expected hyper block dto response from Elrond proxy
 type HyperBlockApiResponse struct {
 	Data  HyperBlockApiResponsePayload `json:"data"`
 	Error string                       `json:"error"`

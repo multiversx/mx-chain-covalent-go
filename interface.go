@@ -39,6 +39,7 @@ type HttpServer interface {
 	Close() error
 }
 
+// AvroMarshaller defines what an avro marshaller should do
 type AvroMarshaller interface {
 	Encode(record avro.AvroRecord) ([]byte, error)
 	Decode(record avro.AvroRecord, buffer []byte) error

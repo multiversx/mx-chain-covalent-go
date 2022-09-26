@@ -67,17 +67,10 @@ func startProxy(ctx *cli.Context) error {
 }
 
 func createServer(cfg *config.Config) api.HTTPServer {
-	httpClient := api.NewDefaultHttpClient(80)
+	httpClient := api.NewDefaultHttpClient(cfg.RequestTimeOutSec)
 	hyperBlockFacade := api.NewHyperBlockFacade(httpClient, cfg.ElrondProxyUrl)
-
-	//processor, err := factory.CreateDataProcessor(&factory.ArgsDataProcessor{
-	//	PubKeyConvertor:  nil,
-	//	Accounts:         nil,
-	//	Hasher:           nil,
-	//	Marshaller:       nil,
-	//	ShardCoordinator: nil,
-	//})
-	hyperBlockProxy := api.NewHyperBlockProxy(hyperBlockFacade, &utility.AvroMarshaller{}, process.NewHyperBlockProcessor())
+	hyperBlockProcessor := process.NewHyperBlockProcessor()
+	hyperBlockProxy := api.NewHyperBlockProxy(hyperBlockFacade, &utility.AvroMarshaller{}, hyperBlockProcessor)
 
 	router := gin.Default()
 	router.GET(fmt.Sprintf("%s/by-nonce/:nonce", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByNonce)

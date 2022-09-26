@@ -12,33 +12,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var options = HyperBlockQueryOptions{
-	WithLogs:     false,
-	WithBalances: false,
-}
-
 type hyperBlockProxy struct {
 	hyperBlockFacade HyperBlockFacadeHandler
 	processor        covalent.HyperBlockProcessor
-	marshaller       covalent.AvroMarshaller
+	encoder          AvroEncoder
 }
 
+// NewHyperBlockProxy will create a covalent proxy, able to process hyper block requests from Elrond
 func NewHyperBlockProxy(
 	hyperBlockFacade HyperBlockFacadeHandler,
-	marshaller covalent.AvroMarshaller,
+	avroEncoder AvroEncoder,
 	hyperBlockProcessor covalent.HyperBlockProcessor,
 ) *hyperBlockProxy {
 	return &hyperBlockProxy{
 		hyperBlockFacade: hyperBlockFacade,
-		marshaller:       marshaller,
+		encoder:          avroEncoder,
 		processor:        hyperBlockProcessor,
 	}
 }
 
+// GetHyperBlockByNonce will process given hyper block request by nonce from Elrond
 func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 	nonce, err := getNonceFromRequest(c)
 	if err != nil {
-		RespondWithBadRequest(c, errors.New("cannot parse nonce").Error())
+		respondWithBadRequest(c, errors.New("cannot parse nonce").Error())
 		return
 	}
 
@@ -67,7 +64,7 @@ func (hbp *hyperBlockProxy) processHyperBlock(c *gin.Context, hyperBlock *hyperB
 		return
 	}
 
-	blockSchemaAvroBytes, err := hbp.marshaller.Encode(blockSchema)
+	blockSchemaAvroBytes, err := hbp.encoder.Encode(blockSchema)
 	if err != nil {
 		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
 		return
@@ -76,10 +73,11 @@ func (hbp *hyperBlockProxy) processHyperBlock(c *gin.Context, hyperBlock *hyperB
 	shared.RespondWithSuccess(c, blockSchemaAvroBytes)
 }
 
+// GetHyperBlockByHash will process given hyper block request by hash from Elrond
 func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
-	hash, err := checkHashFromRequest(c)
+	hash, err := getHashFromRequest(c)
 	if err != nil {
-		RespondWithBadRequest(c, errors.New("invalid block hash parameter").Error())
+		respondWithBadRequest(c, errors.New("invalid block hash parameter").Error())
 		return
 	}
 
@@ -92,7 +90,7 @@ func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
 	hbp.processHyperBlock(c, &hyperBlockApiResponse.Data.HyperBlock)
 }
 
-func checkHashFromRequest(c *gin.Context) (string, error) {
+func getHashFromRequest(c *gin.Context) (string, error) {
 	hash := c.Param("hash")
 	_, err := hex.DecodeString(hash)
 	if err != nil {
@@ -102,7 +100,7 @@ func checkHashFromRequest(c *gin.Context) (string, error) {
 	return hash, nil
 }
 
-func RespondWithBadRequest(c *gin.Context, errorMessage string) {
+func respondWithBadRequest(c *gin.Context, errorMessage string) {
 	c.JSON(
 		http.StatusBadRequest,
 		shared.GenericAPIResponse{

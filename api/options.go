@@ -12,3 +12,11 @@ type HyperBlockQueryOptions struct {
 	WithLogs     bool
 	WithBalances bool
 }
+
+// TODO: Remove this once the feat is complete, since:
+// - withLogs is implemented, but not available on mainnet
+// - withBalances is not yet implemented
+var options = HyperBlockQueryOptions{
+	WithLogs:     false,
+	WithBalances: false,
+}

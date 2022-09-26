@@ -13,13 +13,14 @@ import (
 const hyperBlockPathByNonce = "/hyperblock/by-nonce"
 const hyperBlockPathByHash = "/hyperblock/by-hash"
 
-var log = logger.GetOrCreate("process")
+var log = logger.GetOrCreate("api")
 
 type HyperBlockFacade struct {
 	elrondProxyUrl string
 	httpClient     HTTPClient
 }
 
+// NewHyperBlockFacade will create a hyper block facade, which can fetch hyper blocks from Elrond proxy
 func NewHyperBlockFacade(httpClient HTTPClient, elrondProxyUrl string) *HyperBlockFacade {
 	return &HyperBlockFacade{
 		httpClient:     httpClient,
@@ -27,15 +28,18 @@ func NewHyperBlockFacade(httpClient HTTPClient, elrondProxyUrl string) *HyperBlo
 	}
 }
 
+// GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options
 func (hpf *HyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
-	blockPathByNonce := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
-	fullPath := hpf.getFullPathWithOptions(blockPathByNonce, options)
+	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
+	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
 
 	return hpf.getHyperBlock(fullPath)
 }
+
+// GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options
 func (hpf *HyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
-	blockPathByHash := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
-	fullPath := hpf.getFullPathWithOptions(blockPathByHash, options)
+	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
+	fullPath := hpf.getFullPathWithOptions(blockByHashPath, options)
 
 	return hpf.getHyperBlock(fullPath)
 }

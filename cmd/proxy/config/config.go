@@ -8,11 +8,13 @@ import (
 
 // Config holds the config for covalent proxy
 type Config struct {
-	Port           uint32 `toml:"Port"`
-	HyperBlockPath string `toml:"HyperBlockPath"`
-	ElrondProxyUrl string `toml:"ElrondProxyUrl"`
+	Port              uint32 `toml:"Port"`
+	HyperBlockPath    string `toml:"HyperBlockPath"`
+	ElrondProxyUrl    string `toml:"ElrondProxyUrl"`
+	RequestTimeOutSec uint64 `toml:"RequestTimeOutSec"`
 }
 
+// LoadConfig will load the Config from the provided file
 func LoadConfig(tomlFile string) (*Config, error) {
 	tomlBytes, err := ioutil.ReadFile(tomlFile)
 	if err != nil {
