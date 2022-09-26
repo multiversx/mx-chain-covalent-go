@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -15,16 +14,17 @@ import (
 	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-const hyperBlockPathByNonce = "/hyperblock/by-nonce"
+const hyperBlockPathByNonce = "hyperblock/by-nonce"
+const hyperBlockPathByHash = "hyperblock/by-hash"
 
 var log = logger.GetOrCreate("process")
 
 type HyperBlockFacade struct {
-	path       string
-	httpClient *http.Client
+	elrondProxyUrl string
+	httpClient     *http.Client
 }
 
-func NewHyperBlockFacade(requestTimeoutSec uint64, path string) *HyperBlockFacade {
+func NewHyperBlockFacade(requestTimeoutSec uint64, elrondProxyUrl string) *HyperBlockFacade {
 	httpClient := http.DefaultClient
 
 	var mutHttpClient sync.RWMutex
@@ -33,38 +33,33 @@ func NewHyperBlockFacade(requestTimeoutSec uint64, path string) *HyperBlockFacad
 	mutHttpClient.Unlock()
 
 	return &HyperBlockFacade{
-		httpClient: httpClient,
-		path:       path,
+		httpClient:     httpClient,
+		elrondProxyUrl: elrondProxyUrl,
 	}
 }
 
 func (hpf *HyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*HyperblockApiResponse, error) {
-	log.Info("path", "pp", fmt.Sprintf("%s%s/%d", hpf.path, hyperBlockPathByNonce, nonce))
-	pppp := fmt.Sprintf("%s%s/%d", hpf.path, hyperBlockPathByNonce, nonce)
-	path := BuildUrlWithBlockQueryOptions(fmt.Sprintf("%s%s/%d", hpf.path, hyperBlockPathByNonce, nonce), options)
-	log.Info("path", "pp", path)
-	var response HyperblockApiResponse
+	blockPathByNonce := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
+	fullPath := hpf.getFullPathWithOptions(blockPathByNonce, options)
 
-	err := hpf.httpGet(pppp, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Info("respons", "r", response.Data.Hyperblock.PrevBlockHash)
-
-	return &response, nil
+	return hpf.getHyperBlock(fullPath)
 }
 func (hpf *HyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperblockApiResponse, error) {
-	return nil, nil
+	blockPathByHash := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
+	fullPath := hpf.getFullPathWithOptions(blockPathByHash, options)
+
+	return hpf.getHyperBlock(fullPath)
 }
 
-func (hpf *HyperBlockFacade) httpGet(
-	path string,
-	value *HyperblockApiResponse,
-) error {
+func (hpf *HyperBlockFacade) getFullPathWithOptions(path string, options HyperBlockQueryOptions) string {
+	pathWithOptions := BuildUrlWithBlockQueryOptions(path, options)
+	return fmt.Sprintf("%s/%s", hpf.elrondProxyUrl, pathWithOptions)
+}
+
+func (hpf *HyperBlockFacade) getHyperBlock(path string) (*HyperblockApiResponse, error) {
 	resp, err := hpf.httpClient.Get(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer func() {
@@ -76,19 +71,20 @@ func (hpf *HyperBlockFacade) httpGet(
 
 	responseBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = json.Unmarshal(responseBodyBytes, value)
+	var response HyperblockApiResponse
+	err = json.Unmarshal(responseBodyBytes, &response)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(value.Error)
+		return nil, fmt.Errorf("status code: %d, elrond proxy response error: %s", resp.StatusCode, response.Error)
 	}
 
-	return nil
+	return &response, nil
 }
 
 // BuildUrlWithBlockQueryOptions builds an URL with block query parameters
@@ -105,7 +101,7 @@ func BuildUrlWithBlockQueryOptions(path string, options HyperBlockQueryOptions) 
 
 func setQueryParamIfTrue(query url.Values, option bool, urlParam string) {
 	if option {
-		query.Set(urlParam, "true")
+		query.Add(urlParam, "true")
 	}
 }
 

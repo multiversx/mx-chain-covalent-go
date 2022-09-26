@@ -80,6 +80,7 @@ func createServer(cfg *config.Config) api.HTTPServer {
 
 	router := gin.Default()
 	router.GET(fmt.Sprintf("%s/by-nonce/:nonce", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByNonce)
+	router.GET(fmt.Sprintf("%s/by-hash/:hash", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByHash)
 
 	return &http.Server{
 		Handler: router,
