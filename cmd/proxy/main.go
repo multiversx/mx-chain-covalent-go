@@ -10,8 +10,8 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
+	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli"
 )
@@ -67,7 +67,8 @@ func startProxy(ctx *cli.Context) error {
 }
 
 func createServer(cfg *config.Config) api.HTTPServer {
-	hyperBlockFacade := api.NewHyperBlockFacade(80, cfg.ElrondProxyUrl)
+	httpClient := api.NewDefaultHttpClient(80)
+	hyperBlockFacade := api.NewHyperBlockFacade(httpClient, cfg.ElrondProxyUrl)
 
 	//processor, err := factory.CreateDataProcessor(&factory.ArgsDataProcessor{
 	//	PubKeyConvertor:  nil,
@@ -76,7 +77,7 @@ func createServer(cfg *config.Config) api.HTTPServer {
 	//	Marshaller:       nil,
 	//	ShardCoordinator: nil,
 	//})
-	hyperBlockProxy := api.NewHyperBlockProxy(hyperBlockFacade, &utility.AvroMarshaller{}, &mock.DataHandlerStub{})
+	hyperBlockProxy := api.NewHyperBlockProxy(hyperBlockFacade, &utility.AvroMarshaller{}, process.NewHyperBlockProcessor())
 
 	router := gin.Default()
 	router.GET(fmt.Sprintf("%s/by-nonce/:nonce", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByNonce)

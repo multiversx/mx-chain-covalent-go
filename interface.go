@@ -1,6 +1,7 @@
 package covalent
 
 import (
+	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
@@ -10,6 +11,10 @@ import (
 
 type DataHandler interface {
 	ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error)
+}
+
+type HyperBlockProcessor interface {
+	Process(hyperBlock *hyperBlock.HyperBlock) (*schema.BlockResult, error)
 }
 
 type Driver interface {
