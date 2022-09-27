@@ -26,9 +26,9 @@ type HyperBlockFacadeHandler interface {
 	GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error)
 }
 
-// HyperBlockProxyFetcher is the covalent proxy. It should be able to fetch hyper blocks from
+// HyperBlockProxy is the covalent proxy. It should be able to fetch hyper blocks from
 // Elrond proxy(json format), process them and provide avro schema defined hyper blocks(as byte array).
-type HyperBlockProxyFetcher interface {
+type HyperBlockProxy interface {
 	GetHyperBlockByNonce(c *gin.Context)
 	GetHyperBlockByHash(c *gin.Context)
 }

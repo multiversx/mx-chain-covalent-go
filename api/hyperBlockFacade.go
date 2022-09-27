@@ -15,21 +15,28 @@ const hyperBlockPathByHash = "/hyperblock/by-hash"
 
 var log = logger.GetOrCreate("api")
 
-type HyperBlockFacade struct {
+type hyperBlockFacade struct {
 	elrondProxyUrl string
 	httpClient     HTTPClient
 }
 
 // NewHyperBlockFacade will create a hyper block facade, which can fetch hyper blocks from Elrond proxy
-func NewHyperBlockFacade(httpClient HTTPClient, elrondProxyUrl string) *HyperBlockFacade {
-	return &HyperBlockFacade{
+func NewHyperBlockFacade(httpClient HTTPClient, elrondProxyUrl string) (*hyperBlockFacade, error) {
+	if httpClient == nil {
+		return nil, errNilHttpServer
+	}
+	if len(elrondProxyUrl) == 0 {
+		return nil, errEmptyElrondProxyUrl
+	}
+
+	return &hyperBlockFacade{
 		httpClient:     httpClient,
 		elrondProxyUrl: elrondProxyUrl,
-	}
+	}, nil
 }
 
 // GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options
-func (hpf *HyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
 	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
 	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
 
@@ -37,14 +44,14 @@ func (hpf *HyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlo
 }
 
 // GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options
-func (hpf *HyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
 	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
 	fullPath := hpf.getFullPathWithOptions(blockByHashPath, options)
 
 	return hpf.getHyperBlock(fullPath)
 }
 
-func (hpf *HyperBlockFacade) getFullPathWithOptions(path string, options HyperBlockQueryOptions) string {
+func (hpf *hyperBlockFacade) getFullPathWithOptions(path string, options HyperBlockQueryOptions) string {
 	pathWithOptions := buildUrlWithBlockQueryOptions(path, options)
 	return fmt.Sprintf("%s%s", hpf.elrondProxyUrl, pathWithOptions)
 }
@@ -66,7 +73,7 @@ func setQueryParamIfTrue(query url.Values, option bool, urlParam string) {
 	}
 }
 
-func (hpf *HyperBlockFacade) getHyperBlock(path string) (*HyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) getHyperBlock(path string) (*HyperBlockApiResponse, error) {
 	resp, err := hpf.httpClient.Get(path)
 	if err != nil {
 		return nil, err

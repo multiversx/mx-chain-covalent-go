@@ -13,6 +13,7 @@ type DataHandler interface {
 	ProcessData(args *indexer.ArgsSaveBlockData) (*schema.BlockResult, error)
 }
 
+// HyperBlockProcessor shall handle hyper block processing into avro schema blocks
 type HyperBlockProcessor interface {
 	Process(hyperBlock *hyperBlock.HyperBlock) (*schema.BlockResult, error)
 }

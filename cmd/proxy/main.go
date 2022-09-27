@@ -55,7 +55,11 @@ func startProxy(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	server := createServer(cfg)
+
+	server, err := createServer(cfg)
+	if err != nil {
+		return err
+	}
 
 	go func() {
 		err = server.ListenAndServe()
@@ -66,11 +70,17 @@ func startProxy(ctx *cli.Context) error {
 	return nil
 }
 
-func createServer(cfg *config.Config) api.HTTPServer {
+func createServer(cfg *config.Config) (api.HTTPServer, error) {
 	httpClient := api.NewDefaultHttpClient(cfg.RequestTimeOutSec)
-	hyperBlockFacade := api.NewHyperBlockFacade(httpClient, cfg.ElrondProxyUrl)
+	hyperBlockFacade, err := api.NewHyperBlockFacade(httpClient, cfg.ElrondProxyUrl)
+	if err != nil {
+		return nil, err
+	}
 	hyperBlockProcessor := process.NewHyperBlockProcessor()
-	hyperBlockProxy := api.NewHyperBlockProxy(hyperBlockFacade, &utility.AvroMarshaller{}, hyperBlockProcessor)
+	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade, &utility.AvroMarshaller{}, hyperBlockProcessor)
+	if err != nil {
+		return nil, err
+	}
 
 	router := gin.Default()
 	router.GET(fmt.Sprintf("%s/by-nonce/:nonce", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByNonce)
@@ -79,7 +89,7 @@ func createServer(cfg *config.Config) api.HTTPServer {
 	return &http.Server{
 		Handler: router,
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
-	}
+	}, nil
 }
 
 func waitForServerShutdown(httpServer api.HTTPServer) {

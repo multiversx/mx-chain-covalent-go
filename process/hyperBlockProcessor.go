@@ -10,10 +10,12 @@ import (
 type hyperBlockProcessor struct {
 }
 
+// NewHyperBlockProcessor will create a new instance of an hyper block processor
 func NewHyperBlockProcessor() *hyperBlockProcessor {
 	return &hyperBlockProcessor{}
 }
 
+// Process will process current hyper block and convert it to an avro schema block result
 func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*schema.BlockResult, error) {
 	block := schema.NewBlockResult()
 

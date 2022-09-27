@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/hex"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -23,25 +22,35 @@ func NewHyperBlockProxy(
 	hyperBlockFacade HyperBlockFacadeHandler,
 	avroEncoder AvroEncoder,
 	hyperBlockProcessor covalent.HyperBlockProcessor,
-) *hyperBlockProxy {
+) (*hyperBlockProxy, error) {
+	if hyperBlockFacade == nil {
+		return nil, errNilHyperBlockFacade
+	}
+	if avroEncoder == nil {
+		return nil, errNilAvroEncoder
+	}
+	if hyperBlockProcessor == nil {
+		return nil, errNilHyperBlockProcessor
+	}
+
 	return &hyperBlockProxy{
 		hyperBlockFacade: hyperBlockFacade,
 		encoder:          avroEncoder,
 		processor:        hyperBlockProcessor,
-	}
+	}, nil
 }
 
 // GetHyperBlockByNonce will process given hyper block request by nonce from Elrond
 func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 	nonce, err := getNonceFromRequest(c)
 	if err != nil {
-		respondWithBadRequest(c, errors.New("cannot parse nonce").Error())
+		respondWithBadRequest(c, err)
 		return
 	}
 
 	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlockByNonce(nonce, options)
 	if err != nil {
-		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+		respondWithInternalError(c, err)
 		return
 	}
 
@@ -51,7 +60,7 @@ func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 func getNonceFromRequest(c *gin.Context) (uint64, error) {
 	nonceStr := c.Param("nonce")
 	if nonceStr == "" {
-		return 0, errors.New("invalid block nonce parameter")
+		return 0, errInvalidBlockNonce
 	}
 
 	return strconv.ParseUint(nonceStr, 10, 64)
@@ -60,13 +69,13 @@ func getNonceFromRequest(c *gin.Context) (uint64, error) {
 func (hbp *hyperBlockProxy) processHyperBlock(c *gin.Context, hyperBlock *hyperBlock.HyperBlock) {
 	blockSchema, err := hbp.processor.Process(hyperBlock)
 	if err != nil {
-		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+		respondWithInternalError(c, err)
 		return
 	}
 
 	blockSchemaAvroBytes, err := hbp.encoder.Encode(blockSchema)
 	if err != nil {
-		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+		respondWithInternalError(c, err)
 		return
 	}
 
@@ -77,13 +86,13 @@ func (hbp *hyperBlockProxy) processHyperBlock(c *gin.Context, hyperBlock *hyperB
 func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
 	hash, err := getHashFromRequest(c)
 	if err != nil {
-		respondWithBadRequest(c, errors.New("invalid block hash parameter").Error())
+		respondWithBadRequest(c, err)
 		return
 	}
 
 	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlockByHash(hash, options)
 	if err != nil {
-		shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+		respondWithInternalError(c, err)
 		return
 	}
 
@@ -94,18 +103,22 @@ func getHashFromRequest(c *gin.Context) (string, error) {
 	hash := c.Param("hash")
 	_, err := hex.DecodeString(hash)
 	if err != nil {
-		return "", errors.New("invalid block hash parameter")
+		return "", errInvalidBlockHash
 	}
 
 	return hash, nil
 }
 
-func respondWithBadRequest(c *gin.Context, errorMessage string) {
+func respondWithInternalError(c *gin.Context, err error) {
+	shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+}
+
+func respondWithBadRequest(c *gin.Context, err error) {
 	c.JSON(
 		http.StatusBadRequest,
 		shared.GenericAPIResponse{
 			Data:  nil,
-			Error: errorMessage,
+			Error: err.Error(),
 			Code:  shared.ReturnCodeRequestError,
 		},
 	)
