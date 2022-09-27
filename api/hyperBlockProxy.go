@@ -5,42 +5,27 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/gin-gonic/gin"
 )
 
 type hyperBlockProxy struct {
 	hyperBlockFacade HyperBlockFacadeHandler
-	processor        covalent.HyperBlockProcessor
-	encoder          AvroEncoder
 }
 
-// NewHyperBlockProxy will create a covalent proxy, able to process hyper block requests from Elrond
-func NewHyperBlockProxy(
-	hyperBlockFacade HyperBlockFacadeHandler,
-	avroEncoder AvroEncoder,
-	hyperBlockProcessor covalent.HyperBlockProcessor,
-) (*hyperBlockProxy, error) {
+// NewHyperBlockProxy will create a covalent proxy, able to fetch hyper block requests
+// from Elrond and return them in covalent format
+func NewHyperBlockProxy(hyperBlockFacade HyperBlockFacadeHandler) (*hyperBlockProxy, error) {
 	if hyperBlockFacade == nil {
 		return nil, errNilHyperBlockFacade
-	}
-	if avroEncoder == nil {
-		return nil, errNilAvroEncoder
-	}
-	if hyperBlockProcessor == nil {
-		return nil, errNilHyperBlockProcessor
 	}
 
 	return &hyperBlockProxy{
 		hyperBlockFacade: hyperBlockFacade,
-		encoder:          avroEncoder,
-		processor:        hyperBlockProcessor,
 	}, nil
 }
 
-// GetHyperBlockByNonce will process given hyper block request by nonce from Elrond
+// GetHyperBlockByNonce will fetch requested hyper block request by nonce
 func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 	nonce, err := getNonceFromRequest(c)
 	if err != nil {
@@ -54,7 +39,7 @@ func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 		return
 	}
 
-	hbp.processHyperBlock(c, &hyperBlockApiResponse.Data.HyperBlock)
+	c.JSON(http.StatusOK, hyperBlockApiResponse)
 }
 
 func getNonceFromRequest(c *gin.Context) (uint64, error) {
@@ -66,23 +51,7 @@ func getNonceFromRequest(c *gin.Context) (uint64, error) {
 	return strconv.ParseUint(nonceStr, 10, 64)
 }
 
-func (hbp *hyperBlockProxy) processHyperBlock(c *gin.Context, hyperBlock *hyperBlock.HyperBlock) {
-	blockSchema, err := hbp.processor.Process(hyperBlock)
-	if err != nil {
-		respondWithInternalError(c, err)
-		return
-	}
-
-	blockSchemaAvroBytes, err := hbp.encoder.Encode(blockSchema)
-	if err != nil {
-		respondWithInternalError(c, err)
-		return
-	}
-
-	shared.RespondWithSuccess(c, blockSchemaAvroBytes)
-}
-
-// GetHyperBlockByHash will process given hyper block request by hash from Elrond
+// GetHyperBlockByHash will fetch requested hyper block request by hash
 func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
 	hash, err := getHashFromRequest(c)
 	if err != nil {
@@ -96,7 +65,7 @@ func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
 		return
 	}
 
-	hbp.processHyperBlock(c, &hyperBlockApiResponse.Data.HyperBlock)
+	c.JSON(http.StatusOK, hyperBlockApiResponse)
 }
 
 func getHashFromRequest(c *gin.Context) (string, error) {

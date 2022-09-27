@@ -1,13 +1,12 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 
+	"github.com/ElrondNetwork/covalent-indexer-go"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/elrond-go/api/shared"
 )
 
 const hyperBlockPathByNonce = "/hyperblock/by-nonce"
@@ -17,34 +16,49 @@ var log = logger.GetOrCreate("api")
 
 type hyperBlockFacade struct {
 	elrondProxyUrl string
-	httpClient     HTTPClient
+	processor      covalent.HyperBlockProcessor
+	elrondEndpoint ElrondHyperBlockEndpointHandler
+	encoder        AvroEncoder
 }
 
 // NewHyperBlockFacade will create a hyper block facade, which can fetch hyper blocks from Elrond proxy
-func NewHyperBlockFacade(httpClient HTTPClient, elrondProxyUrl string) (*hyperBlockFacade, error) {
-	if httpClient == nil {
-		return nil, errNilHttpServer
-	}
+func NewHyperBlockFacade(
+	elrondProxyUrl string,
+	avroEncoder AvroEncoder,
+	elrondHyperBlockEndpoint ElrondHyperBlockEndpointHandler,
+	hyperBlockProcessor covalent.HyperBlockProcessor,
+) (*hyperBlockFacade, error) {
 	if len(elrondProxyUrl) == 0 {
 		return nil, errEmptyElrondProxyUrl
 	}
+	if avroEncoder == nil {
+		return nil, errNilAvroEncoder
+	}
+	if hyperBlockProcessor == nil {
+		return nil, errNilHyperBlockProcessor
+	}
+	if elrondHyperBlockEndpoint == nil {
+		return nil, errNilHyperBlockEndpointHandler
+	}
 
 	return &hyperBlockFacade{
-		httpClient:     httpClient,
 		elrondProxyUrl: elrondProxyUrl,
+		processor:      hyperBlockProcessor,
+		encoder:        avroEncoder,
+		elrondEndpoint: elrondHyperBlockEndpoint,
 	}, nil
 }
 
-// GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options
-func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
+// GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options in covalent format
+func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error) {
 	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
 	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
 
 	return hpf.getHyperBlock(fullPath)
 }
 
-// GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options
-func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error) {
+// GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options in covalent format
+func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error) {
 	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
 	fullPath := hpf.getFullPathWithOptions(blockByHashPath, options)
 
@@ -73,33 +87,25 @@ func setQueryParamIfTrue(query url.Values, option bool, urlParam string) {
 	}
 }
 
-func (hpf *hyperBlockFacade) getHyperBlock(path string) (*HyperBlockApiResponse, error) {
-	resp, err := hpf.httpClient.Get(path)
+func (hpf *hyperBlockFacade) getHyperBlock(path string) (*CovalentHyperBlockApiResponse, error) {
+	elrondHyperBlock, err := hpf.elrondEndpoint.GetHyperBlock(path)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() {
-		errNotCritical := resp.Body.Close()
-		if errNotCritical != nil {
-			log.Warn("close body", "error", errNotCritical.Error())
-		}
-	}()
-
-	responseBodyBytes, err := ioutil.ReadAll(resp.Body)
+	hyperBlockSchema, err := hpf.processor.Process(&elrondHyperBlock.Data.HyperBlock)
 	if err != nil {
 		return nil, err
 	}
 
-	var response HyperBlockApiResponse
-	err = json.Unmarshal(responseBodyBytes, &response)
+	hyperBlockSchemaAvroBytes, err := hpf.encoder.Encode(hyperBlockSchema)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code: %d, elrond proxy response error: %s", resp.StatusCode, response.Error)
-	}
-
-	return &response, nil
+	return &CovalentHyperBlockApiResponse{
+		Data:  hyperBlockSchemaAvroBytes,
+		Error: "",
+		Code:  shared.ReturnCodeSuccess,
+	}, nil
 }

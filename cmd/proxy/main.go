@@ -72,12 +72,24 @@ func startProxy(ctx *cli.Context) error {
 
 func createServer(cfg *config.Config) (api.HTTPServer, error) {
 	httpClient := api.NewDefaultHttpClient(cfg.RequestTimeOutSec)
-	hyperBlockFacade, err := api.NewHyperBlockFacade(httpClient, cfg.ElrondProxyUrl)
+	elrondHyperBlockEndpointHandler, err := api.NewElrondHyperBlockEndPoint(httpClient)
 	if err != nil {
 		return nil, err
 	}
+
 	hyperBlockProcessor := process.NewHyperBlockProcessor()
-	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade, &utility.AvroMarshaller{}, hyperBlockProcessor)
+	avroEncoder := &utility.AvroMarshaller{}
+	hyperBlockFacade, err := api.NewHyperBlockFacade(
+		cfg.ElrondProxyUrl,
+		avroEncoder,
+		elrondHyperBlockEndpointHandler,
+		hyperBlockProcessor,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade)
 	if err != nil {
 		return nil, err
 	}

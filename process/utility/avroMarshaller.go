@@ -6,6 +6,7 @@ import (
 	"github.com/elodina/go-avro"
 )
 
+// AvroMarshaller can marshall/unmarshall avro records
 type AvroMarshaller struct {
 }
 

@@ -5,14 +5,21 @@ import (
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 )
 
-// HyperBlockApiResponse is the expected hyper block dto response from Elrond proxy
-type HyperBlockApiResponse struct {
-	Data  HyperBlockApiResponsePayload `json:"data"`
-	Error string                       `json:"error"`
-	Code  shared.ReturnCode            `json:"code"`
+// ElrondHyperBlockApiResponse is the expected hyper block dto response from Elrond proxy
+type ElrondHyperBlockApiResponse struct {
+	Data  ElrondHyperBlockApiResponsePayload `json:"data"`
+	Error string                             `json:"error"`
+	Code  shared.ReturnCode                  `json:"code"`
 }
 
-// HyperBlockApiResponsePayload wraps a hyperBlock
-type HyperBlockApiResponsePayload struct {
+// ElrondHyperBlockApiResponsePayload wraps a hyperBlock
+type ElrondHyperBlockApiResponsePayload struct {
 	HyperBlock hyperBlock.HyperBlock `json:"hyperblock"`
+}
+
+// CovalentHyperBlockApiResponse is the hyper block dto response for Covalent
+type CovalentHyperBlockApiResponse struct {
+	Data  []byte            `json:"data"`
+	Error string            `json:"error"`
+	Code  shared.ReturnCode `json:"code"`
 }

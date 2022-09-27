@@ -12,6 +12,8 @@ var errNilAvroEncoder = errors.New("nil avro encoder provided")
 
 var errNilHyperBlockProcessor = errors.New("nil hyper block processor provided")
 
+var errNilHyperBlockEndpointHandler = errors.New("nil hyper block endpoint handler provided")
+
 var errInvalidBlockNonce = errors.New("invalid block nonce")
 
 var errInvalidBlockHash = errors.New("invalid block hash")

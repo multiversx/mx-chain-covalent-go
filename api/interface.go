@@ -20,10 +20,15 @@ type HTTPClient interface {
 	Get(url string) (resp *http.Response, err error)
 }
 
-// HyperBlockFacadeHandler defines the actions needed for fetching of hyperBlocks from Elrond proxy
+// ElrondHyperBlockEndpointHandler should fetch hyper block api responses from elrond
+type ElrondHyperBlockEndpointHandler interface {
+	GetHyperBlock(path string) (*ElrondHyperBlockApiResponse, error)
+}
+
+// HyperBlockFacadeHandler defines the actions needed for fetching of hyperBlocks from Elrond proxy in covalent format
 type HyperBlockFacadeHandler interface {
-	GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error)
-	GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*HyperBlockApiResponse, error)
+	GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
+	GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
 }
 
 // HyperBlockProxy is the covalent proxy. It should be able to fetch hyper blocks from
