@@ -1,13 +1,25 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
+	"github.com/ElrondNetwork/covalent-indexer-go/api"
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
+	"github.com/ElrondNetwork/covalent-indexer-go/facade"
+	"github.com/ElrondNetwork/covalent-indexer-go/process"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
+	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli"
 )
 
 const (
 	logFilePrefix = "covalent-proxy"
+	tomlFile      = "./config.toml"
 )
 
 func main() {
@@ -40,5 +52,69 @@ func startProxy(ctx *cli.Context) error {
 
 	log.Info("starting server")
 
+	cfg, err := config.LoadConfig(tomlFile)
+	if err != nil {
+		return err
+	}
+
+	server, err := createServer(cfg)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		err = server.ListenAndServe()
+		log.LogIfError(err)
+	}()
+
+	waitForServerShutdown(server)
 	return nil
+}
+
+func createServer(cfg *config.Config) (api.HTTPServer, error) {
+	httpClient := api.NewDefaultHttpClient(cfg.RequestTimeOutSec)
+	elrondHyperBlockEndpointHandler, err := api.NewElrondHyperBlockEndPoint(httpClient)
+	if err != nil {
+		return nil, err
+	}
+
+	hyperBlockProcessor := process.NewHyperBlockProcessor()
+	avroEncoder := &utility.AvroMarshaller{}
+	hyperBlockFacade, err := facade.NewHyperBlockFacade(
+		cfg.ElrondProxyUrl,
+		avroEncoder,
+		elrondHyperBlockEndpointHandler,
+		hyperBlockProcessor,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade)
+	if err != nil {
+		return nil, err
+	}
+
+	router := gin.Default()
+	router.GET(fmt.Sprintf("%s/by-nonce/:nonce", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByNonce)
+	router.GET(fmt.Sprintf("%s/by-hash/:hash", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByHash)
+
+	return &http.Server{
+		Handler: router,
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+	}, nil
+}
+
+func waitForServerShutdown(httpServer api.HTTPServer) {
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt, os.Kill)
+	<-quit
+
+	shutdownContext, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	err := httpServer.Shutdown(shutdownContext)
+	log.LogIfError(err)
+	err = httpServer.Close()
+	log.LogIfError(err)
 }
