@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
+
+var log = logger.GetOrCreate("api")
 
 type elrondHyperBlockEndPoint struct {
 	httpClient HTTPClient
 }
 
-// NewElrondHyperBlockEndPoint will create a handler which can fetch hyper blocks from Elrond
+// NewElrondHyperBlockEndPoint will create a handler which can fetch hyper blocks from Elrond gateway
 func NewElrondHyperBlockEndPoint(httpClient HTTPClient) (*elrondHyperBlockEndPoint, error) {
 	if httpClient == nil {
 		return nil, errNilHttpServer
@@ -30,9 +34,11 @@ func (hpe *elrondHyperBlockEndPoint) GetHyperBlock(path string) (*ElrondHyperBlo
 	}
 
 	defer func() {
-		errNotCritical := resp.Body.Close()
-		if errNotCritical != nil {
-			log.Warn("close body", "error", errNotCritical.Error())
+		if resp != nil && resp.Body != nil {
+			errNotCritical := resp.Body.Close()
+			if errNotCritical != nil {
+				log.Warn("close body", "error", errNotCritical.Error())
+			}
 		}
 	}()
 

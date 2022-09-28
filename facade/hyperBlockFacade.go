@@ -1,23 +1,21 @@
-package api
+package facade
 
 import (
 	"fmt"
 	"net/url"
 
 	"github.com/ElrondNetwork/covalent-indexer-go"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 )
 
 const hyperBlockPathByNonce = "/hyperblock/by-nonce"
 const hyperBlockPathByHash = "/hyperblock/by-hash"
 
-var log = logger.GetOrCreate("api")
-
 type hyperBlockFacade struct {
 	elrondProxyUrl string
 	processor      covalent.HyperBlockProcessor
-	elrondEndpoint ElrondHyperBlockEndpointHandler
+	elrondEndpoint api.ElrondHyperBlockEndpointHandler
 	encoder        AvroEncoder
 }
 
@@ -25,7 +23,7 @@ type hyperBlockFacade struct {
 func NewHyperBlockFacade(
 	elrondProxyUrl string,
 	avroEncoder AvroEncoder,
-	elrondHyperBlockEndpoint ElrondHyperBlockEndpointHandler,
+	elrondHyperBlockEndpoint api.ElrondHyperBlockEndpointHandler,
 	hyperBlockProcessor covalent.HyperBlockProcessor,
 ) (*hyperBlockFacade, error) {
 	if len(elrondProxyUrl) == 0 {
@@ -50,7 +48,7 @@ func NewHyperBlockFacade(
 }
 
 // GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options in covalent format
-func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
 	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
 
@@ -58,24 +56,24 @@ func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options HyperBlo
 }
 
 // GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options in covalent format
-func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
 	fullPath := hpf.getFullPathWithOptions(blockByHashPath, options)
 
 	return hpf.getHyperBlock(fullPath)
 }
 
-func (hpf *hyperBlockFacade) getFullPathWithOptions(path string, options HyperBlockQueryOptions) string {
+func (hpf *hyperBlockFacade) getFullPathWithOptions(path string, options api.HyperBlockQueryOptions) string {
 	pathWithOptions := buildUrlWithBlockQueryOptions(path, options)
 	return fmt.Sprintf("%s%s", hpf.elrondProxyUrl, pathWithOptions)
 }
 
-func buildUrlWithBlockQueryOptions(path string, options HyperBlockQueryOptions) string {
+func buildUrlWithBlockQueryOptions(path string, options api.HyperBlockQueryOptions) string {
 	u := url.URL{Path: path}
 	query := u.Query()
 
-	setQueryParamIfTrue(query, options.WithLogs, UrlParameterWithLogs)
-	setQueryParamIfTrue(query, options.WithBalances, UrlParameterWithBalances)
+	setQueryParamIfTrue(query, options.WithLogs, api.UrlParameterWithLogs)
+	setQueryParamIfTrue(query, options.WithBalances, api.UrlParameterWithBalances)
 
 	u.RawQuery = query.Encode()
 	return u.String()
@@ -87,7 +85,7 @@ func setQueryParamIfTrue(query url.Values, option bool, urlParam string) {
 	}
 }
 
-func (hpf *hyperBlockFacade) getHyperBlock(path string) (*CovalentHyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) getHyperBlock(path string) (*api.CovalentHyperBlockApiResponse, error) {
 	elrondHyperBlock, err := hpf.elrondEndpoint.GetHyperBlock(path)
 	if err != nil {
 		return nil, err
@@ -103,7 +101,7 @@ func (hpf *hyperBlockFacade) getHyperBlock(path string) (*CovalentHyperBlockApiR
 		return nil, err
 	}
 
-	return &CovalentHyperBlockApiResponse{
+	return &api.CovalentHyperBlockApiResponse{
 		Data:  hyperBlockSchemaAvroBytes,
 		Error: "",
 		Code:  shared.ReturnCodeSuccess,
