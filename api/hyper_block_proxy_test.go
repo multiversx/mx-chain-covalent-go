@@ -2,16 +2,18 @@ package api_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
+	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,11 +23,13 @@ func init() {
 
 const hyperBlockPath = "/hyperBlock"
 
-func startProxyServer(proxy api.HyperBlockProxy, path string) *gin.Engine {
+func startProxyServer(proxy api.HyperBlockProxy) *gin.Engine {
 	ws := gin.New()
-	routes := ws.Group(path)
+
+	routes := ws.Group(hyperBlockPath)
 	routes.GET("/by-nonce/:nonce", proxy.GetHyperBlockByNonce)
 	routes.GET("/by-hash/:hash", proxy.GetHyperBlockByHash)
+
 	return ws
 }
 
@@ -35,32 +39,84 @@ func loadResponse(t *testing.T, rsp io.Reader, destination interface{}) {
 	require.Nil(t, err)
 }
 
-func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
-	t.Parallel()
+func sendRequest(t *testing.T, ws *gin.Engine, path string, expectedStatus int) *api.CovalentHyperBlockApiResponse {
+	req, err := http.NewRequest("GET", path, nil)
+	require.Nil(t, err)
 
-	requestedNonce := uint64(4)
-	blockResponse := &api.CovalentHyperBlockApiResponse{
-		Data:  []byte("abc"),
-		Error: "",
-		Code:  "success",
-	}
-	facade := &mock.HyperBlockFacadeStub{
-		GetHyperBlockByNonceCalled: func(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
-			require.Equal(t, requestedNonce, nonce)
-			return blockResponse, nil
-		},
-	}
-	proxy, _ := api.NewHyperBlockProxy(facade)
-
-	ws := startProxyServer(proxy, hyperBlockPath)
-
-	requestPath := fmt.Sprintf("%s/by-nonce/%d", hyperBlockPath, requestedNonce)
-	req, _ := http.NewRequest("GET", requestPath, nil)
 	resp := httptest.NewRecorder()
 	ws.ServeHTTP(resp, req)
+	require.Equal(t, expectedStatus, resp.Code)
 
 	apiResp := &api.CovalentHyperBlockApiResponse{}
 	loadResponse(t, resp.Body, apiResp)
-	assert.Equal(t, http.StatusOK, resp.Code)
-	assert.Equal(t, apiResp, blockResponse)
+
+	return apiResp
+}
+
+func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		requestedNonce := uint64(4)
+		blockResponse := &api.CovalentHyperBlockApiResponse{
+			Data:  []byte("abc"),
+			Error: "",
+			Code:  "success",
+		}
+		facade := &mock.HyperBlockFacadeStub{
+			GetHyperBlockByNonceCalled: func(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+				require.Equal(t, requestedNonce, nonce)
+				return blockResponse, nil
+			},
+		}
+		proxy, _ := api.NewHyperBlockProxy(facade)
+		ws := startProxyServer(proxy)
+		requestPath := fmt.Sprintf("%s/by-nonce/%d", hyperBlockPath, requestedNonce)
+		apiResp := sendRequest(t, ws, requestPath, http.StatusOK)
+		require.Equal(t, apiResp, blockResponse)
+	})
+
+	t.Run("invalid nonce, should error", func(t *testing.T) {
+		t.Parallel()
+
+		getHyperBlockFromFacadeCalled := false
+		facade := &mock.HyperBlockFacadeStub{
+			GetHyperBlockByNonceCalled: func(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+				getHyperBlockFromFacadeCalled = true
+				return nil, nil
+			},
+		}
+		proxy, _ := api.NewHyperBlockProxy(facade)
+		ws := startProxyServer(proxy)
+
+		requestPath := fmt.Sprintf("%s/by-nonce/abc", hyperBlockPath)
+		apiResp := sendRequest(t, ws, requestPath, http.StatusBadRequest)
+		require.False(t, getHyperBlockFromFacadeCalled)
+		require.Empty(t, apiResp.Data)
+		require.Equal(t, apiResp.Code, shared.ReturnCodeRequestError)
+		require.True(t, strings.Contains(apiResp.Error, "abc"))
+	})
+
+	t.Run("could not get hyper block from facade, should error", func(t *testing.T) {
+		t.Parallel()
+
+		errFacade := errors.New("error getting hyper block from facade")
+		facade := &mock.HyperBlockFacadeStub{
+			GetHyperBlockByNonceCalled: func(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+				return nil, errFacade
+			},
+		}
+		proxy, _ := api.NewHyperBlockProxy(facade)
+		ws := startProxyServer(proxy)
+
+		requestPath := fmt.Sprintf("%s/by-nonce/4", hyperBlockPath)
+		apiResp := sendRequest(t, ws, requestPath, http.StatusInternalServerError)
+		require.Equal(t, &api.CovalentHyperBlockApiResponse{
+			Data:  nil,
+			Error: errFacade.Error(),
+			Code:  shared.ReturnCodeInternalError,
+		}, apiResp)
+	})
 }
