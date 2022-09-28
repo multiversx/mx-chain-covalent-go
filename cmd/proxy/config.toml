@@ -1,13 +1,13 @@
-# Proxy port
+# proxy port
 port = 8086
 
 # API path to get hyperBlock from covalent proxy
 hyperBlockPath = "/hyperBlock"
 
 
-# ElrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
+# elrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
 elrondProxyUrl = "https://gateway.elrond.com"
 
-# RequestTimeoutSec represents the maximum number of seconds a request can last until throwing an error
+# requestTimeoutSec represents the maximum number of seconds a request can last until throwing an error
 # A Timeout of zero means no timeout.
 requestTimeOutSec = 80

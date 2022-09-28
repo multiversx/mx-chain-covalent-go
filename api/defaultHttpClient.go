@@ -11,7 +11,7 @@ type httpClient struct {
 
 // NewDefaultHttpClient will create a default http client which can be queried to GET url responses
 func NewDefaultHttpClient(requestTimeoutSec uint64) *httpClient {
-	client := http.DefaultClient
+	client := &http.Client{}
 	client.Timeout = time.Duration(requestTimeoutSec) * time.Second
 
 	return &httpClient{
