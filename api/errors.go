@@ -4,15 +4,7 @@ import "errors"
 
 var errNilHttpServer = errors.New("nil http server provided")
 
-var errEmptyElrondProxyUrl = errors.New("empty proxy url provided")
-
 var errNilHyperBlockFacade = errors.New("nil hyper block facade provided")
-
-var errNilAvroEncoder = errors.New("nil avro encoder provided")
-
-var errNilHyperBlockProcessor = errors.New("nil hyper block processor provided")
-
-var errNilHyperBlockEndpointHandler = errors.New("nil hyper block endpoint handler provided")
 
 var errInvalidBlockNonce = errors.New("invalid block nonce")
 
