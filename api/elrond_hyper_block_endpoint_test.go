@@ -68,27 +68,6 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 		require.Equal(t, errHttpClient, err)
 	})
 
-	t.Run("status code not ok, should return error", func(t *testing.T) {
-		t.Parallel()
-
-		client := &mock.HTTPClientStub{
-			GetCalled: func(url string) (resp *http.Response, err error) {
-				require.Equal(t, path, url)
-
-				return &http.Response{
-					Body:       ioutil.NopCloser(bytes.NewBuffer(bodyResponse)),
-					StatusCode: http.StatusBadRequest,
-				}, nil
-			},
-		}
-
-		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
-		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
-		require.Nil(t, hyperBlockApiResponse)
-		require.NotNil(t, err)
-		require.True(t, strings.Contains(err.Error(), strconv.Itoa(http.StatusBadRequest)))
-	})
-
 	t.Run("could not read body, should return error and close body", func(t *testing.T) {
 		t.Parallel()
 
@@ -144,5 +123,26 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
 		require.Nil(t, hyperBlockApiResponse)
 		require.NotNil(t, err)
+	})
+
+	t.Run("status code not ok, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		client := &mock.HTTPClientStub{
+			GetCalled: func(url string) (resp *http.Response, err error) {
+				require.Equal(t, path, url)
+
+				return &http.Response{
+					Body:       ioutil.NopCloser(bytes.NewBuffer(bodyResponse)),
+					StatusCode: http.StatusBadRequest,
+				}, nil
+			},
+		}
+
+		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		require.Nil(t, hyperBlockApiResponse)
+		require.NotNil(t, err)
+		require.True(t, strings.Contains(err.Error(), strconv.Itoa(http.StatusBadRequest)))
 	})
 }
