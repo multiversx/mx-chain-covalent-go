@@ -11,5 +11,5 @@ func (ehb *ElrondHyperBlockEndPointStub) GetHyperBlock(path string) (*api.Elrond
 		return ehb.GetHyperBlockCalled(path)
 	}
 
-	return nil, nil
+	return &api.ElrondHyperBlockApiResponse{}, nil
 }
