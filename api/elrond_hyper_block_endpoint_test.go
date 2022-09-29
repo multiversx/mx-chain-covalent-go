@@ -16,6 +16,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNewElrondHyperBlockEndPoint(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		endPoint, err := NewElrondHyperBlockEndPoint(&mock.HTTPClientStub{})
+		require.NotNil(t, endPoint)
+		require.Nil(t, err)
+	})
+
+	t.Run("nil http client, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		endPoint, err := NewElrondHyperBlockEndPoint(nil)
+		require.Nil(t, endPoint)
+		require.Equal(t, errNilHttpServer, err)
+	})
+}
+
 func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 	t.Parallel()
 
@@ -41,6 +61,34 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 
 				return &http.Response{
 					Body:       ioutil.NopCloser(bytes.NewBuffer(bodyResponse)),
+					StatusCode: http.StatusOK,
+				}, nil
+			},
+		}
+
+		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		require.Nil(t, err)
+		require.Equal(t, expectedElrondApiResponse, hyperBlockApiResponse)
+	})
+
+	t.Run("close response body failed, should work anyway and return no error", func(t *testing.T) {
+		t.Parallel()
+
+		reader := ioutil.NopCloser(bytes.NewBuffer(bodyResponse))
+		errClosingBody := errors.New("error closing body")
+		body := &mock.ReadCloserStub{
+			ReadCalled: reader.Read,
+			CloseCalled: func() error {
+				return errClosingBody
+			},
+		}
+		client := &mock.HTTPClientStub{
+			GetCalled: func(url string) (resp *http.Response, err error) {
+				require.Equal(t, path, url)
+
+				return &http.Response{
+					Body:       body,
 					StatusCode: http.StatusOK,
 				}, nil
 			},
