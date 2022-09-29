@@ -1,4 +1,4 @@
-package mock
+package apiMocks
 
 import "github.com/ElrondNetwork/covalent-indexer-go/api"
 
