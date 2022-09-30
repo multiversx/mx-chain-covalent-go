@@ -38,7 +38,6 @@ func main() {
 		os.Exit(1)
 		return
 	}
-
 }
 
 func startProcess(c *cli.Context) error {
