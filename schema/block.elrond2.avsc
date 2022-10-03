@@ -1,7 +1,7 @@
 {
   "type": "record",
   "namespace": "com.covalenthq.block.schema",
-  "name": "BlockResult",
+  "name": "HyperBlock",
   "fields": [
     {"name": "Hash", "type": {
       "name": "hash", "type": "fixed", "size": 32}},
@@ -36,6 +36,7 @@
       "scale": 0
     }},
     {"name": "Timestamp", "type": "long"},
+
     {"name": "EpochStartInfo", "type": ["null",
       {"name": "EpochStartInfo",
         "type": "record",
@@ -116,6 +117,8 @@
           {"name": "GasPrice", "type": "long"},
           {"name": "GasLimit", "type": "long"},
           {"name": "Data", "type": "bytes"},
+          {"name": "CodeMetadata", "type": "bytes"},
+          {"name": "Code", "type": "bytes"},
           {"name": "PreviousTransactionHash", "type": "hash"},
           {"name": "OriginalTransactionHash", "type": "hash"},
           {"name": "OriginalSender", "type": "address"},
@@ -129,16 +132,15 @@
           {"name": "NotarizedAtSourceInMetaHash", "type": "hash"},
           {"name": "NotarizedAtDestinationInMetaNonce", "type": "long"},
           {"name": "NotarizedAtDestinationInMetaHash", "type": "hash"},
-          {"name": "HyperblockNonce", "type": "long"},
-          {"name": "HyperblockHash", "type": "hash"},
+          {"name": "HyperBlockNonce", "type": "long"},
+          {"name": "HyperBlockHash", "type": "hash"},
           {"name": "Timestamp", "type": "long"},
 
-
-          {"name": "Receipts", "type": {"type": "array", "items": {
+          {"name": "Receipt", "type": {
             "name": "Receipt",
             "type": "record",
             "fields": [
-              {"name": "Hash", "type": "hash"},
+              {"name": "TxHash", "type": "hash"},
               {"name": "Value", "type": {
                 "type": "bytes",
                 "logicalType": "bignum",
@@ -146,14 +148,45 @@
                 "scale": 0
               }},
               {"name": "Sender", "type": "address"},
-              {"name": "Data", "type": "bytes"},
-              {"name": "TxHash", "type": "hash"},
-              {"name": "Timestamp", "type": "long"}
+              {"name": "Data", "type": "bytes"}
             ]
-          }}}
+          }},
+
+          {"name": "Log", "type": {
+            "name": "Log",
+            "type": "record",
+            "fields": [
+              {"name": "Address", "type": ["null","address"]},
+              {"name": "Events", "type": {"type":"array", "items": {
+                "name": "Event",
+                "type": "record",
+                "fields": [
+                  {"name": "Address", "type": ["null","address"]},
+                  {"name": "Identifier", "type": "bytes"},
+                  {"name": "Topics", "type": {"type": "array", "items": "bytes"}},
+                  {"name": "Data", "type": "bytes"}
+                ]
+              }}}
+            ]
+          }},
+
+          {"name": "Status", "type": "string"},
+          {"name": "Tokens", "type": {"type" : "array", "items": { "type":  "string"}}},
+          {"name": "ESDTValues", "type": {"type" : "array", "items": { "type":  {
+            "type": "bytes",
+            "logicalType": "bignum",
+            "precision": 1000,
+            "scale": 0
+          }}}},
+          {"name": "Receivers", "type": {"type" : "array", "items": { "type":  "address"}}},
+          {"name": "ReceiversShardIDs", "type": {"type" : "array", "items": { "type":  "int"}}},
+          {"name": "Operation", "type": "string"},
+          {"name": "Function", "type": "string"},
+          {"name": "InitiallyPaidFee", "type": "string"},
+          {"name": "IsRelayed", "type": "boolean"},
+          {"name": "IsRefund", "type": "boolean"}
         ]
       }}]}},
-
 
     {"name": "SCResults", "type": {"type": [ "null",
       {"type" : "array", "items": {
@@ -187,6 +220,7 @@
           {"name": "CodeMetadata", "type": "bytes"},
           {"name": "ReturnMessage", "type": "bytes"},
           {"name": "OriginalSender", "type": "address"},
+          {"name": "Log", "type": "Log"},
           {"name": "Tokens", "type": {"type" : "array", "items": { "type":  "string"}}},
           {"name": "ESDTValues", "type": {"type" : "array", "items": { "type":  {
             "type": "bytes",
