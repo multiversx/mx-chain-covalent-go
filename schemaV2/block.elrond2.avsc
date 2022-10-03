@@ -237,6 +237,21 @@
       ]
     }}]}},
 
+    {"name": "StateChanges", "type": {"type": "array", "items":{
+      "name": "AccountBalanceUpdate",
+      "type": "record",
+      "fields": [
+        {"name": "Address", "type": "address"},
+        {"name": "Balance", "type": {
+          "type": "bytes",
+          "logicalType": "bignum",
+          "precision": 1000,
+          "scale": 0
+        }},
+        {"name": "Nonce", "type": "long"}
+      ]
+    }}},
+
     {"name": "Status", "type": "string"}
   ]
 }
