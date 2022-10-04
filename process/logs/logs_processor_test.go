@@ -22,7 +22,7 @@ func TestLogsProcessor_ProcessLog(t *testing.T) {
 		require.Equal(t, schemaV2.NewLog(), log)
 	})
 
-	t.Run("no events, expect log filled only with address", func(t *testing.T) {
+	t.Run("no events, expect log only filled with address", func(t *testing.T) {
 		t.Parallel()
 
 		apiLog := &transaction.ApiLogs{Address: "erd1qq", Events: nil}
@@ -34,7 +34,7 @@ func TestLogsProcessor_ProcessLog(t *testing.T) {
 		}, processedLog)
 	})
 
-	t.Run("4 events, 2 nil event, expect one log with 2 events", func(t *testing.T) {
+	t.Run("4 events, 2 nil events, expect one log with 2 events", func(t *testing.T) {
 		t.Parallel()
 
 		event1 := &transaction.Events{
