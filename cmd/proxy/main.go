@@ -11,7 +11,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/covalent-indexer-go/facade"
-	"github.com/ElrondNetwork/covalent-indexer-go/process"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/factory"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli"
@@ -78,7 +78,12 @@ func createServer(cfg *config.Config) (api.HTTPServer, error) {
 		return nil, err
 	}
 
-	hyperBlockProcessor := process.NewHyperBlockProcessor()
+	args := &factory.ArgsHyperBlockProcessor{}
+	hyperBlockProcessor, err := factory.CreateHyperBlockProcessor(args)
+	if err != nil {
+		return nil, err
+	}
+
 	avroEncoder := &utility.AvroMarshaller{}
 	hyperBlockFacade, err := facade.NewHyperBlockFacade(
 		cfg.ElrondProxyUrl,

@@ -2,8 +2,10 @@ package process
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
 
 // BlockHandler defines what a block processor shall do
@@ -32,7 +34,7 @@ type SCResultsHandler interface {
 
 // ReceiptHandler defines what a receipt processor shall do
 type ReceiptHandler interface {
-	ProcessReceipts(receipts map[string]data.TransactionHandler, timeStamp uint64) []*schema.Receipt
+	ProcessReceipt(apiReceipt *transaction.ApiReceipt) (*schemaV2.Receipt, error)
 }
 
 // LogHandler defines what a log processor shall do

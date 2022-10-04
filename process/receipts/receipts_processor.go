@@ -1,13 +1,13 @@
 package receipts
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go"
+	"encoding/hex"
+	"fmt"
+
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/receipt"
+	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
 
 type receiptsProcessor struct {
@@ -15,47 +15,21 @@ type receiptsProcessor struct {
 }
 
 // NewReceiptsProcessor creates a new instance of receipts processor
-func NewReceiptsProcessor(pubKeyConverter core.PubkeyConverter) (*receiptsProcessor, error) {
-	if check.IfNil(pubKeyConverter) {
-		return nil, covalent.ErrNilPubKeyConverter
+func NewReceiptsProcessor() *receiptsProcessor {
+	return &receiptsProcessor{}
+}
+
+// ProcessReceipt converts receipts api data to a specific structure defined by avro schema
+func (rp *receiptsProcessor) ProcessReceipt(apiReceipt *transaction.ApiReceipt) (*schemaV2.Receipt, error) {
+	hash, err := hex.DecodeString(apiReceipt.TxHash)
+	if err != nil {
+		return nil, fmt.Errorf("receiptsProcessor.ProcessReceipt: could not decode tx hash: %s from receipt, err: %w", apiReceipt.TxHash, err)
 	}
 
-	return &receiptsProcessor{
-		pubKeyConverter: pubKeyConverter,
+	return &schemaV2.Receipt{
+		Value:  utility.GetBytes(apiReceipt.Value),
+		Sender: []byte(apiReceipt.SndAddr),
+		Data:   []byte(apiReceipt.Data),
+		TxHash: hash,
 	}, nil
-}
-
-// ProcessReceipts converts receipts data to a specific structure defined by avro schema
-func (rp *receiptsProcessor) ProcessReceipts(receipts map[string]data.TransactionHandler, timeStamp uint64) []*schema.Receipt {
-	allReceipts := make([]*schema.Receipt, 0, len(receipts))
-
-	for currHash, currReceipt := range receipts {
-		rec := rp.processReceipt(currReceipt, currHash, timeStamp)
-		if rec != nil {
-			allReceipts = append(allReceipts, rec)
-		}
-	}
-
-	return allReceipts
-}
-
-func (rp *receiptsProcessor) processReceipt(
-	tx data.TransactionHandler,
-	receiptHash string,
-	timeStamp uint64,
-) *schema.Receipt {
-
-	rec, castOk := tx.(*receipt.Receipt)
-	if !castOk {
-		return nil
-	}
-
-	return &schema.Receipt{
-		Hash:      []byte(receiptHash),
-		Value:     utility.GetBytes(rec.GetValue()),
-		Sender:    utility.EncodePubKey(rp.pubKeyConverter, rec.GetSndAddr()),
-		Data:      rec.GetData(),
-		TxHash:    rec.GetTxHash(),
-		Timestamp: int64(timeStamp),
-	}
 }

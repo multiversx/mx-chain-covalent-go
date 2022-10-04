@@ -1,4 +1,4 @@
-package schema
+package schemaV2
 
 import "github.com/elodina/go-avro"
 
