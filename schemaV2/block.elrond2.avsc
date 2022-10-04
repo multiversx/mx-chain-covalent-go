@@ -102,7 +102,7 @@
           {"name": "Hash", "type": "hash"},
           {"name": "Nonce", "type": "long"},
           {"name": "Round", "type": "long"},
-          {"name": "Epoch", "type": "long"},
+          {"name": "Epoch", "type": "int"},
           {"name": "Value",  "type": {
             "type": "bytes",
             "logicalType": "bignum",
@@ -182,7 +182,12 @@
           {"name": "ReceiversShardIDs", "type": {"type" : "array", "items": { "type":  "int"}}},
           {"name": "Operation", "type": "string"},
           {"name": "Function", "type": "string"},
-          {"name": "InitiallyPaidFee", "type": "string"},
+          {"name": "InitiallyPaidFee", "type": {
+            "type": "bytes",
+            "logicalType": "bignum",
+            "precision": 1000,
+            "scale": 0
+          }},
           {"name": "IsRelayed", "type": "boolean"},
           {"name": "IsRefund", "type": "boolean"}
         ]

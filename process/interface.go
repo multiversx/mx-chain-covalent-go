@@ -20,11 +20,7 @@ type MiniBlockHandler interface {
 
 // TransactionHandler defines what a transaction processor shall do
 type TransactionHandler interface {
-	ProcessTransactions(
-		header data.HeaderHandler,
-		headerHash []byte,
-		bodyHandler data.BodyHandler,
-		pool *indexer.Pool) ([]*schema.Transaction, error)
+	ProcessTransactions(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error)
 }
 
 // SCResultsHandler defines what a smart contract processor shall do
@@ -39,7 +35,7 @@ type ReceiptHandler interface {
 
 // LogHandler defines what a log processor shall do
 type LogHandler interface {
-	ProcessLogs(logs []*data.LogData) []*schema.Log
+	ProcessLog(log *transaction.ApiLogs) *schemaV2.Log
 }
 
 // AccountsHandler defines what an account processor shall do

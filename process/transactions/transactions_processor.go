@@ -1,218 +1,138 @@
 package transactions
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go"
+	"encoding/hex"
+
+	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/core/check"
-	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/block"
-	erdBlock "github.com/ElrondNetwork/elrond-go-core/data/block"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
-	"github.com/ElrondNetwork/elrond-go-core/data/rewardTx"
+	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
-	"github.com/ElrondNetwork/elrond-go-core/hashing"
-	"github.com/ElrondNetwork/elrond-go-core/marshal"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
-var log = logger.GetOrCreate("covalent/process/transactions/transactionProcessor")
-
 type transactionProcessor struct {
-	hasher          hashing.Hasher
-	marshaller      marshal.Marshalizer
-	pubKeyConverter core.PubkeyConverter
+	logProcessor   process.LogHandler
+	receiptHandler process.ReceiptHandler
 }
 
 // NewTransactionProcessor creates a new instance of transactions processor
 func NewTransactionProcessor(
-	pubKeyConverter core.PubkeyConverter,
-	hasher hashing.Hasher,
-	marshaller marshal.Marshalizer,
+	logProcessor process.LogHandler,
+	receiptHandler process.ReceiptHandler,
 ) (*transactionProcessor, error) {
-	if check.IfNil(pubKeyConverter) {
-		return nil, covalent.ErrNilPubKeyConverter
-	}
-	if check.IfNil(marshaller) {
-		return nil, covalent.ErrNilMarshaller
-	}
-	if check.IfNil(hasher) {
-		return nil, covalent.ErrNilHasher
-	}
 
 	return &transactionProcessor{
-		pubKeyConverter: pubKeyConverter,
-		hasher:          hasher,
-		marshaller:      marshaller,
+		logProcessor:   logProcessor,
+		receiptHandler: receiptHandler,
 	}, nil
 }
 
 // ProcessTransactions converts transactions data to a specific structure defined by avro schema
-func (txp *transactionProcessor) ProcessTransactions(
-	header data.HeaderHandler,
-	headerHash []byte,
-	bodyHandler data.BodyHandler,
-	pool *indexer.Pool,
-) ([]*schema.Transaction, error) {
-	body, ok := bodyHandler.(*erdBlock.Body)
-	if !ok {
-		return nil, covalent.ErrBlockBodyAssertion
-	}
-
-	allTxs := make([]*schema.Transaction, 0, len(pool.Txs)+len(pool.Rewards)+len(pool.Invalid))
-	for _, currMiniBlock := range body.MiniBlocks {
-		currPool := getRelevantTxPoolBasedOnMBType(currMiniBlock, pool)
-		if currPool == nil {
-			continue
-		}
-
-		txsInCurrMB, err := txp.processTxsFromMiniBlock(currPool, currMiniBlock, header, headerHash, currMiniBlock.Type)
+func (txp *transactionProcessor) ProcessTransactions(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error) {
+	allTxs := make([]*schemaV2.Transaction, 0, len(apiTransactions))
+	for _, apiTx := range apiTransactions {
+		tx, err := txp.processTransaction(apiTx)
 		if err != nil {
-			log.Warn("transactionProcessor.processTxsFromMiniBlock", "error", err)
-			continue
+			return nil, err
 		}
-		allTxs = append(allTxs, txsInCurrMB...)
+
+		allTxs = append(allTxs, tx)
 	}
 
 	return allTxs, nil
 }
 
-func (txp *transactionProcessor) processTxsFromMiniBlock(
-	transactions map[string]data.TransactionHandler,
-	miniBlock *erdBlock.MiniBlock,
-	header data.HeaderHandler,
-	blockHash []byte,
-	mbType block.Type,
-) ([]*schema.Transaction, error) {
-	miniBlockHash, err := core.CalculateHash(txp.marshaller, txp.hasher, miniBlock)
+func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransactionResult) (*schemaV2.Transaction, error) {
+	txHash, err := hex.DecodeString(apiTx.Hash)
+	if err != nil {
+		return nil, err
+	}
+	value, err := utility.GetBigIntBytesFromStr(apiTx.Value)
+	if err != nil {
+		return nil, err
+	}
+	prevTxHash, err := hex.DecodeString(apiTx.PreviousTransactionHash)
+	if err != nil {
+		return nil, err
+	}
+	originalTxHash, err := hex.DecodeString(apiTx.OriginalTransactionHash)
+	if err != nil {
+		return nil, err
+	}
+	signature, err := hex.DecodeString(apiTx.Signature)
+	if err != nil {
+		return nil, err
+	}
+	blockHash, err := hex.DecodeString(apiTx.BlockHash)
+	if err != nil {
+		return nil, err
+	}
+	notarizedAtSourceInMetaHash, err := hex.DecodeString(apiTx.NotarizedAtSourceInMetaHash)
+	if err != nil {
+		return nil, err
+	}
+	notarizedAtDestinationInMetaHash, err := hex.DecodeString(apiTx.NotarizedAtDestinationInMetaHash)
+	if err != nil {
+		return nil, err
+	}
+	hyperBlockHash, err := hex.DecodeString(apiTx.HyperblockHash)
+	if err != nil {
+		return nil, err
+	}
+	receipt, err := txp.receiptHandler.ProcessReceipt(apiTx.Receipt)
+	if err != nil {
+		return nil, err
+	}
+	esdtValues, err := utility.BigIntBytesSliceFromStringSlice(apiTx.ESDTValues)
+	if err != nil {
+		return nil, err
+	}
+	initiallyPaidFee, err := utility.GetBigIntBytesFromStr(apiTx.InitiallyPaidFee)
 	if err != nil {
 		return nil, err
 	}
 
-	txsInMiniBlock := make([]*schema.Transaction, 0, len(miniBlock.TxHashes))
-	for _, txHash := range miniBlock.TxHashes {
-		tx, isInPool := transactions[string(txHash)]
-		if !isInPool {
-			log.Warn("transactionProcessor.processTxsFromMiniBlock tx hash not found in tx pool", "hash", txHash)
-			continue
-		}
-
-		processedTx := txp.processTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header, mbType)
-		if processedTx != nil {
-			txsInMiniBlock = append(txsInMiniBlock, processedTx)
-		}
-	}
-
-	return txsInMiniBlock, nil
-}
-
-func (txp *transactionProcessor) processTransaction(
-	tx data.TransactionHandler,
-	txHash []byte,
-	miniBlockHash []byte,
-	blockHash []byte,
-	miniBlock *erdBlock.MiniBlock,
-	header data.HeaderHandler,
-	mbType block.Type,
-) *schema.Transaction {
-	var ret *schema.Transaction
-
-	switch mbType {
-	case block.TxBlock:
-		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
-	case block.RewardsBlock:
-		ret = txp.processRewardTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
-	case block.InvalidBlock:
-		ret = txp.processNormalTransaction(tx, txHash, miniBlockHash, blockHash, miniBlock, header)
-	default:
-		return nil
-	}
-
-	return ret
-}
-
-func (txp *transactionProcessor) processNormalTransaction(
-	normalTx data.TransactionHandler,
-	txHash []byte,
-	miniBlockHash []byte,
-	blockHash []byte,
-	miniBlock *erdBlock.MiniBlock,
-	header data.HeaderHandler,
-) *schema.Transaction {
-	tx, castOk := normalTx.(*transaction.Transaction)
-	if !castOk {
-		return nil
-	}
-
-	return &schema.Transaction{
-		Hash:             txHash,
-		MiniBlockHash:    miniBlockHash,
-		BlockHash:        blockHash,
-		Nonce:            int64(tx.GetNonce()),
-		Round:            int64(header.GetRound()),
-		Value:            utility.GetBytes(tx.GetValue()),
-		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
-		Sender:           utility.EncodePubKey(txp.pubKeyConverter, tx.GetSndAddr()),
-		ReceiverShard:    int32(miniBlock.ReceiverShardID),
-		SenderShard:      int32(miniBlock.SenderShardID),
-		GasPrice:         int64(tx.GetGasPrice()),
-		GasLimit:         int64(tx.GetGasLimit()),
-		Data:             tx.GetData(),
-		Signature:        tx.GetSignature(),
-		Timestamp:        int64(header.GetTimeStamp()),
-		SenderUserName:   tx.GetSndUserName(),
-		ReceiverUserName: tx.GetRcvUserName(),
-	}
-}
-
-func (txp *transactionProcessor) processRewardTransaction(
-	transaction data.TransactionHandler,
-	txHash []byte,
-	miniBlockHash []byte,
-	blockHash []byte,
-	miniBlock *erdBlock.MiniBlock,
-	header data.HeaderHandler,
-) *schema.Transaction {
-	tx, castOk := transaction.(*rewardTx.RewardTx)
-	if !castOk {
-		return nil
-	}
-
-	return &schema.Transaction{
-		Hash:             txHash,
-		MiniBlockHash:    miniBlockHash,
-		BlockHash:        blockHash,
-		Nonce:            0,
-		Round:            int64(tx.GetRound()),
-		Value:            utility.GetBytes(tx.GetValue()),
-		Receiver:         utility.EncodePubKey(txp.pubKeyConverter, tx.GetRcvAddr()),
-		Sender:           utility.MetaChainShardAddress(),
-		ReceiverShard:    int32(miniBlock.ReceiverShardID),
-		SenderShard:      int32(miniBlock.SenderShardID),
-		GasPrice:         0,
-		GasLimit:         0,
-		Data:             nil,
-		Signature:        nil,
-		Timestamp:        int64(header.GetTimeStamp()),
-		SenderUserName:   nil,
-		ReceiverUserName: nil,
-	}
-}
-
-func getRelevantTxPoolBasedOnMBType(miniBlock *erdBlock.MiniBlock, pool *indexer.Pool) map[string]data.TransactionHandler {
-	var ret map[string]data.TransactionHandler
-
-	switch miniBlock.Type {
-	case block.TxBlock:
-		ret = pool.Txs
-	case block.RewardsBlock:
-		ret = pool.Rewards
-	case block.InvalidBlock:
-		ret = pool.Invalid
-	default:
-		ret = nil
-	}
-
-	return ret
+	return &schemaV2.Transaction{
+		Type:                              apiTx.Type,
+		Hash:                              txHash,
+		Nonce:                             int64(apiTx.Nonce),
+		Round:                             int64(apiTx.Round),
+		Epoch:                             int32(apiTx.Epoch),
+		Value:                             value,
+		Receiver:                          []byte(apiTx.Receiver),
+		Sender:                            []byte(apiTx.Sender),
+		SenderUserName:                    apiTx.SenderUsername,
+		ReceiverUserName:                  apiTx.ReceiverUsername,
+		GasPrice:                          int64(apiTx.GasPrice),
+		GasLimit:                          int64(apiTx.GasLimit),
+		Data:                              apiTx.Data,
+		CodeMetadata:                      apiTx.CodeMetadata,
+		Code:                              []byte(apiTx.Code),
+		PreviousTransactionHash:           prevTxHash,
+		OriginalTransactionHash:           originalTxHash,
+		OriginalSender:                    []byte(apiTx.OriginalSender),
+		Signature:                         signature,
+		SourceShard:                       int32(apiTx.SourceShard),
+		DestinationShard:                  int32(apiTx.DestinationShard),
+		BlockNonce:                        int64(apiTx.BlockNonce),
+		BlockHash:                         blockHash,
+		NotarizedAtSourceInMetaNonce:      int64(apiTx.NotarizedAtSourceInMetaNonce),
+		NotarizedAtSourceInMetaHash:       notarizedAtSourceInMetaHash,
+		NotarizedAtDestinationInMetaNonce: int64(apiTx.NotarizedAtDestinationInMetaNonce),
+		NotarizedAtDestinationInMetaHash:  notarizedAtDestinationInMetaHash,
+		HyperBlockNonce:                   int64(apiTx.HyperblockNonce),
+		HyperBlockHash:                    hyperBlockHash,
+		Timestamp:                         apiTx.Timestamp,
+		Receipt:                           receipt,
+		Log:                               txp.logProcessor.ProcessLog(apiTx.Logs),
+		Status:                            apiTx.Status.String(),
+		Tokens:                            apiTx.Tokens,
+		ESDTValues:                        esdtValues,
+		Receivers:                         utility.StringSliceToByteSlice(apiTx.Receivers),
+		ReceiversShardIDs:                 utility.UInt32SliceToInt32Slice(apiTx.ReceiversShardIDs),
+		Operation:                         apiTx.Operation,
+		Function:                          apiTx.Function,
+		InitiallyPaidFee:                  initiallyPaidFee,
+		IsRelayed:                         apiTx.IsRelayed,
+		IsRefund:                          apiTx.IsRefund,
+	}, nil
 }

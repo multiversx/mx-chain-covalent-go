@@ -97,7 +97,7 @@ type Transaction struct {
 	Hash                              []byte
 	Nonce                             int64
 	Round                             int64
-	Epoch                             int64
+	Epoch                             int32
 	Value                             []byte
 	Receiver                          []byte
 	Sender                            []byte
@@ -132,7 +132,7 @@ type Transaction struct {
 	ReceiversShardIDs                 []int32
 	Operation                         string
 	Function                          string
-	InitiallyPaidFee                  string
+	InitiallyPaidFee                  []byte
 	IsRelayed                         bool
 	IsRefund                          bool
 }
@@ -161,6 +161,7 @@ func NewTransaction() *Transaction {
 		ESDTValues:                       make([][]byte, 0),
 		Receivers:                        make([][]byte, 0),
 		ReceiversShardIDs:                make([]int32, 0),
+		InitiallyPaidFee:                 []byte{},
 	}
 }
 
@@ -499,7 +500,7 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "Epoch",
-                                "type": "long"
+                                "type": "int"
                             },
                             {
                                 "name": "Value",
@@ -784,7 +785,7 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "InitiallyPaidFee",
-                                "type": "string"
+                                "type": "bytes"
                             },
                             {
                                 "name": "IsRelayed",
@@ -1105,7 +1106,7 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Epoch",
-            "type": "long"
+            "type": "int"
         },
         {
             "name": "Value",
@@ -1390,7 +1391,7 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "InitiallyPaidFee",
-            "type": "string"
+            "type": "bytes"
         },
         {
             "name": "IsRelayed",

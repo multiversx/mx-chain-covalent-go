@@ -1,5 +1,6 @@
 package transactions_test
 
+/*
 import (
 	"errors"
 	"math/rand"
@@ -34,20 +35,6 @@ type transactionData struct {
 	headerData *headerData
 }
 
-func generateRandomTx() *transaction.Transaction {
-	return &transaction.Transaction{
-		Nonce:       rand.Uint64(),
-		Value:       testscommon.GenerateRandomBigInt(),
-		RcvAddr:     testscommon.GenerateRandomBytes(),
-		SndAddr:     testscommon.GenerateRandomBytes(),
-		GasLimit:    rand.Uint64(),
-		GasPrice:    rand.Uint64(),
-		Data:        testscommon.GenerateRandomBytes(),
-		Signature:   testscommon.GenerateRandomBytes(),
-		SndUserName: testscommon.GenerateRandomBytes(),
-		RcvUserName: testscommon.GenerateRandomBytes(),
-	}
-}
 
 func generateRandomRewardTx() *rewardTx.RewardTx {
 	return &rewardTx.RewardTx{
@@ -602,3 +589,4 @@ func requireProcessedTransactionEqual(
 	}
 
 }
+*/

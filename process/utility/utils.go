@@ -41,6 +41,17 @@ func UIntSliceToIntSlice(in []uint64) []int64 {
 	return out
 }
 
+// UInt32SliceToInt32Slice outputs the int64 slice representation of a uint64 slice input
+func UInt32SliceToInt32Slice(in []uint32) []int32 {
+	out := make([]int32, len(in))
+
+	for i := range in {
+		out[i] = int32(in[i])
+	}
+
+	return out
+}
+
 // GetBytes returns the bytes representation of a big int input if not nil, otherwise returns []byte{}
 func GetBytes(val *big.Int) []byte {
 	if val != nil {
@@ -48,6 +59,47 @@ func GetBytes(val *big.Int) []byte {
 	}
 
 	return big.NewInt(0).Bytes()
+}
+
+// GetBigIntBytesFromStr returns the big int bytes representation of a string input if not empty, otherwise returns []byte{}
+func GetBigIntBytesFromStr(val string) ([]byte, error) {
+	if len(val) == 0 {
+		return big.NewInt(0).Bytes(), nil
+	}
+
+	valBI, ok := big.NewInt(0).SetString(val, 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid value in base 10: %s", val)
+	}
+
+	return valBI.Bytes(), nil
+}
+
+// StringSliceToByteSlice converts the input string slice to a byte slice
+func StringSliceToByteSlice(in []string) [][]byte {
+	out := make([][]byte, len(in))
+
+	for idx, elem := range in {
+		out[idx] = []byte(elem)
+	}
+
+	return out
+}
+
+// BigIntBytesSliceFromStringSlice converts the input string slice in a big int byte array slice
+func BigIntBytesSliceFromStringSlice(in []string) ([][]byte, error) {
+	out := make([][]byte, len(in))
+
+	for idx, elem := range in {
+		bigIntBytes, err := GetBigIntBytesFromStr(elem)
+		if err != nil {
+			return nil, err
+		}
+
+		out[idx] = bigIntBytes
+	}
+
+	return out, nil
 }
 
 // EncodePubKey returns a byte slice of the encoded pubKey input, using a pub key converter
