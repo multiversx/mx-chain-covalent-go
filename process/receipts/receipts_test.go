@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestReceiptsProcessor_ProcessReceipts_TwoReceipts_OneNormalTx_ExpectTwoProcessedReceipts(t *testing.T) {
+func TestReceiptsProcessor_ProcessReceipt(t *testing.T) {
 	t.Parallel()
 
 	rp := receipts.NewReceiptsProcessor()
