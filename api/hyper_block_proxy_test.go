@@ -74,6 +74,8 @@ func TestNewHyperBlockProxy(t *testing.T) {
 }
 
 func TestGetNonceFromRequest_MissingNonce_ShouldReturnError(t *testing.T) {
+	t.Parallel()
+
 	context := &gin.Context{
 		Params: []gin.Param{
 			{
