@@ -23,6 +23,14 @@ func TestReceiptsProcessor_ProcessReceipt(t *testing.T) {
 		TxHash:  "975ca52570",
 	}
 
+	t.Run("nil receipt, should return empty receipt", func(t *testing.T) {
+		t.Parallel()
+
+		processedReceipt, err := rp.ProcessReceipt(nil)
+		require.Nil(t, err)
+		require.Equal(t, schemaV2.NewReceipt(), processedReceipt)
+	})
+
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
@@ -43,11 +51,12 @@ func TestReceiptsProcessor_ProcessReceipt(t *testing.T) {
 	t.Run("invalid hash, should return error", func(t *testing.T) {
 		t.Parallel()
 
-		receipt.TxHash = "rr"
-		processedReceipt, err := rp.ProcessReceipt(receipt)
+		receiptCopy := *receipt
+		receiptCopy.TxHash = "rr"
+		processedReceipt, err := rp.ProcessReceipt(&receiptCopy)
 
 		require.Nil(t, processedReceipt)
 		require.NotNil(t, err)
-		require.True(t, strings.Contains(err.Error(), receipt.TxHash))
+		require.True(t, strings.Contains(err.Error(), receiptCopy.TxHash))
 	})
 }

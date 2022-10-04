@@ -21,6 +21,10 @@ func NewReceiptsProcessor() *receiptsProcessor {
 
 // ProcessReceipt converts receipts api data to a specific structure defined by avro schema
 func (rp *receiptsProcessor) ProcessReceipt(apiReceipt *transaction.ApiReceipt) (*schemaV2.Receipt, error) {
+	if apiReceipt == nil {
+		return schemaV2.NewReceipt(), nil
+	}
+
 	hash, err := hex.DecodeString(apiReceipt.TxHash)
 	if err != nil {
 		return nil, fmt.Errorf("receiptsProcessor.ProcessReceipt: could not decode tx hash: %s from receipt, err: %w", apiReceipt.TxHash, err)
