@@ -85,7 +85,7 @@ func respondWithInternalError(c *gin.Context, err error) {
 func respondWithBadRequest(c *gin.Context, err error) {
 	c.JSON(
 		http.StatusBadRequest,
-		shared.GenericAPIResponse{
+		CovalentHyperBlockApiResponse{
 			Data:  nil,
 			Error: err.Error(),
 			Code:  shared.ReturnCodeRequestError,
