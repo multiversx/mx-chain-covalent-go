@@ -99,10 +99,12 @@
         "type": "record",
         "fields": [
           {"name": "Type", "type": "string"},
+          {"name": "ProcessingTypeOnSource", "type": "string"},
+          {"name": "ProcessingTypeOnDestination", "type": "string"},
           {"name": "Hash", "type": "hash"},
           {"name": "Nonce", "type": "long"},
           {"name": "Round", "type": "long"},
-          {"name": "Epoch", "type": "long"},
+          {"name": "Epoch", "type": "int"},
           {"name": "Value",  "type": {
             "type": "bytes",
             "logicalType": "bignum",
@@ -121,6 +123,7 @@
           {"name": "Code", "type": "bytes"},
           {"name": "PreviousTransactionHash", "type": "hash"},
           {"name": "OriginalTransactionHash", "type": "hash"},
+          {"name": "ReturnMessage", "type": "string"},
           {"name": "OriginalSender", "type": "address"},
           {"name": "Signature", "type": ["null", {
             "name": "signature", "type": "fixed", "size": 64}]},
@@ -132,6 +135,8 @@
           {"name": "NotarizedAtSourceInMetaHash", "type": "hash"},
           {"name": "NotarizedAtDestinationInMetaNonce", "type": "long"},
           {"name": "NotarizedAtDestinationInMetaHash", "type": "hash"},
+          {"name": "MiniBlockType", "type": "string"},
+          {"name": "MiniBlockHash", "type": "hash"},
           {"name": "HyperBlockNonce", "type": "long"},
           {"name": "HyperBlockHash", "type": "hash"},
           {"name": "Timestamp", "type": "long"},
@@ -182,7 +187,12 @@
           {"name": "ReceiversShardIDs", "type": {"type" : "array", "items": { "type":  "int"}}},
           {"name": "Operation", "type": "string"},
           {"name": "Function", "type": "string"},
-          {"name": "InitiallyPaidFee", "type": "string"},
+          {"name": "InitiallyPaidFee", "type": {
+            "type": "bytes",
+            "logicalType": "bignum",
+            "precision": 1000,
+            "scale": 0
+          }},
           {"name": "IsRelayed", "type": "boolean"},
           {"name": "IsRefund", "type": "boolean"}
         ]
