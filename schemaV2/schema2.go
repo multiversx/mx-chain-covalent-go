@@ -94,6 +94,8 @@ func (o *ShardBlocks) Schema() avro.Schema {
 
 type Transaction struct {
 	Type                              string
+	ProcessingTypeOnSource            string
+	ProcessingTypeOnDestination       string
 	Hash                              []byte
 	Nonce                             int64
 	Round                             int64
@@ -110,6 +112,7 @@ type Transaction struct {
 	Code                              []byte
 	PreviousTransactionHash           []byte
 	OriginalTransactionHash           []byte
+	ReturnMessage                     string
 	OriginalSender                    []byte
 	Signature                         []byte
 	SourceShard                       int32
@@ -120,6 +123,8 @@ type Transaction struct {
 	NotarizedAtSourceInMetaHash       []byte
 	NotarizedAtDestinationInMetaNonce int64
 	NotarizedAtDestinationInMetaHash  []byte
+	MiniBlockType                     string
+	MiniBlockHash                     []byte
 	HyperBlockNonce                   int64
 	HyperBlockHash                    []byte
 	Timestamp                         int64
@@ -154,6 +159,7 @@ func NewTransaction() *Transaction {
 		BlockHash:                        make([]byte, 32),
 		NotarizedAtSourceInMetaHash:      make([]byte, 32),
 		NotarizedAtDestinationInMetaHash: make([]byte, 32),
+		MiniBlockHash:                    make([]byte, 32),
 		HyperBlockHash:                   make([]byte, 32),
 		Receipt:                          NewReceipt(),
 		Log:                              NewLog(),
@@ -483,6 +489,14 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                                 "type": "string"
                             },
                             {
+                                "name": "ProcessingTypeOnSource",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessingTypeOnDestination",
+                                "type": "string"
+                            },
+                            {
                                 "name": "Hash",
                                 "type": {
                                     "type": "fixed",
@@ -567,6 +581,10 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                                 }
                             },
                             {
+                                "name": "ReturnMessage",
+                                "type": "string"
+                            },
+                            {
                                 "name": "OriginalSender",
                                 "type": {
                                     "type": "fixed",
@@ -624,6 +642,18 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "NotarizedAtDestinationInMetaHash",
+                                "type": {
+                                    "type": "fixed",
+                                    "size": 32,
+                                    "name": "hash"
+                                }
+                            },
+                            {
+                                "name": "MiniBlockType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MiniBlockHash",
                                 "type": {
                                     "type": "fixed",
                                     "size": 32,
@@ -1089,6 +1119,14 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
             "type": "string"
         },
         {
+            "name": "ProcessingTypeOnSource",
+            "type": "string"
+        },
+        {
+            "name": "ProcessingTypeOnDestination",
+            "type": "string"
+        },
+        {
             "name": "Hash",
             "type": {
                 "type": "fixed",
@@ -1173,6 +1211,10 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
             }
         },
         {
+            "name": "ReturnMessage",
+            "type": "string"
+        },
+        {
             "name": "OriginalSender",
             "type": {
                 "type": "fixed",
@@ -1230,6 +1272,18 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "NotarizedAtDestinationInMetaHash",
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
+        },
+        {
+            "name": "MiniBlockType",
+            "type": "string"
+        },
+        {
+            "name": "MiniBlockHash",
             "type": {
                 "type": "fixed",
                 "size": 32,
