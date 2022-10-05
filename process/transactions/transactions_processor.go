@@ -19,6 +19,12 @@ func NewTransactionProcessor(
 	logProcessor process.LogHandler,
 	receiptHandler process.ReceiptHandler,
 ) (*transactionProcessor, error) {
+	if logProcessor == nil {
+		return nil, errNilLogProcessor
+	}
+	if receiptHandler == nil {
+		return nil, errNilReceiptProcessor
+	}
 
 	return &transactionProcessor{
 		logProcessor:   logProcessor,
@@ -29,6 +35,7 @@ func NewTransactionProcessor(
 // ProcessTransactions converts transactions data to a specific structure defined by avro schema
 func (txp *transactionProcessor) ProcessTransactions(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error) {
 	allTxs := make([]*schemaV2.Transaction, 0, len(apiTransactions))
+
 	for _, apiTx := range apiTransactions {
 		tx, err := txp.processTransaction(apiTx)
 		if err != nil {
