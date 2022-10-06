@@ -28,10 +28,6 @@ func HexSliceToByteSlice(in []string) ([][]byte, error) {
 
 // UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
 func UIntSliceToIntSlice(in []uint64) []int64 {
-	if in == nil {
-		return nil
-	}
-
 	out := make([]int64, len(in))
 
 	for i := range in {
@@ -69,7 +65,7 @@ func GetBigIntBytesFromStr(val string) ([]byte, error) {
 
 	valBI, ok := big.NewInt(0).SetString(val, 10)
 	if !ok {
-		return nil, fmt.Errorf("invalid value in base 10: %s", val)
+		return nil, fmt.Errorf("%w: %s", errInvalidValueInBase10, val)
 	}
 
 	return valBI.Bytes(), nil
@@ -86,8 +82,8 @@ func StringSliceToByteSlice(in []string) [][]byte {
 	return out
 }
 
-// BigIntBytesSliceFromStringSlice converts the input string slice in a big int byte array slice
-func BigIntBytesSliceFromStringSlice(in []string) ([][]byte, error) {
+// GetBigIntBytesSliceFromStringSlice converts the input string slice in a big int byte array slice
+func GetBigIntBytesSliceFromStringSlice(in []string) ([][]byte, error) {
 	out := make([][]byte, len(in))
 
 	for idx, elem := range in {

@@ -323,7 +323,7 @@ func requireTransactionProcessedSuccessfully(
 	require.Nil(t, err)
 	receipt, err := receiptHandler.ProcessReceipt(apiTx.Receipt)
 	require.Nil(t, err)
-	esdtValues, err := utility.BigIntBytesSliceFromStringSlice(apiTx.ESDTValues)
+	esdtValues, err := utility.GetBigIntBytesSliceFromStringSlice(apiTx.ESDTValues)
 	require.Nil(t, err)
 	initiallyPaidFee, err := utility.GetBigIntBytesFromStr(apiTx.InitiallyPaidFee)
 	require.Nil(t, err)

@@ -93,7 +93,7 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 	if err != nil {
 		return nil, err
 	}
-	esdtValues, err := utility.BigIntBytesSliceFromStringSlice(apiTx.ESDTValues)
+	esdtValues, err := utility.GetBigIntBytesSliceFromStringSlice(apiTx.ESDTValues)
 	if err != nil {
 		return nil, err
 	}
