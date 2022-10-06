@@ -81,6 +81,10 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 	if err != nil {
 		return nil, err
 	}
+	miniBlockHash, err := hex.DecodeString(apiTx.MiniBlockHash)
+	if err != nil {
+		return nil, err
+	}
 	hyperBlockHash, err := hex.DecodeString(apiTx.HyperblockHash)
 	if err != nil {
 		return nil, err
@@ -100,6 +104,8 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 
 	return &schemaV2.Transaction{
 		Type:                              apiTx.Type,
+		ProcessingTypeOnSource:            apiTx.ProcessingTypeOnSource,
+		ProcessingTypeOnDestination:       apiTx.ProcessingTypeOnDestination,
 		Hash:                              txHash,
 		Nonce:                             int64(apiTx.Nonce),
 		Round:                             int64(apiTx.Round),
@@ -116,6 +122,7 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 		Code:                              []byte(apiTx.Code),
 		PreviousTransactionHash:           prevTxHash,
 		OriginalTransactionHash:           originalTxHash,
+		ReturnMessage:                     apiTx.ReturnMessage,
 		OriginalSender:                    []byte(apiTx.OriginalSender),
 		Signature:                         signature,
 		SourceShard:                       int32(apiTx.SourceShard),
@@ -126,6 +133,8 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 		NotarizedAtSourceInMetaHash:       notarizedAtSourceInMetaHash,
 		NotarizedAtDestinationInMetaNonce: int64(apiTx.NotarizedAtDestinationInMetaNonce),
 		NotarizedAtDestinationInMetaHash:  notarizedAtDestinationInMetaHash,
+		MiniBlockType:                     apiTx.MiniBlockType,
+		MiniBlockHash:                     miniBlockHash,
 		HyperBlockNonce:                   int64(apiTx.HyperblockNonce),
 		HyperBlockHash:                    hyperBlockHash,
 		Timestamp:                         apiTx.Timestamp,
