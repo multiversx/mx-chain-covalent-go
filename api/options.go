@@ -17,6 +17,6 @@ type HyperBlockQueryOptions struct {
 // - withLogs is implemented, but not available on mainnet
 // - withBalances is not yet implemented
 var options = HyperBlockQueryOptions{
-	WithLogs:     false,
+	WithLogs:     true,
 	WithBalances: false,
 }

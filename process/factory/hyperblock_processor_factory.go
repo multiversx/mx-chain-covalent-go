@@ -5,6 +5,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/logs"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
 )
 
 // ArgsHyperBlockProcessor holds all input dependencies required by hyper block processor factory
@@ -15,10 +16,11 @@ type ArgsHyperBlockProcessor struct {
 // CreateHyperBlockProcessor creates a new hyper block processor handler
 func CreateHyperBlockProcessor(args *ArgsHyperBlockProcessor) (covalent.HyperBlockProcessor, error) {
 	receiptsHandler := receipts.NewReceiptsProcessor()
-	_ = receiptsHandler // this will be a subcomp of a tx processor which shall follow in next PRs
-
 	logsHandler := logs.NewLogsProcessor()
-	_ = logsHandler // this will be a subcomp of a tx processor which shall follow in next PRs
+	transactionsHandler, err := transactions.NewTransactionProcessor(logsHandler, receiptsHandler)
+	if err != nil {
+		return nil, err
+	}
 
-	return process.NewHyperBlockProcessor(), nil
+	return process.NewHyperBlockProcessor(transactionsHandler), nil
 }

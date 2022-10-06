@@ -144,30 +144,23 @@ type Transaction struct {
 
 func NewTransaction() *Transaction {
 	return &Transaction{
-		Hash:                             make([]byte, 32),
-		Value:                            []byte{},
-		Receiver:                         make([]byte, 62),
-		Sender:                           make([]byte, 62),
-		SenderUserName:                   []byte{},
-		ReceiverUserName:                 []byte{},
-		Data:                             []byte{},
-		CodeMetadata:                     []byte{},
-		Code:                             []byte{},
-		PreviousTransactionHash:          make([]byte, 32),
-		OriginalTransactionHash:          make([]byte, 32),
-		OriginalSender:                   make([]byte, 62),
-		BlockHash:                        make([]byte, 32),
-		NotarizedAtSourceInMetaHash:      make([]byte, 32),
-		NotarizedAtDestinationInMetaHash: make([]byte, 32),
-		MiniBlockHash:                    make([]byte, 32),
-		HyperBlockHash:                   make([]byte, 32),
-		Receipt:                          NewReceipt(),
-		Log:                              NewLog(),
-		Tokens:                           make([]string, 0),
-		ESDTValues:                       make([][]byte, 0),
-		Receivers:                        make([][]byte, 0),
-		ReceiversShardIDs:                make([]int32, 0),
-		InitiallyPaidFee:                 []byte{},
+		Hash:              make([]byte, 32),
+		Value:             []byte{},
+		Receiver:          make([]byte, 62),
+		Sender:            make([]byte, 62),
+		SenderUserName:    []byte{},
+		ReceiverUserName:  []byte{},
+		Data:              []byte{},
+		CodeMetadata:      []byte{},
+		Code:              []byte{},
+		MiniBlockHash:     make([]byte, 32),
+		Receipt:           NewReceipt(),
+		Log:               NewLog(),
+		Tokens:            make([]string, 0),
+		ESDTValues:        make([][]byte, 0),
+		Receivers:         make([][]byte, 0),
+		ReceiversShardIDs: make([]int32, 0),
+		InitiallyPaidFee:  []byte{},
 	}
 }
 
@@ -566,19 +559,27 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "PreviousTransactionHash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
                             },
                             {
                                 "name": "OriginalTransactionHash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
                             },
                             {
                                 "name": "ReturnMessage",
@@ -586,11 +587,15 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "OriginalSender",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 62,
-                                    "name": "address"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 62,
+                                        "name": "address"
+                                    }
+                                ]
                             },
                             {
                                 "name": "Signature",
@@ -618,11 +623,15 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "BlockHash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
                             },
                             {
                                 "name": "NotarizedAtSourceInMetaNonce",
@@ -630,11 +639,15 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "NotarizedAtSourceInMetaHash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
                             },
                             {
                                 "name": "NotarizedAtDestinationInMetaNonce",
@@ -642,11 +655,15 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "NotarizedAtDestinationInMetaHash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
                             },
                             {
                                 "name": "MiniBlockType",
@@ -666,11 +683,15 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "HyperBlockHash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
                             },
                             {
                                 "name": "Timestamp",
@@ -1196,19 +1217,27 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "PreviousTransactionHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "OriginalTransactionHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "ReturnMessage",
@@ -1216,11 +1245,15 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "OriginalSender",
-            "type": {
-                "type": "fixed",
-                "size": 62,
-                "name": "address"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 62,
+                    "name": "address"
+                }
+            ]
         },
         {
             "name": "Signature",
@@ -1248,11 +1281,15 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "BlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "NotarizedAtSourceInMetaNonce",
@@ -1260,11 +1297,15 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "NotarizedAtSourceInMetaHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "NotarizedAtDestinationInMetaNonce",
@@ -1272,11 +1313,15 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "NotarizedAtDestinationInMetaHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "MiniBlockType",
@@ -1296,11 +1341,15 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "HyperBlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "Timestamp",

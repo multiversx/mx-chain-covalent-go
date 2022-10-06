@@ -121,24 +121,31 @@
           {"name": "Data", "type": "bytes"},
           {"name": "CodeMetadata", "type": "bytes"},
           {"name": "Code", "type": "bytes"},
-          {"name": "PreviousTransactionHash", "type": "hash"},
-          {"name": "OriginalTransactionHash", "type": "hash"},
+          {"name": "PreviousTransactionHash", "type": ["null", {
+            "name": "PreviousTransactionHash", "type" : "hash"}]},
+          {"name": "OriginalTransactionHash", "type": ["null", {
+            "name": "OriginalTransactionHash", "type" : "hash"}]},
           {"name": "ReturnMessage", "type": "string"},
-          {"name": "OriginalSender", "type": "address"},
+          {"name": "OriginalSender", "type": ["null", {
+            "name": "OriginalSender", "type" : "address"}]},
           {"name": "Signature", "type": ["null", {
             "name": "signature", "type": "fixed", "size": 64}]},
           {"name": "SourceShard", "type": "int"},
           {"name": "DestinationShard", "type": "int"},
           {"name": "BlockNonce", "type": "long"},
-          {"name": "BlockHash", "type": "hash"},
+          {"name": "BlockHash", "type": ["null", {
+            "name": "BlockHash", "type" : "hash"}]},
           {"name": "NotarizedAtSourceInMetaNonce", "type": "long"},
-          {"name": "NotarizedAtSourceInMetaHash", "type": "hash"},
+          {"name": "NotarizedAtSourceInMetaHash", "type": ["null", {
+            "name": "NotarizedAtSourceInMetaHash", "type" : "hash"}]},
           {"name": "NotarizedAtDestinationInMetaNonce", "type": "long"},
-          {"name": "NotarizedAtDestinationInMetaHash", "type": "hash"},
+          {"name": "NotarizedAtDestinationInMetaHash", "type": ["null", {
+            "name": "NotarizedAtDestinationInMetaHash", "type" : "hash"}]},
           {"name": "MiniBlockType", "type": "string"},
           {"name": "MiniBlockHash", "type": "hash"},
           {"name": "HyperBlockNonce", "type": "long"},
-          {"name": "HyperBlockHash", "type": "hash"},
+          {"name": "HyperBlockHash", "type": ["null", {
+            "name": "HyperBlockHash", "type" : "hash"}]},
           {"name": "Timestamp", "type": "long"},
 
           {"name": "Receipt", "type": {
