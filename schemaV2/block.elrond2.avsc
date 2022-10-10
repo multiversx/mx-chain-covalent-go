@@ -205,55 +205,6 @@
         ]
       }}]}},
 
-    {"name": "SCResults", "type": {"type": [ "null",
-      {"type" : "array", "items": {
-        "name": "SCResult",
-        "type": "record",
-        "fields": [
-          {"name": "Hash", "type": "hash"},
-          {"name": "Nonce", "type": "long"},
-          {"name": "Value",  "type": {
-            "type": "bytes",
-            "logicalType": "bignum",
-            "precision": 1000,
-            "scale": 0
-          }},
-          {"name": "Receiver", "type": "address"},
-          {"name": "Sender", "type": "address"},
-          {"name": "Relayer", "type": { "type" : ["null", {"type": "address"}] }},
-          {"name": "RelayedValue",  "type": {
-            "type": "bytes",
-            "logicalType": "bignum",
-            "precision": 1000,
-            "scale": 0
-          }},
-          {"name": "Code", "type": "bytes"},
-          {"name": "Data", "type": "bytes"},
-          {"name": "PrevTxHash", "type": "hash"},
-          {"name": "OriginalTxHash", "type": "hash"},
-          {"name": "GasLimit", "type": "long"},
-          {"name": "GasPrice", "type": "long"},
-          {"name": "CallType", "type": "int"},
-          {"name": "CodeMetadata", "type": "bytes"},
-          {"name": "ReturnMessage", "type": "bytes"},
-          {"name": "OriginalSender", "type": "address"},
-          {"name": "Log", "type": "Log"},
-          {"name": "Tokens", "type": {"type" : "array", "items": { "type":  "string"}}},
-          {"name": "ESDTValues", "type": {"type" : "array", "items": { "type":  {
-            "type": "bytes",
-            "logicalType": "bignum",
-            "precision": 1000,
-            "scale": 0
-          }}}},
-          {"name": "Receivers", "type": {"type" : "array", "items": { "type":  "address"}}},
-          {"name": "ReceiversShardIDs", "type": {"type" : "array", "items": { "type":  "int"}}},
-          {"name": "Operation", "type": "string"},
-          {"name": "Function", "type": "string"},
-          {"name": "IsRelayed", "type": "boolean"},
-          {"name": "IsRefund", "type": "boolean"}
-      ]
-    }}]}},
-
     {"name": "StateChanges", "type": {"type": "array", "items":{
       "name": "AccountBalanceUpdate",
       "type": "record",
