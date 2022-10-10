@@ -4,19 +4,8 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
-
-// BlockHandler defines what a block processor shall do
-type BlockHandler interface {
-	ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error)
-}
-
-// MiniBlockHandler defines what a mini blocks processor shall do
-type MiniBlockHandler interface {
-	ProcessMiniBlocks(header data.HeaderHandler, body data.BodyHandler) ([]*schema.MiniBlock, error)
-}
 
 // TransactionHandler defines what a transaction processor shall do
 type TransactionHandler interface {
