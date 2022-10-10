@@ -37,6 +37,10 @@ func (txp *transactionProcessor) ProcessTransactions(apiTransactions []*transact
 	allTxs := make([]*schemaV2.Transaction, 0, len(apiTransactions))
 
 	for _, apiTx := range apiTransactions {
+		if apiTx == nil {
+			continue
+		}
+
 		tx, err := txp.processTransaction(apiTx)
 		if err != nil {
 			return nil, err

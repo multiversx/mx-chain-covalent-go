@@ -7,17 +7,17 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 )
 
-type shardBlockProcessor struct {
+type shardBlocksProcessor struct {
 }
 
-func NewShardProcessor() *shardBlockProcessor {
-	return &shardBlockProcessor{}
+func NewShardBlocksProcessor() *shardBlocksProcessor {
+	return &shardBlocksProcessor{}
 }
 
-func ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error) {
-	shardBlocks := make([]*schemaV2.ShardBlocks, len(apiBlocks))
+func (sbp *shardBlocksProcessor) ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error) {
+	shardBlocks := make([]*schemaV2.ShardBlocks, 0, len(apiBlocks))
 
-	for idx, apiBlock := range apiBlocks {
+	for _, apiBlock := range apiBlocks {
 		if apiBlock == nil {
 			continue
 		}
@@ -27,7 +27,7 @@ func ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlock
 			return nil, err
 		}
 
-		shardBlocks[idx] = shardBlock
+		shardBlocks = append(shardBlocks, shardBlock)
 	}
 
 	return shardBlocks, nil

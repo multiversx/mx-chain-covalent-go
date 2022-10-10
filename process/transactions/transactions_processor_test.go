@@ -15,11 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func generateRandHexString() string {
-	randBytes := testscommon.GenerateRandomFixedBytes(32)
-	return hex.EncodeToString(randBytes)
-}
-
 func generateStringSlice(n int) []string {
 	ret := make([]string, n)
 
@@ -57,7 +52,7 @@ func generateApiTx() *transaction.ApiTransactionResult {
 		Type:                              "normal",
 		ProcessingTypeOnSource:            "source",
 		ProcessingTypeOnDestination:       "dest",
-		Hash:                              generateRandHexString(),
+		Hash:                              testscommon.GenerateRandHexString(),
 		Nonce:                             rand.Uint64(),
 		Round:                             rand.Uint64(),
 		Epoch:                             rand.Uint32(),
@@ -71,25 +66,25 @@ func generateApiTx() *transaction.ApiTransactionResult {
 		Data:                              testscommon.GenerateRandomBytes(),
 		CodeMetadata:                      testscommon.GenerateRandomBytes(),
 		Code:                              "code",
-		PreviousTransactionHash:           generateRandHexString(),
-		OriginalTransactionHash:           generateRandHexString(),
+		PreviousTransactionHash:           testscommon.GenerateRandHexString(),
+		OriginalTransactionHash:           testscommon.GenerateRandHexString(),
 		ReturnMessage:                     "success",
 		OriginalSender:                    "erd1cc",
-		Signature:                         generateRandHexString(),
+		Signature:                         testscommon.GenerateRandHexString(),
 		SourceShard:                       rand.Uint32(),
 		DestinationShard:                  rand.Uint32(),
 		BlockNonce:                        rand.Uint64(),
-		BlockHash:                         generateRandHexString(),
+		BlockHash:                         testscommon.GenerateRandHexString(),
 		NotarizedAtSourceInMetaNonce:      rand.Uint64(),
-		NotarizedAtSourceInMetaHash:       generateRandHexString(),
+		NotarizedAtSourceInMetaHash:       testscommon.GenerateRandHexString(),
 		NotarizedAtDestinationInMetaNonce: rand.Uint64(),
-		NotarizedAtDestinationInMetaHash:  generateRandHexString(),
+		NotarizedAtDestinationInMetaHash:  testscommon.GenerateRandHexString(),
 		MiniBlockType:                     "SmartContractResultBlock",
-		MiniBlockHash:                     generateRandHexString(),
+		MiniBlockHash:                     testscommon.GenerateRandHexString(),
 		HyperblockNonce:                   rand.Uint64(),
-		HyperblockHash:                    generateRandHexString(),
+		HyperblockHash:                    testscommon.GenerateRandHexString(),
 		Timestamp:                         rand.Int63(),
-		Receipt:                           &transaction.ApiReceipt{TxHash: generateRandHexString()},
+		Receipt:                           &transaction.ApiReceipt{TxHash: testscommon.GenerateRandHexString()},
 		Logs:                              &transaction.ApiLogs{Address: "erd1dd"},
 		Status:                            "status",
 		Tokens:                            generateStringSlice(rand.Int()%10 + 1),
@@ -173,6 +168,14 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 		require.Equal(t, processReceiptCalledCt, 10)
 		require.Nil(t, err)
 		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)
+	})
+
+	t.Run("nil api tx, should skip it", func(t *testing.T) {
+		apiTxs := generateApiTxs(3)
+		apiTxs[0] = nil
+		ret, err := txp.ProcessTransactions(apiTxs)
+		require.Nil(t, err)
+		requireTransactionsProcessedSuccessfully(t, apiTxs[1:], ret, logHandler, receiptHandler)
 	})
 
 	t.Run("invalid hash, should err", func(t *testing.T) {
