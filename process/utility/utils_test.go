@@ -293,7 +293,7 @@ func TestGetBigIntBytesFromStr(t *testing.T) {
 		ret, err := utility.GetBigIntBytesFromStr("ff")
 		require.Nil(t, ret)
 		require.NotNil(t, err)
-		require.True(t, strings.Contains(err.Error(), "invalid"))
+		require.ErrorIs(t, err, utility.ErrInvalidValueInBase10)
 		require.True(t, strings.Contains(err.Error(), "ff"))
 	})
 }
