@@ -3,6 +3,7 @@ package process
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
 
@@ -19,6 +20,11 @@ type ReceiptHandler interface {
 // LogHandler defines what a log processor shall do
 type LogHandler interface {
 	ProcessLog(log *transaction.ApiLogs) *schemaV2.Log
+}
+
+// ShardBlocksHandler defines what shard blocks processor shall do
+type ShardBlocksHandler interface {
+	ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error)
 }
 
 // AccountsHandler defines what an account processor shall do

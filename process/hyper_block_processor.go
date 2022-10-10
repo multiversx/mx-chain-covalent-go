@@ -7,16 +7,24 @@ import (
 
 type hyperBlockProcessor struct {
 	transactionProcessor TransactionHandler
+	shardBlocksProcessor ShardBlocksHandler
 }
 
 // NewHyperBlockProcessor will create a new instance of an hyper block processor
-func NewHyperBlockProcessor(transactionHandler TransactionHandler) (*hyperBlockProcessor, error) {
+func NewHyperBlockProcessor(
+	transactionHandler TransactionHandler,
+	shardBlockHandler ShardBlocksHandler,
+) (*hyperBlockProcessor, error) {
 	if transactionHandler == nil {
 		return nil, errNilTransactionHandler
+	}
+	if shardBlockHandler == nil {
+		return nil, errNilShardBlocksHandler
 	}
 
 	return &hyperBlockProcessor{
 		transactionProcessor: transactionHandler,
+		shardBlocksProcessor: shardBlockHandler,
 	}, nil
 }
 
@@ -28,7 +36,12 @@ func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*sch
 	if err != nil {
 		return nil, err
 	}
+	shardBlocks, err := hbp.shardBlocksProcessor.ProcessShardBlocks(hyperBlock.ShardBlocks)
+	if err != nil {
+		return nil, err
+	}
 
+	avroHyperBlock.ShardBlocks = shardBlocks
 	avroHyperBlock.Transactions = txs
 	return avroHyperBlock, nil
 }

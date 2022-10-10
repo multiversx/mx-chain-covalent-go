@@ -5,6 +5,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/logs"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
+	"github.com/ElrondNetwork/covalent-indexer-go/process/shardBlocks"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
 )
 
@@ -22,5 +23,6 @@ func CreateHyperBlockProcessor(args *ArgsHyperBlockProcessor) (covalent.HyperBlo
 		return nil, err
 	}
 
-	return process.NewHyperBlockProcessor(transactionsHandler)
+	shardBlocksHandler := shardBlocks.NewShardBlocksProcessor()
+	return process.NewHyperBlockProcessor(transactionsHandler, shardBlocksHandler)
 }
