@@ -22,5 +22,5 @@ func CreateHyperBlockProcessor(args *ArgsHyperBlockProcessor) (covalent.HyperBlo
 		return nil, err
 	}
 
-	return process.NewHyperBlockProcessor(transactionsHandler), nil
+	return process.NewHyperBlockProcessor(transactionsHandler)
 }
