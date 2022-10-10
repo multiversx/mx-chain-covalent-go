@@ -37,7 +37,7 @@ func UIntSliceToIntSlice(in []uint64) []int64 {
 	return out
 }
 
-// UInt32SliceToInt32Slice outputs the int64 slice representation of a uint64 slice input
+// UInt32SliceToInt32Slice outputs the int32 slice representation of a uint32 slice input
 func UInt32SliceToInt32Slice(in []uint32) []int32 {
 	out := make([]int32, len(in))
 
