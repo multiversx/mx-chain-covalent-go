@@ -10,10 +10,12 @@ import (
 type shardBlocksProcessor struct {
 }
 
+// NewShardBlocksProcessor creates a new instance of a shard block processor
 func NewShardBlocksProcessor() *shardBlocksProcessor {
 	return &shardBlocksProcessor{}
 }
 
+// ProcessShardBlocks converts api notarized shard blocks to avro schema shard blocks
 func (sbp *shardBlocksProcessor) ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error) {
 	shardBlocks := make([]*schemaV2.ShardBlocks, 0, len(apiBlocks))
 
