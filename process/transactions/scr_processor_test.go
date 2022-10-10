@@ -13,6 +13,7 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data"
 	"github.com/ElrondNetwork/elrond-go-core/data/smartContractResult"
+	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/ElrondNetwork/elrond-go-core/data/vm"
 	"github.com/stretchr/testify/require"
 )
@@ -62,6 +63,21 @@ func generateRandomSCR() *smartContractResult.SmartContractResult {
 		CodeMetadata:   testscommon.GenerateRandomBytes(),
 		ReturnMessage:  testscommon.GenerateRandomBytes(),
 		OriginalSender: testscommon.GenerateRandomBytes(),
+	}
+}
+
+func generateRandomTx() *transaction.Transaction {
+	return &transaction.Transaction{
+		Nonce:       rand.Uint64(),
+		Value:       testscommon.GenerateRandomBigInt(),
+		RcvAddr:     testscommon.GenerateRandomBytes(),
+		SndAddr:     testscommon.GenerateRandomBytes(),
+		GasLimit:    rand.Uint64(),
+		GasPrice:    rand.Uint64(),
+		Data:        testscommon.GenerateRandomBytes(),
+		Signature:   testscommon.GenerateRandomBytes(),
+		SndUserName: testscommon.GenerateRandomBytes(),
+		RcvUserName: testscommon.GenerateRandomBytes(),
 	}
 }
 

@@ -1,29 +1,34 @@
 package process
 
 import (
-	"encoding/hex"
-
 	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 )
 
 type hyperBlockProcessor struct {
+	transactionProcessor TransactionHandler
 }
 
 // NewHyperBlockProcessor will create a new instance of an hyper block processor
-func NewHyperBlockProcessor() *hyperBlockProcessor {
-	return &hyperBlockProcessor{}
+func NewHyperBlockProcessor(transactionHandler TransactionHandler) (*hyperBlockProcessor, error) {
+	if transactionHandler == nil {
+		return nil, errNilTransactionHandler
+	}
+
+	return &hyperBlockProcessor{
+		transactionProcessor: transactionHandler,
+	}, nil
 }
 
 // Process will process current hyper block and convert it to an avro schema block result
-func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*schema.BlockResult, error) {
-	block := schema.NewBlockResult()
+func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*schemaV2.HyperBlock, error) {
+	avroHyperBlock := schemaV2.NewHyperBlock()
 
-	hash, err := hex.DecodeString(hyperBlock.Hash)
+	txs, err := hbp.transactionProcessor.ProcessTransactions(hyperBlock.Transactions)
 	if err != nil {
 		return nil, err
 	}
 
-	block.Block.Hash = hash
-	return block, nil
+	avroHyperBlock.Transactions = txs
+	return avroHyperBlock, nil
 }

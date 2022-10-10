@@ -7,7 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock/apiMocks"
 	"github.com/ElrondNetwork/elrond-go/api/shared"
@@ -79,13 +79,11 @@ func TestHyperBlockFacade_GetHyperBlockByNonce(t *testing.T) {
 		},
 	}
 
-	blockResult := &schema.BlockResult{
-		Block: &schema.Block{
-			Hash: []byte(elrondApiResponse.Data.HyperBlock.Hash),
-		},
+	blockResult := &schemaV2.HyperBlock{
+		Hash: []byte(elrondApiResponse.Data.HyperBlock.Hash),
 	}
 	processor := &mock.HyperBlockProcessorStub{
-		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schema.BlockResult, error) {
+		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schemaV2.HyperBlock, error) {
 			require.Equal(t, &elrondApiResponse.Data.HyperBlock, hyperBlock)
 			return blockResult, nil
 		},
@@ -130,13 +128,11 @@ func TestHyperBlockFacade_GetHyperBlockByHash(t *testing.T) {
 		},
 	}
 
-	blockResult := &schema.BlockResult{
-		Block: &schema.Block{
-			Hash: []byte(elrondApiResponse.Data.HyperBlock.Hash),
-		},
+	blockResult := &schemaV2.HyperBlock{
+		Hash: []byte(elrondApiResponse.Data.HyperBlock.Hash),
 	}
 	processor := &mock.HyperBlockProcessorStub{
-		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schema.BlockResult, error) {
+		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schemaV2.HyperBlock, error) {
 			require.Equal(t, &elrondApiResponse.Data.HyperBlock, hyperBlock)
 			return blockResult, nil
 		},
@@ -223,7 +219,7 @@ func TestHyperBlockFacade_GetHyperBlock_ErrorCases(t *testing.T) {
 
 		errProcessor := errors.New("error processing hyper block")
 		processor := &mock.HyperBlockProcessorStub{
-			ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schema.BlockResult, error) {
+			ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schemaV2.HyperBlock, error) {
 				return nil, errProcessor
 			},
 		}

@@ -2,6 +2,7 @@ package utility_test
 
 import (
 	"math/big"
+	"strings"
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
@@ -255,4 +256,74 @@ func TestEncode_BlockResult(t *testing.T) {
 	blockResNilBlock.Block = nil
 	_, err = testAvroMarshaller.Encode(&blockResNilBlock)
 	require.NotNil(t, err)
+}
+
+func TestUInt32SliceToInt32Slice(t *testing.T) {
+	t.Parallel()
+
+	out := utility.UInt32SliceToInt32Slice(nil)
+	require.Equal(t, []int32{}, out)
+
+	out = utility.UInt32SliceToInt32Slice([]uint32{44, 555})
+	require.Equal(t, []int32{44, 555}, out)
+}
+
+func TestGetBigIntBytesFromStr(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		ret, err := utility.GetBigIntBytesFromStr("4321")
+		require.Equal(t, big.NewInt(4321).Bytes(), ret)
+		require.Nil(t, err)
+	})
+
+	t.Run("empty value, should return bigInt(0)", func(t *testing.T) {
+		t.Parallel()
+
+		ret, err := utility.GetBigIntBytesFromStr("")
+		require.Equal(t, big.NewInt(0).Bytes(), ret)
+		require.Nil(t, err)
+	})
+
+	t.Run("invalid value in base 10", func(t *testing.T) {
+		t.Parallel()
+
+		ret, err := utility.GetBigIntBytesFromStr("ff")
+		require.Nil(t, ret)
+		require.NotNil(t, err)
+		require.ErrorIs(t, err, utility.ErrInvalidValueInBase10)
+		require.True(t, strings.Contains(err.Error(), "ff"))
+	})
+}
+
+func TestStringSliceToByteSlice(t *testing.T) {
+	t.Parallel()
+
+	in := []string{"a", "bb", "ccc"}
+	out := utility.StringSliceToByteSlice(in)
+	require.Equal(t, [][]byte{[]byte("a"), []byte("bb"), []byte("ccc")}, out)
+}
+
+func TestBigIntBytesSliceFromStringSlice(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		in := []string{"12", "345"}
+		out, err := utility.GetBigIntBytesSliceFromStringSlice(in)
+		require.Nil(t, err)
+		require.Equal(t, [][]byte{big.NewInt(12).Bytes(), big.NewInt(345).Bytes()}, out)
+	})
+
+	t.Run("invalid string number", func(t *testing.T) {
+		t.Parallel()
+
+		in := []string{"12", "34f"}
+		out, err := utility.GetBigIntBytesSliceFromStringSlice(in)
+		require.Nil(t, out)
+		require.NotNil(t, err)
+	})
 }
