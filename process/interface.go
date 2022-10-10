@@ -3,29 +3,12 @@ package process
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
-	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
-
-// BlockHandler defines what a block processor shall do
-type BlockHandler interface {
-	ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error)
-}
-
-// MiniBlockHandler defines what a mini blocks processor shall do
-type MiniBlockHandler interface {
-	ProcessMiniBlocks(header data.HeaderHandler, body data.BodyHandler) ([]*schema.MiniBlock, error)
-}
 
 // TransactionHandler defines what a transaction processor shall do
 type TransactionHandler interface {
 	ProcessTransactions(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error)
-}
-
-// SCResultsHandler defines what a smart contract processor shall do
-type SCResultsHandler interface {
-	ProcessSCRs(transactions map[string]data.TransactionHandler, timeStamp uint64) []*schema.SCResult
 }
 
 // ReceiptHandler defines what a receipt processor shall do
