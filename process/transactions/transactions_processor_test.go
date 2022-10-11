@@ -12,6 +12,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
+	"github.com/ElrondNetwork/elrond-go/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -166,6 +167,14 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 		ret, err := txp.ProcessTransactions(apiTxs)
 		require.Equal(t, processLogCalledCt, 10)
 		require.Equal(t, processReceiptCalledCt, 10)
+		require.Nil(t, err)
+		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)
+	})
+
+	t.Run("should work with sender = metachain", func(t *testing.T) {
+		apiTxs := generateApiTxs(1)
+		apiTxs[0].Sender = common.MetachainShardName
+		ret, err := txp.ProcessTransactions(apiTxs)
 		require.Nil(t, err)
 		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)
 	})
@@ -341,7 +350,7 @@ func requireTransactionProcessedSuccessfully(
 		Epoch:                             int32(apiTx.Epoch),
 		Value:                             value,
 		Receiver:                          []byte(apiTx.Receiver),
-		Sender:                            []byte(apiTx.Sender),
+		Sender:                            utility.GetAddressOrMetachainAddr(apiTx.Sender),
 		SenderUserName:                    apiTx.SenderUsername,
 		ReceiverUserName:                  apiTx.ReceiverUsername,
 		GasPrice:                          int64(apiTx.GasPrice),
@@ -352,7 +361,7 @@ func requireTransactionProcessedSuccessfully(
 		PreviousTransactionHash:           prevTxHash,
 		OriginalTransactionHash:           originalTxHash,
 		ReturnMessage:                     apiTx.ReturnMessage,
-		OriginalSender:                    []byte(apiTx.OriginalSender),
+		OriginalSender:                    utility.GetAddressOrMetachainAddr(apiTx.OriginalSender),
 		Signature:                         signature,
 		SourceShard:                       int32(apiTx.SourceShard),
 		DestinationShard:                  int32(apiTx.DestinationShard),
