@@ -6,14 +6,16 @@ import (
 )
 
 type hyperBlockProcessor struct {
-	transactionProcessor TransactionHandler
-	shardBlocksProcessor ShardBlocksHandler
+	transactionProcessor    TransactionHandler
+	shardBlocksProcessor    ShardBlocksHandler
+	epochStartInfoProcessor EpochStartInfoHandler
 }
 
 // NewHyperBlockProcessor will create a new instance of an hyper block processor
 func NewHyperBlockProcessor(
 	transactionHandler TransactionHandler,
 	shardBlockHandler ShardBlocksHandler,
+	epochStartInfoProcessor EpochStartInfoHandler,
 ) (*hyperBlockProcessor, error) {
 	if transactionHandler == nil {
 		return nil, errNilTransactionHandler
@@ -21,10 +23,14 @@ func NewHyperBlockProcessor(
 	if shardBlockHandler == nil {
 		return nil, errNilShardBlocksHandler
 	}
+	if epochStartInfoProcessor == nil {
+		return nil, errNilEpochStartInfoHandler
+	}
 
 	return &hyperBlockProcessor{
-		transactionProcessor: transactionHandler,
-		shardBlocksProcessor: shardBlockHandler,
+		transactionProcessor:    transactionHandler,
+		shardBlocksProcessor:    shardBlockHandler,
+		epochStartInfoProcessor: epochStartInfoProcessor,
 	}, nil
 }
 
@@ -40,8 +46,13 @@ func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*sch
 	if err != nil {
 		return nil, err
 	}
+	epochStartInfo, err := hbp.epochStartInfoProcessor.ProcessEpochStartInfo(hyperBlock.EpochStartInfo)
+	if err != nil {
+		return nil, err
+	}
 
 	avroHyperBlock.ShardBlocks = shardBlocks
 	avroHyperBlock.Transactions = txs
+	avroHyperBlock.EpochStartInfo = epochStartInfo
 	return avroHyperBlock, nil
 }

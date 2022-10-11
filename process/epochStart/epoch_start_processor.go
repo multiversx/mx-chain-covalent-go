@@ -11,10 +11,12 @@ import (
 type epochStartInfoProcessor struct {
 }
 
+// NewEpochStartInfoProcessor will create a new instance of epoch start info processor
 func NewEpochStartInfoProcessor() *epochStartInfoProcessor {
 	return &epochStartInfoProcessor{}
 }
 
+// ProcessEpochStartInfo converts receipts api epoch start info to a specific structure defined by avro schema
 func (esi *epochStartInfoProcessor) ProcessEpochStartInfo(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error) {
 	if apiEpochInfo == nil {
 		return schemaV2.NewEpochStartInfo(), nil
