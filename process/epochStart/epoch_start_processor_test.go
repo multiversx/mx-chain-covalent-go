@@ -43,12 +43,12 @@ func TestEpochStartInfoProcessor_ProcessEpochStartInfo(t *testing.T) {
 		}, epochStartInfo)
 	})
 
-	t.Run("nil api epoch info, should return empty info", func(t *testing.T) {
+	t.Run("nil api epoch info, should return nil info", func(t *testing.T) {
 		t.Parallel()
 
 		epochStartInfo, err := esi.ProcessEpochStartInfo(nil)
 		require.Nil(t, err)
-		require.Equal(t, schemaV2.NewEpochStartInfo(), epochStartInfo)
+		require.Nil(t, epochStartInfo)
 	})
 
 	t.Run("invalid total supply, should return error", func(t *testing.T) {
