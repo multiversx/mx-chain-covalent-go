@@ -5,8 +5,8 @@
   "fields": [
     {"name": "Hash", "type": {
       "name": "hash", "type": "fixed", "size": 32}},
-    {"name": "PrevBlockHash", "type": "hash"},
-    {"name": "StateRootHash", "type": "hash"},
+    {"name": "PrevBlockHash", "type": ["null", "hash"]},
+    {"name": "StateRootHash", "type": ["null", "hash"]},
     {"name": "Nonce", "type": "long"},
     {"name": "Round", "type": "long"},
     {"name": "Epoch", "type": "int"},
