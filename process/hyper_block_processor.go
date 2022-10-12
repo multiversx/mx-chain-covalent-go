@@ -15,7 +15,7 @@ type hyperBlockProcessor struct {
 func NewHyperBlockProcessor(
 	transactionHandler TransactionHandler,
 	shardBlockHandler ShardBlocksHandler,
-	epochStartInfoProcessor EpochStartInfoHandler,
+	epochStartInfoHandler EpochStartInfoHandler,
 ) (*hyperBlockProcessor, error) {
 	if transactionHandler == nil {
 		return nil, errNilTransactionHandler
@@ -23,14 +23,14 @@ func NewHyperBlockProcessor(
 	if shardBlockHandler == nil {
 		return nil, errNilShardBlocksHandler
 	}
-	if epochStartInfoProcessor == nil {
+	if epochStartInfoHandler == nil {
 		return nil, errNilEpochStartInfoHandler
 	}
 
 	return &hyperBlockProcessor{
 		transactionProcessor:    transactionHandler,
 		shardBlocksProcessor:    shardBlockHandler,
-		epochStartInfoProcessor: epochStartInfoProcessor,
+		epochStartInfoProcessor: epochStartInfoHandler,
 	}, nil
 }
 
