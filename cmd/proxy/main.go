@@ -78,8 +78,7 @@ func createServer(cfg *config.Config) (api.HTTPServer, error) {
 		return nil, err
 	}
 
-	args := &factory.ArgsHyperBlockProcessor{}
-	hyperBlockProcessor, err := factory.CreateHyperBlockProcessor(args)
+	hyperBlockProcessor, err := factory.CreateHyperBlockProcessor()
 	if err != nil {
 		return nil, err
 	}

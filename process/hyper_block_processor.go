@@ -8,32 +8,40 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 )
 
+type HyperBlockProcessorArgs struct {
+	TransactionHandler     TransactionHandler
+	ShardBlockHandler      ShardBlocksHandler
+	EpochStartInfoHandler  EpochStartInfoHandler
+	AlteredAccountsHandler AlteredAccountsHandler
+}
+
 type hyperBlockProcessor struct {
-	transactionProcessor    TransactionHandler
-	shardBlocksProcessor    ShardBlocksHandler
-	epochStartInfoProcessor EpochStartInfoHandler
+	transactionProcessor     TransactionHandler
+	shardBlocksProcessor     ShardBlocksHandler
+	epochStartInfoProcessor  EpochStartInfoHandler
+	alteredAccountsProcessor AlteredAccountsHandler
 }
 
 // NewHyperBlockProcessor will create a new instance of an hyper block processor
-func NewHyperBlockProcessor(
-	transactionHandler TransactionHandler,
-	shardBlockHandler ShardBlocksHandler,
-	epochStartInfoHandler EpochStartInfoHandler,
-) (*hyperBlockProcessor, error) {
-	if transactionHandler == nil {
+func NewHyperBlockProcessor(args *HyperBlockProcessorArgs) (*hyperBlockProcessor, error) {
+	if args.TransactionHandler == nil {
 		return nil, errNilTransactionHandler
 	}
-	if shardBlockHandler == nil {
+	if args.ShardBlockHandler == nil {
 		return nil, errNilShardBlocksHandler
 	}
-	if epochStartInfoHandler == nil {
+	if args.EpochStartInfoHandler == nil {
 		return nil, errNilEpochStartInfoHandler
+	}
+	if args.AlteredAccountsHandler == nil {
+		return nil, errNilAlteredAccountsHandler
 	}
 
 	return &hyperBlockProcessor{
-		transactionProcessor:    transactionHandler,
-		shardBlocksProcessor:    shardBlockHandler,
-		epochStartInfoProcessor: epochStartInfoHandler,
+		transactionProcessor:     args.TransactionHandler,
+		shardBlocksProcessor:     args.ShardBlockHandler,
+		epochStartInfoProcessor:  args.EpochStartInfoHandler,
+		alteredAccountsProcessor: args.AlteredAccountsHandler,
 	}, nil
 }
 

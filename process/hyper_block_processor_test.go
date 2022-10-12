@@ -12,6 +12,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func createHyperBlockProcessorArgs() *HyperBlockProcessorArgs {
+	return &HyperBlockProcessorArgs{
+		TransactionHandler:     &mock.TransactionHandlerStub{},
+		ShardBlockHandler:      &mock.ShardBlocksHandlerStub{},
+		EpochStartInfoHandler:  &mock.EpochStartInfoHandlerStub{},
+		AlteredAccountsHandler: &mock.AlteredAccountsHandlerStub{},
+	}
+}
+
 func TestHyperBlockProcessor_Process(t *testing.T) {
 	t.Parallel()
 
@@ -61,7 +70,14 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 				return processedEpochStartInfo, nil
 			},
 		}
-		hbp, _ := NewHyperBlockProcessor(txProcessor, shardBlocksProcessor, epochStartInfoProcessor)
+
+		args := &HyperBlockProcessorArgs{
+			TransactionHandler:     txProcessor,
+			ShardBlockHandler:      shardBlocksProcessor,
+			EpochStartInfoHandler:  epochStartInfoProcessor,
+			AlteredAccountsHandler: &mock.AlteredAccountsHandlerStub{},
+		}
+		hbp, _ := NewHyperBlockProcessor(args)
 
 		processedHyperBlock, err := hbp.Process(apiHyperBLock)
 		require.Nil(t, err)
@@ -85,4 +101,16 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 			Status:                 "status",
 		}, processedHyperBlock)
 	})
+
+	t.Run("invalid hash, should return error", func(t *testing.T) {
+		apiHyperBLockCopy := *apiHyperBLock
+		apiHyperBLockCopy.Hash = "hash"
+		args := createHyperBlockProcessorArgs()
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.NotNil(t, err)
+	})
+
 }
