@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/ElrondNetwork/elrond-go/common"
 )
 
 // HexSliceToByteSlice outputs a decoded byte slice representation of a hex string encoded slice input
@@ -98,9 +99,14 @@ func GetBigIntBytesSliceFromStringSlice(in []string) ([][]byte, error) {
 	return out, nil
 }
 
-// EncodePubKey returns a byte slice of the encoded pubKey input, using a pub key converter
-func EncodePubKey(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
-	return []byte(pubKeyConverter.Encode(pubKey))
+// GetAddressOrMetachainAddr checks if the corresponding address is metachain. This func should only be used for sender addresses.
+// If so, it returns a 62 byte array address(by padding with zeros), otherwise converts the address string to byte slice.
+func GetAddressOrMetachainAddr(address string) []byte {
+	if address != common.MetachainShardName {
+		return []byte(address)
+	}
+
+	return MetaChainShardAddress()
 }
 
 // MetaChainShardAddress returns core.MetachainShardId as a 62 byte array address(by padding with zeros).

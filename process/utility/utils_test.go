@@ -8,6 +8,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
+	"github.com/ElrondNetwork/elrond-go/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -325,5 +326,23 @@ func TestBigIntBytesSliceFromStringSlice(t *testing.T) {
 		out, err := utility.GetBigIntBytesSliceFromStringSlice(in)
 		require.Nil(t, out)
 		require.NotNil(t, err)
+	})
+}
+
+func TestGetAddressOrMetachainAddr(t *testing.T) {
+	t.Parallel()
+
+	t.Run("normal address", func(t *testing.T) {
+		t.Parallel()
+
+		address := utility.GetAddressOrMetachainAddr("address")
+		require.Equal(t, []byte("address"), address)
+	})
+
+	t.Run("metachain address", func(t *testing.T) {
+		t.Parallel()
+
+		address := utility.GetAddressOrMetachainAddr(common.MetachainShardName)
+		require.Equal(t, utility.MetaChainShardAddress(), address)
 	})
 }

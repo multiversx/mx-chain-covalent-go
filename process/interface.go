@@ -27,6 +27,11 @@ type ShardBlocksHandler interface {
 	ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error)
 }
 
+// EpochStartInfoHandler defines what epoch start info processor shall do
+type EpochStartInfoHandler interface {
+	ProcessEpochStartInfo(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error)
+}
+
 // AccountsHandler defines what an account processor shall do
 type AccountsHandler interface {
 	ProcessAccounts(
