@@ -1,7 +1,7 @@
 package process
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	covalentApi "github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
@@ -32,17 +32,7 @@ type EpochStartInfoHandler interface {
 	ProcessEpochStartInfo(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error)
 }
 
-// AccountsHandler defines what an account processor shall do
-type AccountsHandler interface {
-	ProcessAccounts(
-		processedTxs []*schema.Transaction,
-		processedSCRs []*schema.SCResult,
-		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate
-}
-
-// ShardCoordinator defines what a shard coordinator shall do
-type ShardCoordinator interface {
-	SelfId() uint32
-	ComputeId(address []byte) uint32
-	IsInterfaceNil() bool
+// AlteredAccountsHandler defines what an account processor shall do
+type AlteredAccountsHandler interface {
+	ProcessAccounts(apiAlteredAccounts []*covalentApi.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error)
 }
