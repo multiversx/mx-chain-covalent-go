@@ -19,7 +19,7 @@ func NewEpochStartInfoProcessor() *epochStartInfoProcessor {
 // ProcessEpochStartInfo converts receipts api epoch start info to a specific structure defined by avro schema
 func (esi *epochStartInfoProcessor) ProcessEpochStartInfo(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error) {
 	if apiEpochInfo == nil {
-		return nil, nil
+		return schemaV2.NewEpochStartInfo(), nil
 	}
 
 	totalSupply, err := utility.GetBigIntBytesFromStr(apiEpochInfo.TotalSupply)
