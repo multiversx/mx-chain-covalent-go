@@ -1,7 +1,9 @@
 package process
 
 import (
+	"errors"
 	"math/big"
+	"strings"
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
@@ -48,6 +50,8 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 	}
 
 	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
 		processedTxs := []*schemaV2.Transaction{{Hash: []byte(apiTxs[0].Hash)}}
 		processedShardBlocks := []*schemaV2.ShardBlocks{{Hash: []byte(shardBlocks[0].Hash)}}
 		processedEpochStartInfo := &schemaV2.EpochStartInfo{NodePrice: big.NewInt(100).Bytes()}
@@ -103,6 +107,8 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 	})
 
 	t.Run("invalid hash, should return error", func(t *testing.T) {
+		t.Parallel()
+
 		apiHyperBLockCopy := *apiHyperBLock
 		apiHyperBLockCopy.Hash = "hash"
 		args := createHyperBlockProcessorArgs()
@@ -111,6 +117,146 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
 		require.Nil(t, processedHyperBlock)
 		require.NotNil(t, err)
+	})
+
+	t.Run("invalid prev block hash, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		apiHyperBLockCopy.PrevBlockHash = "prev block hash"
+		args := createHyperBlockProcessorArgs()
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.NotNil(t, err)
+	})
+
+	t.Run("invalid state root hash, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		apiHyperBLockCopy.StateRootHash = "state root hash"
+		args := createHyperBlockProcessorArgs()
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.NotNil(t, err)
+	})
+
+	t.Run("invalid accumulated fees, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		apiHyperBLockCopy.AccumulatedFees = "accumulated fees"
+		args := createHyperBlockProcessorArgs()
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Error(t, err)
+		require.True(t, strings.Contains(err.Error(), "invalid"))
+		require.True(t, strings.Contains(err.Error(), "accumulated fees"))
+	})
+
+	t.Run("invalid developer fees, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		apiHyperBLockCopy.DeveloperFees = "developer fees"
+		args := createHyperBlockProcessorArgs()
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Error(t, err)
+		require.True(t, strings.Contains(err.Error(), "invalid"))
+		require.True(t, strings.Contains(err.Error(), "developer fees"))
+	})
+
+	t.Run("invalid accumulated fees in epoch, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		apiHyperBLockCopy.AccumulatedFeesInEpoch = "accumulated fees in epoch"
+		args := createHyperBlockProcessorArgs()
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Error(t, err)
+		require.True(t, strings.Contains(err.Error(), "invalid"))
+		require.True(t, strings.Contains(err.Error(), "accumulated fees in epoch"))
+	})
+
+	t.Run("invalid developer fees in epoch, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		apiHyperBLockCopy.DeveloperFeesInEpoch = "developer fees in epoch"
+		args := createHyperBlockProcessorArgs()
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Error(t, err)
+		require.True(t, strings.Contains(err.Error(), "invalid"))
+		require.True(t, strings.Contains(err.Error(), "developer fees in epoch"))
+	})
+
+	t.Run("invalid txs, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		args := createHyperBlockProcessorArgs()
+		errProcessTransactions := errors.New("error processing transactions")
+		args.TransactionHandler = &mock.TransactionHandlerStub{
+			ProcessTransactionsCalled: func(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error) {
+				return nil, errProcessTransactions
+			},
+		}
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Equal(t, errProcessTransactions, err)
+	})
+
+	t.Run("invalid shard blocks, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		args := createHyperBlockProcessorArgs()
+		errProcessShardBlocks := errors.New("error processing shard blocks")
+		args.ShardBlockHandler = &mock.ShardBlocksHandlerStub{
+			ProcessShardBlocksCalled: func(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error) {
+				return nil, errProcessShardBlocks
+			},
+		}
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Equal(t, errProcessShardBlocks, err)
+	})
+
+	t.Run("invalid epoch start info, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		args := createHyperBlockProcessorArgs()
+		errProcessEpochStartInfo := errors.New("error processing epoch start info")
+		args.EpochStartInfoHandler = &mock.EpochStartInfoHandlerStub{
+			ProcessEpochStartInfoCalled: func(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error) {
+				return nil, errProcessEpochStartInfo
+			},
+		}
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Equal(t, errProcessEpochStartInfo, err)
 	})
 
 }
