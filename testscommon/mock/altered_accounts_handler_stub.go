@@ -1,17 +1,17 @@
 package mock
 
 import (
-	covalentApi "github.com/ElrondNetwork/covalent-indexer-go/api"
+	"github.com/ElrondNetwork/covalent-indexer-go/alteredAccount"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 )
 
 // AlteredAccountsHandlerStub -
 type AlteredAccountsHandlerStub struct {
-	ProcessAccountsCalled func(apiAlteredAccounts []*covalentApi.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error)
+	ProcessAccountsCalled func(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error)
 }
 
 // ProcessAccounts -
-func (ahs *AlteredAccountsHandlerStub) ProcessAccounts(apiAlteredAccounts []*covalentApi.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error) {
+func (ahs *AlteredAccountsHandlerStub) ProcessAccounts(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error) {
 	if ahs.ProcessAccountsCalled != nil {
 		return ahs.ProcessAccountsCalled(apiAlteredAccounts)
 	}

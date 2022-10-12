@@ -1,7 +1,7 @@
 package accounts
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
+	"github.com/ElrondNetwork/covalent-indexer-go/alteredAccount"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 )
@@ -15,7 +15,7 @@ func NewAlteredAccountsProcessor() *alteredAccountsProcessor {
 }
 
 // ProcessAccounts converts accounts data to a specific structure defined by avro schema
-func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*api.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error) {
+func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error) {
 	accounts := make([]*schemaV2.AccountBalanceUpdate, 0, len(apiAlteredAccounts))
 
 	for _, apiAccount := range apiAlteredAccounts {
@@ -34,7 +34,7 @@ func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*api.Al
 	return accounts, nil
 }
 
-func processAccount(apiAccount *api.AlteredAccount) (*schemaV2.AccountBalanceUpdate, error) {
+func processAccount(apiAccount *alteredAccount.AlteredAccount) (*schemaV2.AccountBalanceUpdate, error) {
 	balance, err := utility.GetBigIntBytesFromStr(apiAccount.Balance)
 	if err != nil {
 		return nil, err
