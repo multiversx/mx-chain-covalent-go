@@ -9,8 +9,8 @@ import (
 type alteredAccountsProcessor struct {
 }
 
-// NewAccountsProcessor creates a new instance of altered accounts processor
-func NewAccountsProcessor() *alteredAccountsProcessor {
+// NewAlteredAccountsProcessor creates a new instance of altered accounts processor
+func NewAlteredAccountsProcessor() *alteredAccountsProcessor {
 	return &alteredAccountsProcessor{}
 }
 
