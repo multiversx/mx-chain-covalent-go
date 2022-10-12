@@ -1,4 +1,4 @@
-package mock
+package processMocks
 
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"

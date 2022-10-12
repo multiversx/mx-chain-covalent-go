@@ -8,7 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
+	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/processMocks"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
@@ -16,10 +16,10 @@ import (
 
 func createHyperBlockProcessorArgs() *HyperBlockProcessorArgs {
 	return &HyperBlockProcessorArgs{
-		TransactionHandler:     &mock.TransactionHandlerStub{},
-		ShardBlockHandler:      &mock.ShardBlocksHandlerStub{},
-		EpochStartInfoHandler:  &mock.EpochStartInfoHandlerStub{},
-		AlteredAccountsHandler: &mock.AlteredAccountsHandlerStub{},
+		TransactionHandler:     &processMocks.TransactionHandlerStub{},
+		ShardBlockHandler:      &processMocks.ShardBlocksHandlerStub{},
+		EpochStartInfoHandler:  &processMocks.EpochStartInfoHandlerStub{},
+		AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{},
 	}
 }
 
@@ -56,19 +56,19 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 		processedShardBlocks := []*schemaV2.ShardBlocks{{Hash: []byte(shardBlocks[0].Hash)}}
 		processedEpochStartInfo := &schemaV2.EpochStartInfo{NodePrice: big.NewInt(100).Bytes()}
 
-		txProcessor := &mock.TransactionHandlerStub{
+		txProcessor := &processMocks.TransactionHandlerStub{
 			ProcessTransactionsCalled: func(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error) {
 				require.Equal(t, apiTxs, apiTransactions)
 				return processedTxs, nil
 			},
 		}
-		shardBlocksProcessor := &mock.ShardBlocksHandlerStub{
+		shardBlocksProcessor := &processMocks.ShardBlocksHandlerStub{
 			ProcessShardBlocksCalled: func(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error) {
 				require.Equal(t, shardBlocks, apiBlocks)
 				return processedShardBlocks, nil
 			},
 		}
-		epochStartInfoProcessor := &mock.EpochStartInfoHandlerStub{
+		epochStartInfoProcessor := &processMocks.EpochStartInfoHandlerStub{
 			ProcessEpochStartInfoCalled: func(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error) {
 				require.Equal(t, epochStartInfo, apiEpochInfo)
 				return processedEpochStartInfo, nil
@@ -79,7 +79,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 			TransactionHandler:     txProcessor,
 			ShardBlockHandler:      shardBlocksProcessor,
 			EpochStartInfoHandler:  epochStartInfoProcessor,
-			AlteredAccountsHandler: &mock.AlteredAccountsHandlerStub{},
+			AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{},
 		}
 		hbp, _ := NewHyperBlockProcessor(args)
 
@@ -211,7 +211,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 		apiHyperBLockCopy := *apiHyperBLock
 		args := createHyperBlockProcessorArgs()
 		errProcessTransactions := errors.New("error processing transactions")
-		args.TransactionHandler = &mock.TransactionHandlerStub{
+		args.TransactionHandler = &processMocks.TransactionHandlerStub{
 			ProcessTransactionsCalled: func(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error) {
 				return nil, errProcessTransactions
 			},
@@ -229,7 +229,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 		apiHyperBLockCopy := *apiHyperBLock
 		args := createHyperBlockProcessorArgs()
 		errProcessShardBlocks := errors.New("error processing shard blocks")
-		args.ShardBlockHandler = &mock.ShardBlocksHandlerStub{
+		args.ShardBlockHandler = &processMocks.ShardBlocksHandlerStub{
 			ProcessShardBlocksCalled: func(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error) {
 				return nil, errProcessShardBlocks
 			},
@@ -247,7 +247,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 		apiHyperBLockCopy := *apiHyperBLock
 		args := createHyperBlockProcessorArgs()
 		errProcessEpochStartInfo := errors.New("error processing epoch start info")
-		args.EpochStartInfoHandler = &mock.EpochStartInfoHandlerStub{
+		args.EpochStartInfoHandler = &processMocks.EpochStartInfoHandlerStub{
 			ProcessEpochStartInfoCalled: func(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error) {
 				return nil, errProcessEpochStartInfo
 			},
