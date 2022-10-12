@@ -25,6 +25,6 @@ func CreateHyperBlockProcessor(args *ArgsHyperBlockProcessor) (covalent.HyperBlo
 	}
 
 	shardBlocksHandler := shardBlocks.NewShardBlocksProcessor()
-	epochStartHandler := epochStart.NewEpochStartInfoProcessor()
-	return process.NewHyperBlockProcessor(transactionsHandler, shardBlocksHandler, epochStartHandler)
+	epochStartInfoHandler := epochStart.NewEpochStartInfoProcessor()
+	return process.NewHyperBlockProcessor(transactionsHandler, shardBlocksHandler, epochStartInfoHandler)
 }

@@ -48,7 +48,7 @@ func TestEpochStartInfoProcessor_ProcessEpochStartInfo(t *testing.T) {
 
 		epochStartInfo, err := esi.ProcessEpochStartInfo(nil)
 		require.Nil(t, err)
-		require.Nil(t, epochStartInfo)
+		require.Equal(t, schemaV2.NewEpochStartInfo(), epochStartInfo)
 	})
 
 	t.Run("invalid total supply, should return error", func(t *testing.T) {
