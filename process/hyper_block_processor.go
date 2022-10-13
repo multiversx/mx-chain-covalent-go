@@ -103,10 +103,47 @@ func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*sch
 		AccumulatedFeesInEpoch: accumulatedFeesInEpoch,
 		DeveloperFeesInEpoch:   developerFeesInEpoch,
 		Timestamp:              int64(hyperBlock.Timestamp),
-		EpochStartInfo:         epochStartInfo,
-		ShardBlocks:            shardBlocks,
-		Transactions:           txs,
+		EpochStartInfo:         epochStartInfoOrNil(epochStartInfo),
+		ShardBlocks:            shardBlocksOrNil(shardBlocks),
+		Transactions:           txsOrNil(txs),
 		StateChanges:           nil,
 		Status:                 hyperBlock.Status,
 	}, nil
+}
+
+func txsOrNil(txs []*schemaV2.Transaction) []*schemaV2.Transaction {
+	if len(txs) == 0 {
+		return nil
+	}
+	return txs
+}
+
+func shardBlocksOrNil(shardBlocks []*schemaV2.ShardBlocks) []*schemaV2.ShardBlocks {
+	if len(shardBlocks) == 0 {
+		return nil
+	}
+	return shardBlocks
+}
+
+func epochStartInfoOrNil(epochStartInfo *schemaV2.EpochStartInfo) *schemaV2.EpochStartInfo {
+	if emptyEpochStartInfo(epochStartInfo) {
+		return nil
+	}
+
+	return epochStartInfo
+}
+
+func emptyEpochStartInfo(epochStartInfo *schemaV2.EpochStartInfo) bool {
+	if epochStartInfo == nil {
+		return true
+	}
+
+	return len(epochStartInfo.TotalSupply) == 0 &&
+		len(epochStartInfo.TotalToDistribute) == 0 &&
+		len(epochStartInfo.TotalNewlyMinted) == 0 &&
+		len(epochStartInfo.RewardsPerBlock) == 0 &&
+		len(epochStartInfo.RewardsForProtocolSustainability) == 0 &&
+		len(epochStartInfo.NodePrice) == 0 &&
+		len(epochStartInfo.PrevEpochStartHash) == 0 &&
+		epochStartInfo.PrevEpochStartRound == 0
 }
