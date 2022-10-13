@@ -3,7 +3,7 @@ package accounts
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/alteredAccount"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 )
 
 type alteredAccountsProcessor struct {
@@ -15,8 +15,8 @@ func NewAlteredAccountsProcessor() *alteredAccountsProcessor {
 }
 
 // ProcessAccounts converts accounts data to a specific structure defined by avro schema
-func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schemaV2.AccountBalanceUpdate, error) {
-	accounts := make([]*schemaV2.AccountBalanceUpdate, 0, len(apiAlteredAccounts))
+func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schema.AccountBalanceUpdate, error) {
+	accounts := make([]*schema.AccountBalanceUpdate, 0, len(apiAlteredAccounts))
 
 	for _, apiAccount := range apiAlteredAccounts {
 		if apiAccount == nil {
@@ -34,13 +34,13 @@ func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*altere
 	return accounts, nil
 }
 
-func processAccount(apiAccount *alteredAccount.AlteredAccount) (*schemaV2.AccountBalanceUpdate, error) {
+func processAccount(apiAccount *alteredAccount.AlteredAccount) (*schema.AccountBalanceUpdate, error) {
 	balance, err := utility.GetBigIntBytesFromStr(apiAccount.Balance)
 	if err != nil {
 		return nil, err
 	}
 
-	return &schemaV2.AccountBalanceUpdate{
+	return &schema.AccountBalanceUpdate{
 		Address: []byte(apiAccount.Address),
 		Balance: balance,
 		Nonce:   int64(apiAccount.Nonce),

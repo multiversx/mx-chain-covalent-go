@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 )
 
 // HyperBlockProcessorArgs holds all input dependencies required
@@ -48,7 +48,7 @@ func NewHyperBlockProcessor(args *HyperBlockProcessorArgs) (*hyperBlockProcessor
 }
 
 // Process will process current hyper block and convert it to an avro schema block result
-func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*schemaV2.HyperBlock, error) {
+func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*schema.HyperBlock, error) {
 	hash, err := hex.DecodeString(hyperBlock.Hash)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*sch
 		return nil, err
 	}
 
-	return &schemaV2.HyperBlock{
+	return &schema.HyperBlock{
 		Hash:                   hash,
 		PrevBlockHash:          prevBlockHash,
 		StateRootHash:          stateRootHash,
@@ -111,21 +111,21 @@ func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*sch
 	}, nil
 }
 
-func txsOrNil(txs []*schemaV2.Transaction) []*schemaV2.Transaction {
+func txsOrNil(txs []*schema.Transaction) []*schema.Transaction {
 	if len(txs) == 0 {
 		return nil
 	}
 	return txs
 }
 
-func shardBlocksOrNil(shardBlocks []*schemaV2.ShardBlocks) []*schemaV2.ShardBlocks {
+func shardBlocksOrNil(shardBlocks []*schema.ShardBlocks) []*schema.ShardBlocks {
 	if len(shardBlocks) == 0 {
 		return nil
 	}
 	return shardBlocks
 }
 
-func epochStartInfoOrNil(epochStartInfo *schemaV2.EpochStartInfo) *schemaV2.EpochStartInfo {
+func epochStartInfoOrNil(epochStartInfo *schema.EpochStartInfo) *schema.EpochStartInfo {
 	if emptyEpochStartInfo(epochStartInfo) {
 		return nil
 	}
@@ -133,7 +133,7 @@ func epochStartInfoOrNil(epochStartInfo *schemaV2.EpochStartInfo) *schemaV2.Epoc
 	return epochStartInfo
 }
 
-func emptyEpochStartInfo(epochStartInfo *schemaV2.EpochStartInfo) bool {
+func emptyEpochStartInfo(epochStartInfo *schema.EpochStartInfo) bool {
 	if epochStartInfo == nil {
 		return true
 	}

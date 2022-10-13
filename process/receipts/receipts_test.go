@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
@@ -28,7 +28,7 @@ func TestReceiptsProcessor_ProcessReceipt(t *testing.T) {
 
 		processedReceipt, err := rp.ProcessReceipt(nil)
 		require.Nil(t, err)
-		require.Equal(t, schemaV2.NewReceipt(), processedReceipt)
+		require.Equal(t, schema.NewReceipt(), processedReceipt)
 	})
 
 	t.Run("should work", func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestReceiptsProcessor_ProcessReceipt(t *testing.T) {
 		hashBytes, err := hex.DecodeString(receipt.TxHash)
 		require.Nil(t, err)
 
-		require.Equal(t, &schemaV2.Receipt{
+		require.Equal(t, &schema.Receipt{
 			TxHash: hashBytes,
 			Value:  receipt.Value.Bytes(),
 			Sender: []byte(receipt.SndAddr),

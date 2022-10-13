@@ -14,33 +14,9 @@ import (
 
 var testAvroMarshaller = &utility.AvroMarshaller{}
 
-func TestHexSliceToByteSlice_DifferentValues(t *testing.T) {
-	in := []string{"0a", "0b", "0c"}
-	out, err := utility.HexSliceToByteSlice(in)
-	require.Nil(t, err)
-
-	require.Len(t, out, 3)
-	require.Equal(t, []byte{0xa}, out[0])
-	require.Equal(t, []byte{0xb}, out[1])
-	require.Equal(t, []byte{0xc}, out[2])
-}
-
-func TestHexSliceToByteSlice_EmptyInput(t *testing.T) {
-	out, err := utility.HexSliceToByteSlice([]string{})
-
-	require.Nil(t, err)
-	require.Len(t, out, 0)
-}
-
-func TestHexSliceToByteSlice_InvalidString_ExpectError(t *testing.T) {
-	in := []string{"0a", "xz", "0c"}
-	out, err := utility.HexSliceToByteSlice(in)
-
-	require.NotNil(t, err)
-	require.Nil(t, out)
-}
-
 func TestUIntSliceToIntSlice_DifferentValues(t *testing.T) {
+	t.Parallel()
+
 	in := []uint64{1, 2, 3}
 	out := utility.UIntSliceToIntSlice(in)
 
@@ -51,12 +27,15 @@ func TestUIntSliceToIntSlice_DifferentValues(t *testing.T) {
 }
 
 func TestUIntSliceToIntSlice_EmptyInput(t *testing.T) {
-	out := utility.UIntSliceToIntSlice([]uint64{})
+	t.Parallel()
 
+	out := utility.UIntSliceToIntSlice([]uint64{})
 	require.Len(t, out, 0)
 }
 
 func TestGetBytes(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, utility.GetBytes(nil), []byte{})
 
 	x := big.NewInt(10)
@@ -64,6 +43,8 @@ func TestGetBytes(t *testing.T) {
 }
 
 func TestEncodeDecode(t *testing.T) {
+	t.Parallel()
+
 	account := &schema.AccountBalanceUpdate{
 		Address: testscommon.GenerateRandomFixedBytes(62),
 		Balance: big.NewInt(1000).Bytes(),
@@ -80,8 +61,10 @@ func TestEncodeDecode(t *testing.T) {
 	require.Equal(t, account, decodedAccount)
 }
 
-func TestEncode_Block(t *testing.T) {
-	block := schema.Block{
+func TestEncode_HyperBlock(t *testing.T) {
+	t.Parallel()
+
+	block := schema.HyperBlock{
 		Hash:          testscommon.GenerateRandomFixedBytes(32),
 		StateRootHash: testscommon.GenerateRandomFixedBytes(32),
 	}
@@ -96,35 +79,32 @@ func TestEncode_Block(t *testing.T) {
 	blockNilStateRootHash := block
 	blockNilStateRootHash.StateRootHash = nil
 	_, err = testAvroMarshaller.Encode(&blockNilStateRootHash)
-	require.NotNil(t, err)
-}
-
-func TestEncode_MiniBlock(t *testing.T) {
-	mb := schema.MiniBlock{
-		Hash: testscommon.GenerateRandomFixedBytes(32),
-	}
-	_, err := testAvroMarshaller.Encode(&mb)
 	require.Nil(t, err)
 
-	mbNilHash := mb
-	mbNilHash.Hash = nil
-	_, err = testAvroMarshaller.Encode(&mbNilHash)
-	require.NotNil(t, err)
+	blockNilPrevRootHash := block
+	blockNilPrevRootHash.PrevBlockHash = nil
+	_, err = testAvroMarshaller.Encode(&blockNilPrevRootHash)
+	require.Nil(t, err)
 }
 
 func TestEncode_EpochStartInfo(t *testing.T) {
+	t.Parallel()
+
 	info := schema.EpochStartInfo{}
 	_, err := testAvroMarshaller.Encode(&info)
 	require.Nil(t, err)
 }
 
 func TestEncode_Transaction(t *testing.T) {
+	t.Parallel()
+
 	tx := schema.Transaction{
-		Hash:          testscommon.GenerateRandomFixedBytes(32),
-		MiniBlockHash: testscommon.GenerateRandomFixedBytes(32),
-		BlockHash:     testscommon.GenerateRandomFixedBytes(32),
-		Receiver:      testscommon.GenerateRandomFixedBytes(62),
-		Sender:        testscommon.GenerateRandomFixedBytes(62),
+		Hash:           testscommon.GenerateRandomFixedBytes(32),
+		MiniBlockHash:  testscommon.GenerateRandomFixedBytes(32),
+		BlockHash:      testscommon.GenerateRandomFixedBytes(32),
+		Receiver:       testscommon.GenerateRandomFixedBytes(62),
+		Sender:         testscommon.GenerateRandomFixedBytes(62),
+		HyperBlockHash: testscommon.GenerateRandomFixedBytes(32),
 	}
 	_, err := testAvroMarshaller.Encode(&tx)
 	require.Nil(t, err)
@@ -142,7 +122,7 @@ func TestEncode_Transaction(t *testing.T) {
 	txNilBlockHash := tx
 	txNilBlockHash.BlockHash = nil
 	_, err = testAvroMarshaller.Encode(&txNilBlockHash)
-	require.NotNil(t, err)
+	require.Nil(t, err)
 
 	txNilReceiver := tx
 	txNilReceiver.Receiver = nil
@@ -155,57 +135,16 @@ func TestEncode_Transaction(t *testing.T) {
 	require.NotNil(t, err)
 }
 
-func TestEncode_SCR(t *testing.T) {
-	scRes := schema.SCResult{
-		Hash:           testscommon.GenerateRandomFixedBytes(32),
-		Sender:         testscommon.GenerateRandomFixedBytes(62),
-		Receiver:       testscommon.GenerateRandomFixedBytes(62),
-		PrevTxHash:     testscommon.GenerateRandomFixedBytes(32),
-		OriginalTxHash: testscommon.GenerateRandomFixedBytes(32),
-	}
-	_, err := testAvroMarshaller.Encode(&scRes)
-	require.Nil(t, err)
-
-	scResNilHash := scRes
-	scResNilHash.Hash = nil
-	_, err = testAvroMarshaller.Encode(&scResNilHash)
-	require.NotNil(t, err)
-
-	scResNilSender := scRes
-	scResNilSender.Sender = nil
-	_, err = testAvroMarshaller.Encode(&scResNilSender)
-	require.NotNil(t, err)
-
-	scResNilReceiver := scRes
-	scResNilReceiver.Receiver = nil
-	_, err = testAvroMarshaller.Encode(&scResNilReceiver)
-	require.NotNil(t, err)
-
-	scResNilPrevTxHash := scRes
-	scResNilPrevTxHash.PrevTxHash = nil
-	_, err = testAvroMarshaller.Encode(&scResNilPrevTxHash)
-	require.NotNil(t, err)
-
-	scResNilOriginalTxHash := scRes
-	scResNilOriginalTxHash.OriginalTxHash = nil
-	_, err = testAvroMarshaller.Encode(&scResNilOriginalTxHash)
-	require.NotNil(t, err)
-}
-
 func TestEncode_Receipt(t *testing.T) {
+	t.Parallel()
+
 	receipt := schema.Receipt{
-		Hash:   testscommon.GenerateRandomFixedBytes(32),
 		Sender: testscommon.GenerateRandomFixedBytes(62),
 		TxHash: testscommon.GenerateRandomFixedBytes(32),
 	}
 
 	_, err := testAvroMarshaller.Encode(&receipt)
 	require.Nil(t, err)
-
-	receiptNilHash := receipt
-	receiptNilHash.Hash = nil
-	_, err = testAvroMarshaller.Encode(&receiptNilHash)
-	require.NotNil(t, err)
 
 	receiptNilSender := receipt
 	receiptNilSender.Sender = nil
@@ -219,6 +158,8 @@ func TestEncode_Receipt(t *testing.T) {
 }
 
 func TestEncode_LogAndEvent(t *testing.T) {
+	t.Parallel()
+
 	log := schema.Event{}
 	_, err := testAvroMarshaller.Encode(&log)
 	require.Nil(t, err)
@@ -229,6 +170,8 @@ func TestEncode_LogAndEvent(t *testing.T) {
 }
 
 func TestEncode_AccountBalanceUpdate(t *testing.T) {
+	t.Parallel()
+
 	acc := schema.AccountBalanceUpdate{
 		Address: testscommon.GenerateRandomFixedBytes(62),
 	}
@@ -238,24 +181,6 @@ func TestEncode_AccountBalanceUpdate(t *testing.T) {
 	accNilAddress := acc
 	accNilAddress.Address = nil
 	_, err = testAvroMarshaller.Encode(&accNilAddress)
-	require.NotNil(t, err)
-}
-
-func TestEncode_BlockResult(t *testing.T) {
-	block := schema.Block{
-		Hash:          testscommon.GenerateRandomFixedBytes(32),
-		StateRootHash: testscommon.GenerateRandomFixedBytes(32),
-	}
-
-	blockRes := schema.BlockResult{
-		Block: &block,
-	}
-	_, err := testAvroMarshaller.Encode(&blockRes)
-	require.Nil(t, err)
-
-	blockResNilBlock := blockRes
-	blockResNilBlock.Block = nil
-	_, err = testAvroMarshaller.Encode(&blockResNilBlock)
 	require.NotNil(t, err)
 }
 

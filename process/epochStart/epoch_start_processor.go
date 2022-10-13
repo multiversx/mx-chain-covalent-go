@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 )
 
@@ -17,9 +17,9 @@ func NewEpochStartInfoProcessor() *epochStartInfoProcessor {
 }
 
 // ProcessEpochStartInfo converts receipts api epoch start info to a specific structure defined by avro schema
-func (esi *epochStartInfoProcessor) ProcessEpochStartInfo(apiEpochInfo *api.EpochStartInfo) (*schemaV2.EpochStartInfo, error) {
+func (esi *epochStartInfoProcessor) ProcessEpochStartInfo(apiEpochInfo *api.EpochStartInfo) (*schema.EpochStartInfo, error) {
 	if apiEpochInfo == nil {
-		return schemaV2.NewEpochStartInfo(), nil
+		return schema.NewEpochStartInfo(), nil
 	}
 
 	totalSupply, err := utility.GetBigIntBytesFromStr(apiEpochInfo.TotalSupply)
@@ -51,7 +51,7 @@ func (esi *epochStartInfoProcessor) ProcessEpochStartInfo(apiEpochInfo *api.Epoc
 		return nil, err
 	}
 
-	return &schemaV2.EpochStartInfo{
+	return &schema.EpochStartInfo{
 		TotalSupply:                      totalSupply,
 		TotalToDistribute:                totalToDistribute,
 		TotalNewlyMinted:                 totalNewlyMinted,

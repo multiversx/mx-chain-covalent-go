@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/stretchr/testify/require"
@@ -68,7 +68,7 @@ func TestProcessShardBlocks(t *testing.T) {
 func requireShardBlocksProcessedSuccessfully(
 	t *testing.T,
 	apiBlocks []*api.NotarizedBlock,
-	processedBlocks []*schemaV2.ShardBlocks,
+	processedBlocks []*schema.ShardBlocks,
 ) {
 	require.Equal(t, len(apiBlocks), len(processedBlocks))
 
@@ -81,12 +81,12 @@ func requireShardBlocksProcessedSuccessfully(
 func requireShardBlockProcessedSuccessfully(
 	t *testing.T,
 	apiBlock *api.NotarizedBlock,
-	processedBlock *schemaV2.ShardBlocks,
+	processedBlock *schema.ShardBlocks,
 ) {
 	hash, err := hex.DecodeString(apiBlock.Hash)
 	require.Nil(t, err)
 
-	require.Equal(t, &schemaV2.ShardBlocks{
+	require.Equal(t, &schema.ShardBlocks{
 		Hash:  hash,
 		Nonce: int64(apiBlock.Nonce),
 		Round: int64(apiBlock.Round),

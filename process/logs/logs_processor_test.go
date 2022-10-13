@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process/logs"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
@@ -19,7 +19,7 @@ func TestLogsProcessor_ProcessLog(t *testing.T) {
 		t.Parallel()
 
 		log := lp.ProcessLog(nil)
-		require.Equal(t, schemaV2.NewLog(), log)
+		require.Equal(t, schema.NewLog(), log)
 	})
 
 	t.Run("no events, expect log only filled with address", func(t *testing.T) {
@@ -28,9 +28,9 @@ func TestLogsProcessor_ProcessLog(t *testing.T) {
 		apiLog := &transaction.ApiLogs{Address: "erd1qq", Events: nil}
 
 		processedLog := lp.ProcessLog(apiLog)
-		require.Equal(t, &schemaV2.Log{
+		require.Equal(t, &schema.Log{
 			Address: []byte(apiLog.Address),
-			Events:  []*schemaV2.Event{},
+			Events:  []*schema.Event{},
 		}, processedLog)
 	})
 
@@ -57,9 +57,9 @@ func TestLogsProcessor_ProcessLog(t *testing.T) {
 		}
 
 		processedLog := lp.ProcessLog(apiLog)
-		expectedLog := &schemaV2.Log{
+		expectedLog := &schema.Log{
 			Address: []byte(apiLog.Address),
-			Events: []*schemaV2.Event{
+			Events: []*schema.Event{
 				{
 					Address:    []byte(event1.Address),
 					Identifier: []byte(event1.Identifier),

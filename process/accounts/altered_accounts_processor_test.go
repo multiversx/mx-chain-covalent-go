@@ -8,7 +8,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/alteredAccount"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/stretchr/testify/require"
 )
@@ -71,7 +71,7 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 func requireAlteredAccountsProcessedSuccessfully(
 	t *testing.T,
 	apiAccounts []*alteredAccount.AlteredAccount,
-	processedAccounts []*schemaV2.AccountBalanceUpdate,
+	processedAccounts []*schema.AccountBalanceUpdate,
 ) {
 	require.Equal(t, len(apiAccounts), len(processedAccounts))
 
@@ -83,12 +83,12 @@ func requireAlteredAccountsProcessedSuccessfully(
 func requireAlteredAccountProcessedSuccessfully(
 	t *testing.T,
 	apiAccount *alteredAccount.AlteredAccount,
-	processedAccount *schemaV2.AccountBalanceUpdate,
+	processedAccount *schema.AccountBalanceUpdate,
 ) {
 	balance, err := utility.GetBigIntBytesFromStr(apiAccount.Balance)
 	require.Nil(t, err)
 
-	expectedAccount := &schemaV2.AccountBalanceUpdate{
+	expectedAccount := &schema.AccountBalanceUpdate{
 		Address: []byte(apiAccount.Address),
 		Balance: balance,
 		Nonce:   int64(apiAccount.Nonce),

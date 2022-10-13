@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
@@ -20,9 +20,9 @@ func NewReceiptsProcessor() *receiptsProcessor {
 }
 
 // ProcessReceipt converts receipts api data to a specific structure defined by avro schema
-func (rp *receiptsProcessor) ProcessReceipt(apiReceipt *transaction.ApiReceipt) (*schemaV2.Receipt, error) {
+func (rp *receiptsProcessor) ProcessReceipt(apiReceipt *transaction.ApiReceipt) (*schema.Receipt, error) {
 	if apiReceipt == nil {
-		return schemaV2.NewReceipt(), nil
+		return schema.NewReceipt(), nil
 	}
 
 	hash, err := hex.DecodeString(apiReceipt.TxHash)
@@ -30,7 +30,7 @@ func (rp *receiptsProcessor) ProcessReceipt(apiReceipt *transaction.ApiReceipt) 
 		return nil, fmt.Errorf("receiptsProcessor.ProcessReceipt: could not decode tx hash: %s from receipt, err: %w", apiReceipt.TxHash, err)
 	}
 
-	return &schemaV2.Receipt{
+	return &schema.Receipt{
 		Value:  utility.GetBytes(apiReceipt.Value),
 		Sender: []byte(apiReceipt.SndAddr),
 		Data:   []byte(apiReceipt.Data),

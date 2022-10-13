@@ -3,7 +3,7 @@ package shardBlocks
 import (
 	"encoding/hex"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 )
 
@@ -16,8 +16,8 @@ func NewShardBlocksProcessor() *shardBlocksProcessor {
 }
 
 // ProcessShardBlocks converts api notarized shard blocks to avro schema shard blocks
-func (sbp *shardBlocksProcessor) ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schemaV2.ShardBlocks, error) {
-	shardBlocks := make([]*schemaV2.ShardBlocks, 0, len(apiBlocks))
+func (sbp *shardBlocksProcessor) ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schema.ShardBlocks, error) {
+	shardBlocks := make([]*schema.ShardBlocks, 0, len(apiBlocks))
 
 	for _, apiBlock := range apiBlocks {
 		if apiBlock == nil {
@@ -35,13 +35,13 @@ func (sbp *shardBlocksProcessor) ProcessShardBlocks(apiBlocks []*api.NotarizedBl
 	return shardBlocks, nil
 }
 
-func processShardBlock(apiBlock *api.NotarizedBlock) (*schemaV2.ShardBlocks, error) {
+func processShardBlock(apiBlock *api.NotarizedBlock) (*schema.ShardBlocks, error) {
 	hash, err := hex.DecodeString(apiBlock.Hash)
 	if err != nil {
 		return nil, err
 	}
 
-	return &schemaV2.ShardBlocks{
+	return &schema.ShardBlocks{
 		Hash:  hash,
 		Nonce: int64(apiBlock.Nonce),
 		Round: int64(apiBlock.Round),
