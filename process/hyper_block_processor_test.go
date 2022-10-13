@@ -23,6 +23,63 @@ func createHyperBlockProcessorArgs() *HyperBlockProcessorArgs {
 	}
 }
 
+func TestNewHyperBlockProcessor(t *testing.T) {
+	t.Parallel()
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		args := createHyperBlockProcessorArgs()
+		hbp, err := NewHyperBlockProcessor(args)
+		require.Nil(t, err)
+		require.NotNil(t, hbp)
+	})
+
+	t.Run("nil transaction processor, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		args := createHyperBlockProcessorArgs()
+		args.TransactionHandler = nil
+
+		hbp, err := NewHyperBlockProcessor(args)
+		require.Nil(t, hbp)
+		require.Equal(t, errNilTransactionHandler, err)
+	})
+
+	t.Run("nil transaction processor, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		args := createHyperBlockProcessorArgs()
+		args.ShardBlockHandler = nil
+
+		hbp, err := NewHyperBlockProcessor(args)
+		require.Nil(t, hbp)
+		require.Equal(t, errNilShardBlocksHandler, err)
+	})
+
+	t.Run("nil transaction processor, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		args := createHyperBlockProcessorArgs()
+		args.EpochStartInfoHandler = nil
+
+		hbp, err := NewHyperBlockProcessor(args)
+		require.Nil(t, hbp)
+		require.Equal(t, errNilEpochStartInfoHandler, err)
+	})
+
+	t.Run("nil transaction processor, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		args := createHyperBlockProcessorArgs()
+		args.AlteredAccountsHandler = nil
+
+		hbp, err := NewHyperBlockProcessor(args)
+		require.Nil(t, hbp)
+		require.Equal(t, errNilAlteredAccountsHandler, err)
+	})
+}
+
 func TestHyperBlockProcessor_Process(t *testing.T) {
 	t.Parallel()
 
