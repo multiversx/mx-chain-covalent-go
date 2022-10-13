@@ -8,6 +8,8 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
 )
 
+// HyperBlockProcessorArgs holds all input dependencies required
+// by hyper block processor in order to create a new hyper block processor
 type HyperBlockProcessorArgs struct {
 	TransactionHandler     TransactionHandler
 	ShardBlockHandler      ShardBlocksHandler
