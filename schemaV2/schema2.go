@@ -25,8 +25,6 @@ type HyperBlock struct {
 func NewHyperBlock() *HyperBlock {
 	return &HyperBlock{
 		Hash:                   make([]byte, 32),
-		PrevBlockHash:          make([]byte, 32),
-		StateRootHash:          make([]byte, 32),
 		AccumulatedFees:        []byte{},
 		DeveloperFees:          []byte{},
 		AccumulatedFeesInEpoch: []byte{},
@@ -269,19 +267,27 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "PrevBlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "StateRootHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "Nonce",

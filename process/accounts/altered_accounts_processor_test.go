@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
+	"github.com/ElrondNetwork/covalent-indexer-go/alteredAccount"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func generateApiAccounts(n int) []*api.AlteredAccount {
-	ret := make([]*api.AlteredAccount, n)
+func generateApiAccounts(n int) []*alteredAccount.AlteredAccount {
+	ret := make([]*alteredAccount.AlteredAccount, n)
 
 	for i := 0; i < n; i++ {
 		ret[i] = generateApiAccount()
@@ -23,8 +23,8 @@ func generateApiAccounts(n int) []*api.AlteredAccount {
 	return ret
 }
 
-func generateApiAccount() *api.AlteredAccount {
-	return &api.AlteredAccount{
+func generateApiAccount() *alteredAccount.AlteredAccount {
+	return &alteredAccount.AlteredAccount{
 		Address: "erd1q",
 		Balance: testscommon.GenerateRandomBigInt().String(),
 		Nonce:   rand.Uint64(),
@@ -70,7 +70,7 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 
 func requireAlteredAccountsProcessedSuccessfully(
 	t *testing.T,
-	apiAccounts []*api.AlteredAccount,
+	apiAccounts []*alteredAccount.AlteredAccount,
 	processedAccounts []*schemaV2.AccountBalanceUpdate,
 ) {
 	require.Equal(t, len(apiAccounts), len(processedAccounts))
@@ -82,7 +82,7 @@ func requireAlteredAccountsProcessedSuccessfully(
 
 func requireAlteredAccountProcessedSuccessfully(
 	t *testing.T,
-	apiAccount *api.AlteredAccount,
+	apiAccount *alteredAccount.AlteredAccount,
 	processedAccount *schemaV2.AccountBalanceUpdate,
 ) {
 	balance, err := utility.GetBigIntBytesFromStr(apiAccount.Balance)
