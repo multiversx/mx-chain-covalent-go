@@ -106,6 +106,7 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 		return nil, err
 	}
 
+	log := txp.logProcessor.ProcessLog(apiTx.Logs)
 	return &schema.Transaction{
 		Type:                              apiTx.Type,
 		ProcessingTypeOnSource:            apiTx.ProcessingTypeOnSource,
@@ -142,8 +143,8 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 		HyperBlockNonce:                   int64(apiTx.HyperblockNonce),
 		HyperBlockHash:                    hyperBlockHash,
 		Timestamp:                         apiTx.Timestamp,
-		Receipt:                           receipt,
-		Log:                               txp.logProcessor.ProcessLog(apiTx.Logs),
+		Receipt:                           receiptOrNil(receipt),
+		Log:                               logOrNil(log),
 		Status:                            apiTx.Status.String(),
 		Tokens:                            apiTx.Tokens,
 		ESDTValues:                        esdtValues,
@@ -155,4 +156,39 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 		IsRelayed:                         apiTx.IsRelayed,
 		IsRefund:                          apiTx.IsRefund,
 	}, nil
+}
+
+func receiptOrNil(receipt *schema.Receipt) *schema.Receipt {
+	if receipt == nil {
+		return nil
+	}
+
+	if isReceiptEmpty(receipt) {
+		return nil
+	}
+
+	return receipt
+}
+
+func isReceiptEmpty(receipt *schema.Receipt) bool {
+	return len(receipt.Sender) == 0 &&
+		len(receipt.Data) == 0 &&
+		len(receipt.TxHash) == 0 &&
+		len(receipt.Value) == 0
+}
+
+func logOrNil(log *schema.Log) *schema.Log {
+	if log == nil {
+		return nil
+	}
+
+	if isLogEmpty(log) {
+		return nil
+	}
+
+	return log
+}
+
+func isLogEmpty(log *schema.Log) bool {
+	return len(log.Address) == 0 && len(log.Events) == 0
 }
