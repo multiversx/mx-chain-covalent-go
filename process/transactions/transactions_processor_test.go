@@ -8,7 +8,7 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
@@ -143,20 +143,20 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 
 	processLogCalledCt := 0
 	logHandler := &mock.LogHandlerStub{
-		ProcessLogCalled: func(log *transaction.ApiLogs) *schemaV2.Log {
+		ProcessLogCalled: func(log *transaction.ApiLogs) *schema.Log {
 			processLogCalledCt++
-			return &schemaV2.Log{Address: []byte(log.Address)}
+			return &schema.Log{Address: []byte(log.Address)}
 		},
 	}
 	processReceiptCalledCt := 0
 	receiptHandler := &mock.ReceiptHandlerStub{
-		ProcessReceiptCalled: func(apiReceipt *transaction.ApiReceipt) (*schemaV2.Receipt, error) {
+		ProcessReceiptCalled: func(apiReceipt *transaction.ApiReceipt) (*schema.Receipt, error) {
 			processReceiptCalledCt++
 			hash, err := hex.DecodeString(apiReceipt.TxHash)
 			if err != nil {
 				return nil, err
 			}
-			return &schemaV2.Receipt{TxHash: hash}, nil
+			return &schema.Receipt{TxHash: hash}, nil
 		},
 	}
 
@@ -295,7 +295,7 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 func requireTransactionsProcessedSuccessfully(
 	t *testing.T,
 	apiTxs []*transaction.ApiTransactionResult,
-	processedTxs []*schemaV2.Transaction,
+	processedTxs []*schema.Transaction,
 	logHandler process.LogHandler,
 	receiptHandler process.ReceiptHandler,
 ) {
@@ -309,7 +309,7 @@ func requireTransactionsProcessedSuccessfully(
 func requireTransactionProcessedSuccessfully(
 	t *testing.T,
 	apiTx *transaction.ApiTransactionResult,
-	processedTx *schemaV2.Transaction,
+	processedTx *schema.Transaction,
 	logHandler process.LogHandler,
 	receiptHandler process.ReceiptHandler,
 ) {
@@ -340,7 +340,7 @@ func requireTransactionProcessedSuccessfully(
 	initiallyPaidFee, err := utility.GetBigIntBytesFromStr(apiTx.InitiallyPaidFee)
 	require.Nil(t, err)
 
-	expectedTx := &schemaV2.Transaction{
+	expectedTx := &schema.Transaction{
 		Type:                              apiTx.Type,
 		ProcessingTypeOnSource:            apiTx.ProcessingTypeOnSource,
 		ProcessingTypeOnDestination:       apiTx.ProcessingTypeOnDestination,

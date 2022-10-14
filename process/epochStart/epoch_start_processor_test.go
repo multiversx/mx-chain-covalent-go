@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +31,7 @@ func TestEpochStartInfoProcessor_ProcessEpochStartInfo(t *testing.T) {
 
 		epochStartInfo, err := esi.ProcessEpochStartInfo(apiEpochStartInfo)
 		require.Nil(t, err)
-		require.Equal(t, &schemaV2.EpochStartInfo{
+		require.Equal(t, &schema.EpochStartInfo{
 			TotalSupply:                      big.NewInt(4444).Bytes(),
 			TotalToDistribute:                big.NewInt(3333).Bytes(),
 			TotalNewlyMinted:                 big.NewInt(2222).Bytes(),
@@ -48,7 +48,7 @@ func TestEpochStartInfoProcessor_ProcessEpochStartInfo(t *testing.T) {
 
 		epochStartInfo, err := esi.ProcessEpochStartInfo(nil)
 		require.Nil(t, err)
-		require.Equal(t, schemaV2.NewEpochStartInfo(), epochStartInfo)
+		require.Equal(t, schema.NewEpochStartInfo(), epochStartInfo)
 	})
 
 	t.Run("invalid total supply, should return error", func(t *testing.T) {

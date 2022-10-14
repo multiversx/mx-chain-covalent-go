@@ -1,4 +1,4 @@
-package schemaV2
+package schema
 
 import "github.com/elodina/go-avro"
 
@@ -151,8 +151,6 @@ func NewTransaction() *Transaction {
 		CodeMetadata:      []byte{},
 		Code:              []byte{},
 		MiniBlockHash:     make([]byte, 32),
-		Receipt:           NewReceipt(),
-		Log:               NewLog(),
 		Tokens:            make([]string, 0),
 		ESDTValues:        make([][]byte, 0),
 		Receivers:         make([][]byte, 0),
@@ -647,96 +645,104 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "Receipt",
-                                "type": {
-                                    "type": "record",
-                                    "name": "Receipt",
-                                    "fields": [
-                                        {
-                                            "name": "TxHash",
-                                            "type": {
-                                                "type": "fixed",
-                                                "size": 32,
-                                                "name": "hash"
-                                            }
-                                        },
-                                        {
-                                            "name": "Value",
-                                            "type": "bytes"
-                                        },
-                                        {
-                                            "name": "Sender",
-                                            "type": {
-                                                "type": "fixed",
-                                                "size": 62,
-                                                "name": "address"
-                                            }
-                                        },
-                                        {
-                                            "name": "Data",
-                                            "type": "bytes"
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                "name": "Log",
-                                "type": {
-                                    "type": "record",
-                                    "name": "Log",
-                                    "fields": [
-                                        {
-                                            "name": "Address",
-                                            "default": null,
-                                            "type": [
-                                                "null",
-                                                {
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "record",
+                                        "name": "Receipt",
+                                        "fields": [
+                                            {
+                                                "name": "TxHash",
+                                                "type": {
+                                                    "type": "fixed",
+                                                    "size": 32,
+                                                    "name": "hash"
+                                                }
+                                            },
+                                            {
+                                                "name": "Value",
+                                                "type": "bytes"
+                                            },
+                                            {
+                                                "name": "Sender",
+                                                "type": {
                                                     "type": "fixed",
                                                     "size": 62,
                                                     "name": "address"
                                                 }
-                                            ]
-                                        },
-                                        {
-                                            "name": "Events",
-                                            "type": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "record",
-                                                    "name": "Event",
-                                                    "fields": [
-                                                        {
-                                                            "name": "Address",
-                                                            "default": null,
-                                                            "type": [
-                                                                "null",
-                                                                {
-                                                                    "type": "fixed",
-                                                                    "size": 62,
-                                                                    "name": "address"
+                                            },
+                                            {
+                                                "name": "Data",
+                                                "type": "bytes"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Log",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "record",
+                                        "name": "Log",
+                                        "fields": [
+                                            {
+                                                "name": "Address",
+                                                "default": null,
+                                                "type": [
+                                                    "null",
+                                                    {
+                                                        "type": "fixed",
+                                                        "size": 62,
+                                                        "name": "address"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "Events",
+                                                "type": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "record",
+                                                        "name": "Event",
+                                                        "fields": [
+                                                            {
+                                                                "name": "Address",
+                                                                "default": null,
+                                                                "type": [
+                                                                    "null",
+                                                                    {
+                                                                        "type": "fixed",
+                                                                        "size": 62,
+                                                                        "name": "address"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "name": "Identifier",
+                                                                "type": "bytes"
+                                                            },
+                                                            {
+                                                                "name": "Topics",
+                                                                "type": {
+                                                                    "type": "array",
+                                                                    "items": "bytes"
                                                                 }
-                                                            ]
-                                                        },
-                                                        {
-                                                            "name": "Identifier",
-                                                            "type": "bytes"
-                                                        },
-                                                        {
-                                                            "name": "Topics",
-                                                            "type": {
-                                                                "type": "array",
-                                                                "items": "bytes"
+                                                            },
+                                                            {
+                                                                "name": "Data",
+                                                                "type": "bytes"
                                                             }
-                                                        },
-                                                        {
-                                                            "name": "Data",
-                                                            "type": "bytes"
-                                                        }
-                                                    ]
+                                                        ]
+                                                    }
                                                 }
                                             }
-                                        }
-                                    ]
-                                }
+                                        ]
+                                    }
+                                ]
                             },
                             {
                                 "name": "Status",
@@ -1137,96 +1143,104 @@ var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Receipt",
-            "type": {
-                "type": "record",
-                "name": "Receipt",
-                "fields": [
-                    {
-                        "name": "TxHash",
-                        "type": {
-                            "type": "fixed",
-                            "size": 32,
-                            "name": "hash"
-                        }
-                    },
-                    {
-                        "name": "Value",
-                        "type": "bytes"
-                    },
-                    {
-                        "name": "Sender",
-                        "type": {
-                            "type": "fixed",
-                            "size": 62,
-                            "name": "address"
-                        }
-                    },
-                    {
-                        "name": "Data",
-                        "type": "bytes"
-                    }
-                ]
-            }
-        },
-        {
-            "name": "Log",
-            "type": {
-                "type": "record",
-                "name": "Log",
-                "fields": [
-                    {
-                        "name": "Address",
-                        "default": null,
-                        "type": [
-                            "null",
-                            {
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "record",
+                    "name": "Receipt",
+                    "fields": [
+                        {
+                            "name": "TxHash",
+                            "type": {
+                                "type": "fixed",
+                                "size": 32,
+                                "name": "hash"
+                            }
+                        },
+                        {
+                            "name": "Value",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "Sender",
+                            "type": {
                                 "type": "fixed",
                                 "size": 62,
                                 "name": "address"
                             }
-                        ]
-                    },
-                    {
-                        "name": "Events",
-                        "type": {
-                            "type": "array",
-                            "items": {
-                                "type": "record",
-                                "name": "Event",
-                                "fields": [
-                                    {
-                                        "name": "Address",
-                                        "default": null,
-                                        "type": [
-                                            "null",
-                                            {
-                                                "type": "fixed",
-                                                "size": 62,
-                                                "name": "address"
+                        },
+                        {
+                            "name": "Data",
+                            "type": "bytes"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Log",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "record",
+                    "name": "Log",
+                    "fields": [
+                        {
+                            "name": "Address",
+                            "default": null,
+                            "type": [
+                                "null",
+                                {
+                                    "type": "fixed",
+                                    "size": 62,
+                                    "name": "address"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Events",
+                            "type": {
+                                "type": "array",
+                                "items": {
+                                    "type": "record",
+                                    "name": "Event",
+                                    "fields": [
+                                        {
+                                            "name": "Address",
+                                            "default": null,
+                                            "type": [
+                                                "null",
+                                                {
+                                                    "type": "fixed",
+                                                    "size": 62,
+                                                    "name": "address"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "Identifier",
+                                            "type": "bytes"
+                                        },
+                                        {
+                                            "name": "Topics",
+                                            "type": {
+                                                "type": "array",
+                                                "items": "bytes"
                                             }
-                                        ]
-                                    },
-                                    {
-                                        "name": "Identifier",
-                                        "type": "bytes"
-                                    },
-                                    {
-                                        "name": "Topics",
-                                        "type": {
-                                            "type": "array",
-                                            "items": "bytes"
+                                        },
+                                        {
+                                            "name": "Data",
+                                            "type": "bytes"
                                         }
-                                    },
-                                    {
-                                        "name": "Data",
-                                        "type": "bytes"
-                                    }
-                                ]
+                                    ]
+                                }
                             }
                         }
-                    }
-                ]
-            }
+                    ]
+                }
+            ]
         },
         {
             "name": "Status",

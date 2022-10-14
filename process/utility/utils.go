@@ -1,31 +1,12 @@
 package utility
 
 import (
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
 	"github.com/ElrondNetwork/elrond-go/common"
 )
-
-// HexSliceToByteSlice outputs a decoded byte slice representation of a hex string encoded slice input
-func HexSliceToByteSlice(in []string) ([][]byte, error) {
-	if in == nil {
-		return nil, nil
-	}
-	out := make([][]byte, len(in))
-
-	for i := range in {
-		tmp, err := hex.DecodeString(in[i])
-		if err != nil {
-			return nil, err
-		}
-		out[i] = tmp
-	}
-
-	return out, nil
-}
 
 // UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
 func UIntSliceToIntSlice(in []uint64) []int64 {

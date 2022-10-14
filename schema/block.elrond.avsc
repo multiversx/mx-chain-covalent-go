@@ -148,7 +148,7 @@
             "name": "HyperBlockHash", "type" : "hash"}]},
           {"name": "Timestamp", "type": "long"},
 
-          {"name": "Receipt", "type": {
+          {"name": "Receipt", "type": ["null", {
             "name": "Receipt",
             "type": "record",
             "fields": [
@@ -162,9 +162,9 @@
               {"name": "Sender", "type": "address"},
               {"name": "Data", "type": "bytes"}
             ]
-          }},
+          }]},
 
-          {"name": "Log", "type": {
+          {"name": "Log", "type": ["null", {
             "name": "Log",
             "type": "record",
             "fields": [
@@ -180,7 +180,7 @@
                 ]
               }}}
             ]
-          }},
+          }]},
 
           {"name": "Status", "type": "string"},
           {"name": "Tokens", "type": {"type" : "array", "items": { "type":  "string"}}},

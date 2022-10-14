@@ -5,7 +5,7 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schemaV2"
+	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
 
@@ -33,8 +33,8 @@ func NewTransactionProcessor(
 }
 
 // ProcessTransactions converts transactions data to a specific structure defined by avro schema
-func (txp *transactionProcessor) ProcessTransactions(apiTransactions []*transaction.ApiTransactionResult) ([]*schemaV2.Transaction, error) {
-	allTxs := make([]*schemaV2.Transaction, 0, len(apiTransactions))
+func (txp *transactionProcessor) ProcessTransactions(apiTransactions []*transaction.ApiTransactionResult) ([]*schema.Transaction, error) {
+	allTxs := make([]*schema.Transaction, 0, len(apiTransactions))
 
 	for _, apiTx := range apiTransactions {
 		if apiTx == nil {
@@ -52,7 +52,7 @@ func (txp *transactionProcessor) ProcessTransactions(apiTransactions []*transact
 	return allTxs, nil
 }
 
-func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransactionResult) (*schemaV2.Transaction, error) {
+func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransactionResult) (*schema.Transaction, error) {
 	txHash, err := hex.DecodeString(apiTx.Hash)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (txp *transactionProcessor) processTransaction(apiTx *transaction.ApiTransa
 		return nil, err
 	}
 
-	return &schemaV2.Transaction{
+	return &schema.Transaction{
 		Type:                              apiTx.Type,
 		ProcessingTypeOnSource:            apiTx.ProcessingTypeOnSource,
 		ProcessingTypeOnDestination:       apiTx.ProcessingTypeOnDestination,
