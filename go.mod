@@ -6,7 +6,6 @@ require (
 	github.com/ElrondNetwork/elrond-go v1.3.40
 	github.com/ElrondNetwork/elrond-go-core v1.1.19
 	github.com/ElrondNetwork/elrond-go-logger v1.0.7
-	github.com/ElrondNetwork/elrond-vm-common v1.3.15
 	github.com/elodina/go-avro v0.0.0-20160406082632-0c8185d9a3ba
 	github.com/gin-gonic/gin v1.8.0
 	github.com/pelletier/go-toml v1.9.3
