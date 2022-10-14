@@ -46,7 +46,7 @@ func TestNewHyperBlockProcessor(t *testing.T) {
 		require.Equal(t, errNilTransactionHandler, err)
 	})
 
-	t.Run("nil transaction processor, should return error", func(t *testing.T) {
+	t.Run("nil shard block processor, should return error", func(t *testing.T) {
 		t.Parallel()
 
 		args := createHyperBlockProcessorArgs()
@@ -57,7 +57,7 @@ func TestNewHyperBlockProcessor(t *testing.T) {
 		require.Equal(t, errNilShardBlocksHandler, err)
 	})
 
-	t.Run("nil transaction processor, should return error", func(t *testing.T) {
+	t.Run("nil epoch start info processor, should return error", func(t *testing.T) {
 		t.Parallel()
 
 		args := createHyperBlockProcessorArgs()
@@ -68,7 +68,7 @@ func TestNewHyperBlockProcessor(t *testing.T) {
 		require.Equal(t, errNilEpochStartInfoHandler, err)
 	})
 
-	t.Run("nil transaction processor, should return error", func(t *testing.T) {
+	t.Run("nil altered accounts processor, should return error", func(t *testing.T) {
 		t.Parallel()
 
 		args := createHyperBlockProcessorArgs()
