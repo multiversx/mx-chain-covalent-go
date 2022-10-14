@@ -126,14 +126,14 @@ func shardBlocksOrNil(shardBlocks []*schemaV2.ShardBlocks) []*schemaV2.ShardBloc
 }
 
 func epochStartInfoOrNil(epochStartInfo *schemaV2.EpochStartInfo) *schemaV2.EpochStartInfo {
-	if emptyEpochStartInfo(epochStartInfo) {
+	if isEpochStartInfoEmpty(epochStartInfo) {
 		return nil
 	}
 
 	return epochStartInfo
 }
 
-func emptyEpochStartInfo(epochStartInfo *schemaV2.EpochStartInfo) bool {
+func isEpochStartInfoEmpty(epochStartInfo *schemaV2.EpochStartInfo) bool {
 	if epochStartInfo == nil {
 		return true
 	}
