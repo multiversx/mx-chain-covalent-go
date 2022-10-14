@@ -145,6 +145,10 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 	logHandler := &mock.LogHandlerStub{
 		ProcessLogCalled: func(log *transaction.ApiLogs) *schema.Log {
 			processLogCalledCt++
+			if log == nil {
+				return nil
+			}
+
 			return &schema.Log{Address: []byte(log.Address)}
 		},
 	}
@@ -152,6 +156,10 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 	receiptHandler := &mock.ReceiptHandlerStub{
 		ProcessReceiptCalled: func(apiReceipt *transaction.ApiReceipt) (*schema.Receipt, error) {
 			processReceiptCalledCt++
+			if apiReceipt == nil {
+				return nil, nil
+			}
+
 			hash, err := hex.DecodeString(apiReceipt.TxHash)
 			if err != nil {
 				return nil, err
@@ -185,6 +193,42 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 		ret, err := txp.ProcessTransactions(apiTxs)
 		require.Nil(t, err)
 		requireTransactionsProcessedSuccessfully(t, apiTxs[1:], ret, logHandler, receiptHandler)
+	})
+
+	t.Run("nil receipt, should fill it with nil", func(t *testing.T) {
+		apiTxs := generateApiTxs(1)
+		apiTxs[0].Receipt = nil
+		ret, err := txp.ProcessTransactions(apiTxs)
+		require.Nil(t, err)
+		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)
+		require.Nil(t, ret[0].Receipt)
+	})
+
+	t.Run("empty receipt, should fill it with nil", func(t *testing.T) {
+		apiTxs := generateApiTxs(1)
+		apiTxs[0].Receipt = &transaction.ApiReceipt{}
+		ret, err := txp.ProcessTransactions(apiTxs)
+		require.Nil(t, err)
+		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)
+		require.Nil(t, ret[0].Receipt)
+	})
+
+	t.Run("nil log, should fill it with nil", func(t *testing.T) {
+		apiTxs := generateApiTxs(1)
+		apiTxs[0].Logs = nil
+		ret, err := txp.ProcessTransactions(apiTxs)
+		require.Nil(t, err)
+		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)
+		require.Nil(t, ret[0].Log)
+	})
+
+	t.Run("empty log, should fill it with nil", func(t *testing.T) {
+		apiTxs := generateApiTxs(1)
+		apiTxs[0].Logs = &transaction.ApiLogs{}
+		ret, err := txp.ProcessTransactions(apiTxs)
+		require.Nil(t, err)
+		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)
+		require.Nil(t, ret[0].Log)
 	})
 
 	t.Run("invalid hash, should err", func(t *testing.T) {
@@ -339,6 +383,7 @@ func requireTransactionProcessedSuccessfully(
 	require.Nil(t, err)
 	initiallyPaidFee, err := utility.GetBigIntBytesFromStr(apiTx.InitiallyPaidFee)
 	require.Nil(t, err)
+	log := logHandler.ProcessLog(apiTx.Logs)
 
 	expectedTx := &schema.Transaction{
 		Type:                              apiTx.Type,
@@ -376,8 +421,8 @@ func requireTransactionProcessedSuccessfully(
 		HyperBlockNonce:                   int64(apiTx.HyperblockNonce),
 		HyperBlockHash:                    hyperBlockHash,
 		Timestamp:                         apiTx.Timestamp,
-		Receipt:                           receipt,
-		Log:                               logHandler.ProcessLog(apiTx.Logs),
+		Receipt:                           receiptOrNil(receipt),
+		Log:                               logOrNil(log),
 		Status:                            apiTx.Status.String(),
 		Tokens:                            apiTx.Tokens,
 		ESDTValues:                        esdtValues,
