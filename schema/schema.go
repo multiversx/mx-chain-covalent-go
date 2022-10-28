@@ -238,9 +238,8 @@ type AccountBalanceUpdate struct {
 
 func NewAccountBalanceUpdate() *AccountBalanceUpdate {
 	return &AccountBalanceUpdate{
-		Address:          make([]byte, 62),
-		Balance:          []byte{},
-		AccountTokenData: make([]*AccountTokenData, 0),
+		Address: make([]byte, 62),
+		Balance: []byte{},
 	}
 }
 
@@ -881,79 +880,83 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "AccountTokenData",
-                            "type": {
-                                "type": "array",
-                                "items": {
-                                    "type": "record",
-                                    "name": "AccountTokenData",
-                                    "fields": [
-                                        {
-                                            "name": "Nonce",
-                                            "type": "long"
-                                        },
-                                        {
-                                            "name": "Identifier",
-                                            "type": "string"
-                                        },
-                                        {
-                                            "name": "Balance",
-                                            "type": "bytes"
-                                        },
-                                        {
-                                            "name": "Properties",
-                                            "type": "string"
-                                        },
-                                        {
-                                            "name": "MetaData",
-                                            "default": null,
-                                            "type": [
-                                                "null",
-                                                {
-                                                    "type": "record",
-                                                    "name": "MetaData",
-                                                    "fields": [
-                                                        {
-                                                            "name": "Nonce",
-                                                            "type": "long"
-                                                        },
-                                                        {
-                                                            "name": "Name",
-                                                            "type": "bytes"
-                                                        },
-                                                        {
-                                                            "name": "Creator",
-                                                            "type": "bytes"
-                                                        },
-                                                        {
-                                                            "name": "Royalties",
-                                                            "type": "int"
-                                                        },
-                                                        {
-                                                            "name": "Hash",
-                                                            "type": {
-                                                                "type": "fixed",
-                                                                "size": 32,
-                                                                "name": "hash"
+                            "default": null,
+                            "type": [
+                                "null",
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "record",
+                                        "name": "AccountTokenData",
+                                        "fields": [
+                                            {
+                                                "name": "Nonce",
+                                                "type": "long"
+                                            },
+                                            {
+                                                "name": "Identifier",
+                                                "type": "string"
+                                            },
+                                            {
+                                                "name": "Balance",
+                                                "type": "bytes"
+                                            },
+                                            {
+                                                "name": "Properties",
+                                                "type": "string"
+                                            },
+                                            {
+                                                "name": "MetaData",
+                                                "default": null,
+                                                "type": [
+                                                    "null",
+                                                    {
+                                                        "type": "record",
+                                                        "name": "MetaData",
+                                                        "fields": [
+                                                            {
+                                                                "name": "Nonce",
+                                                                "type": "long"
+                                                            },
+                                                            {
+                                                                "name": "Name",
+                                                                "type": "bytes"
+                                                            },
+                                                            {
+                                                                "name": "Creator",
+                                                                "type": "bytes"
+                                                            },
+                                                            {
+                                                                "name": "Royalties",
+                                                                "type": "int"
+                                                            },
+                                                            {
+                                                                "name": "Hash",
+                                                                "type": {
+                                                                    "type": "fixed",
+                                                                    "size": 32,
+                                                                    "name": "hash"
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "URIs",
+                                                                "type": {
+                                                                    "type": "array",
+                                                                    "items": "bytes"
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "Attributes",
+                                                                "type": "bytes"
                                                             }
-                                                        },
-                                                        {
-                                                            "name": "URIs",
-                                                            "type": {
-                                                                "type": "array",
-                                                                "items": "bytes"
-                                                            }
-                                                        },
-                                                        {
-                                                            "name": "Attributes",
-                                                            "type": "bytes"
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    ]
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
                                 }
-                            }
+                            ]
                         }
                     ]
                 }
@@ -1576,79 +1579,83 @@ var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseS
         },
         {
             "name": "AccountTokenData",
-            "type": {
-                "type": "array",
-                "items": {
-                    "type": "record",
-                    "name": "AccountTokenData",
-                    "fields": [
-                        {
-                            "name": "Nonce",
-                            "type": "long"
-                        },
-                        {
-                            "name": "Identifier",
-                            "type": "string"
-                        },
-                        {
-                            "name": "Balance",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Properties",
-                            "type": "string"
-                        },
-                        {
-                            "name": "MetaData",
-                            "default": null,
-                            "type": [
-                                "null",
-                                {
-                                    "type": "record",
-                                    "name": "MetaData",
-                                    "fields": [
-                                        {
-                                            "name": "Nonce",
-                                            "type": "long"
-                                        },
-                                        {
-                                            "name": "Name",
-                                            "type": "bytes"
-                                        },
-                                        {
-                                            "name": "Creator",
-                                            "type": "bytes"
-                                        },
-                                        {
-                                            "name": "Royalties",
-                                            "type": "int"
-                                        },
-                                        {
-                                            "name": "Hash",
-                                            "type": {
-                                                "type": "fixed",
-                                                "size": 32,
-                                                "name": "hash"
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "record",
+                        "name": "AccountTokenData",
+                        "fields": [
+                            {
+                                "name": "Nonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Identifier",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Balance",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "Properties",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MetaData",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "record",
+                                        "name": "MetaData",
+                                        "fields": [
+                                            {
+                                                "name": "Nonce",
+                                                "type": "long"
+                                            },
+                                            {
+                                                "name": "Name",
+                                                "type": "bytes"
+                                            },
+                                            {
+                                                "name": "Creator",
+                                                "type": "bytes"
+                                            },
+                                            {
+                                                "name": "Royalties",
+                                                "type": "int"
+                                            },
+                                            {
+                                                "name": "Hash",
+                                                "type": {
+                                                    "type": "fixed",
+                                                    "size": 32,
+                                                    "name": "hash"
+                                                }
+                                            },
+                                            {
+                                                "name": "URIs",
+                                                "type": {
+                                                    "type": "array",
+                                                    "items": "bytes"
+                                                }
+                                            },
+                                            {
+                                                "name": "Attributes",
+                                                "type": "bytes"
                                             }
-                                        },
-                                        {
-                                            "name": "URIs",
-                                            "type": {
-                                                "type": "array",
-                                                "items": "bytes"
-                                            }
-                                        },
-                                        {
-                                            "name": "Attributes",
-                                            "type": "bytes"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }
-            }
+            ]
         }
     ]
 }`)
