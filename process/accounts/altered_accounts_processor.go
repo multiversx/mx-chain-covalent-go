@@ -54,10 +54,10 @@ func processAlteredAccounts(apiAlteredAccounts []*outport.AlteredAccount) ([]*sc
 		}
 
 		account := &schema.AccountBalanceUpdate{
-			Address:          []byte(apiAlteredAccount.Address),
-			Balance:          balance,
-			Nonce:            int64(apiAlteredAccount.Nonce),
-			AccountTokenData: accountTokenData,
+			Address: []byte(apiAlteredAccount.Address),
+			Balance: balance,
+			Nonce:   int64(apiAlteredAccount.Nonce),
+			Tokens:  tokensOrNil(accountTokenData),
 		}
 		accounts = append(accounts, account)
 	}
@@ -93,6 +93,10 @@ func processAccountsTokenData(apiTokens []*outport.AccountTokenData) ([]*schema.
 }
 
 func processMetaData(apiMetaData *esdt.MetaData) *schema.MetaData {
+	if apiMetaData == nil {
+		return nil
+	}
+
 	return &schema.MetaData{
 		Nonce:      int64(apiMetaData.Nonce),
 		Name:       apiMetaData.Name,
@@ -102,4 +106,12 @@ func processMetaData(apiMetaData *esdt.MetaData) *schema.MetaData {
 		URIs:       apiMetaData.URIs,
 		Attributes: apiMetaData.Attributes,
 	}
+}
+
+func tokensOrNil(accounts []*schema.AccountTokenData) []*schema.AccountTokenData {
+	if len(accounts) == 0 {
+		return nil
+	}
+
+	return accounts
 }

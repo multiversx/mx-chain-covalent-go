@@ -89,6 +89,10 @@ func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*sch
 	if err != nil {
 		return nil, err
 	}
+	alteredAccounts, err := hbp.alteredAccountsProcessor.ProcessAccounts(hyperBlock.ShardBlocks)
+	if err != nil {
+		return nil, err
+	}
 
 	return &schema.HyperBlock{
 		Hash:                   hash,
@@ -106,7 +110,7 @@ func (hbp *hyperBlockProcessor) Process(hyperBlock *hyperBlock.HyperBlock) (*sch
 		EpochStartInfo:         epochStartInfoOrNil(epochStartInfo),
 		ShardBlocks:            shardBlocksOrNil(shardBlocks),
 		Transactions:           txsOrNil(txs),
-		StateChanges:           nil,
+		StateChanges:           alteredAccountsOrNil(alteredAccounts),
 		Status:                 hyperBlock.Status,
 	}, nil
 }
@@ -146,4 +150,12 @@ func emptyEpochStartInfo(epochStartInfo *schema.EpochStartInfo) bool {
 		len(epochStartInfo.NodePrice) == 0 &&
 		len(epochStartInfo.PrevEpochStartHash) == 0 &&
 		epochStartInfo.PrevEpochStartRound == 0
+}
+
+func alteredAccountsOrNil(alteredAccounts []*schema.AccountBalanceUpdate) []*schema.AccountBalanceUpdate {
+	if len(alteredAccounts) == 0 {
+		return nil
+	}
+
+	return alteredAccounts
 }

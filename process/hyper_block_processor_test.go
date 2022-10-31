@@ -10,6 +10,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/processMocks"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
 )
@@ -84,10 +85,12 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 	t.Parallel()
 
 	apiTxs := []*transaction.ApiTransactionResult{{Hash: "hash1"}}
-	shardBlocks := []*api.NotarizedBlock{{Hash: "hash2"}}
+	alteredAcc := &outport.AlteredAccount{Balance: "100"}
+	shardBlocks := []*api.NotarizedBlock{{Hash: "hash2", AlteredAccounts: []*outport.AlteredAccount{alteredAcc}}}
 	epochStartInfo := &api.EpochStartInfo{NodePrice: "100"}
 
 	processedTxs := []*schema.Transaction{{Hash: []byte(apiTxs[0].Hash)}}
+	processedAlteredAcc := &schema.AccountBalanceUpdate{Balance: big.NewInt(100).Bytes()}
 	processedShardBlocks := []*schema.ShardBlocks{{Hash: []byte(shardBlocks[0].Hash)}}
 	processedEpochStartInfo := &schema.EpochStartInfo{NodePrice: big.NewInt(100).Bytes()}
 
@@ -126,7 +129,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 		EpochStartInfo:         processedEpochStartInfo,
 		ShardBlocks:            processedShardBlocks,
 		Transactions:           processedTxs,
-		StateChanges:           nil,
+		StateChanges:           []*schema.AccountBalanceUpdate{processedAlteredAcc},
 		Status:                 "status",
 	}
 
@@ -148,6 +151,12 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 			return processedEpochStartInfo, nil
 		},
 	}
+	alteredAccProcessor := &processMocks.AlteredAccountsHandlerStub{
+		ProcessAccountsCalled: func(apiNotarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error) {
+			require.Equal(t, shardBlocks, apiNotarizedBlocks)
+			return []*schema.AccountBalanceUpdate{processedAlteredAcc}, nil
+		},
+	}
 
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
@@ -155,7 +164,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 			TransactionHandler:     txProcessor,
 			ShardBlockHandler:      shardBlocksProcessor,
 			EpochStartInfoHandler:  epochStartInfoProcessor,
-			AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{},
+			AlteredAccountsHandler: alteredAccProcessor,
 		}
 		hbp, _ := NewHyperBlockProcessor(args)
 
@@ -275,7 +284,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 			},
 			ShardBlockHandler:      shardBlocksProcessor,
 			EpochStartInfoHandler:  epochStartInfoProcessor,
-			AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{},
+			AlteredAccountsHandler: alteredAccProcessor,
 		}
 		hbp, _ := NewHyperBlockProcessor(args)
 
@@ -317,7 +326,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 				},
 			},
 			EpochStartInfoHandler:  epochStartInfoProcessor,
-			AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{},
+			AlteredAccountsHandler: alteredAccProcessor,
 		}
 		hbp, _ := NewHyperBlockProcessor(args)
 
@@ -359,7 +368,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 					return nil, nil
 				},
 			},
-			AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{},
+			AlteredAccountsHandler: alteredAccProcessor,
 		}
 		hbp, _ := NewHyperBlockProcessor(args)
 
@@ -383,7 +392,7 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 					return schema.NewEpochStartInfo(), nil
 				},
 			},
-			AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{},
+			AlteredAccountsHandler: alteredAccProcessor,
 		}
 		hbp, _ := NewHyperBlockProcessor(args)
 
@@ -413,4 +422,45 @@ func TestHyperBlockProcessor_Process(t *testing.T) {
 		require.Equal(t, errProcessEpochStartInfo, err)
 	})
 
+	t.Run("empty altered accounts, should not fill it", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		args := &HyperBlockProcessorArgs{
+			TransactionHandler:    txProcessor,
+			ShardBlockHandler:     shardBlocksProcessor,
+			EpochStartInfoHandler: epochStartInfoProcessor,
+			AlteredAccountsHandler: &processMocks.AlteredAccountsHandlerStub{
+				ProcessAccountsCalled: func(apiNotarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error) {
+					return []*schema.AccountBalanceUpdate{}, nil
+				},
+			},
+		}
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, err)
+
+		expectedProcessedHyperBlockCopy := *expectedProcessedHyperBlock
+		expectedProcessedHyperBlockCopy.StateChanges = nil
+		require.Equal(t, &expectedProcessedHyperBlockCopy, processedHyperBlock)
+	})
+
+	t.Run("invalid altered accounts, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiHyperBLockCopy := *apiHyperBLock
+		args := createHyperBlockProcessorArgs()
+		errProcessAlteredAccounts := errors.New("error processing altered accounts")
+		args.AlteredAccountsHandler = &processMocks.AlteredAccountsHandlerStub{
+			ProcessAccountsCalled: func(apiNotarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error) {
+				return nil, errProcessAlteredAccounts
+			},
+		}
+		hbp, _ := NewHyperBlockProcessor(args)
+
+		processedHyperBlock, err := hbp.Process(&apiHyperBLockCopy)
+		require.Nil(t, processedHyperBlock)
+		require.Equal(t, errProcessAlteredAccounts, err)
+	})
 }

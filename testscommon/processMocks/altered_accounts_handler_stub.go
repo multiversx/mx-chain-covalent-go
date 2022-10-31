@@ -1,19 +1,19 @@
 package processMocks
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/alteredAccount"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/elrond-go-core/data/api"
 )
 
 // AlteredAccountsHandlerStub -
 type AlteredAccountsHandlerStub struct {
-	ProcessAccountsCalled func(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schema.AccountBalanceUpdate, error)
+	ProcessAccountsCalled func(apiNotarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error)
 }
 
 // ProcessAccounts -
-func (ahs *AlteredAccountsHandlerStub) ProcessAccounts(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schema.AccountBalanceUpdate, error) {
+func (ahs *AlteredAccountsHandlerStub) ProcessAccounts(apiNotarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error) {
 	if ahs.ProcessAccountsCalled != nil {
-		return ahs.ProcessAccountsCalled(apiAlteredAccounts)
+		return ahs.ProcessAccountsCalled(apiNotarizedBlocks)
 	}
 
 	return nil, nil
