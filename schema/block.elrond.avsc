@@ -216,7 +216,39 @@
           "precision": 1000,
           "scale": 0
         }},
-        {"name": "Nonce", "type": "long"}
+        {"name": "Nonce", "type": "long"},
+
+        {"name" :  "AccountTokenData", "type" : {"type": ["null",
+          { "type": "array", "items":  {
+            "name": "AccountTokenData",
+            "type": "record",
+            "fields": [
+              {"name" : "Nonce", "type" :  "long"},
+              {"name" : "Identifier", "type" :  "string"},
+              {"name": "Balance", "type": {
+                "type": "bytes",
+                "logicalType": "bignum",
+                "precision": 1000,
+                "scale": 0
+              }},
+              {"name" : "Properties", "type" :  "string"},
+
+              {"name": "MetaData", "type": ["null", {
+                "name": "MetaData",
+                "type": "record",
+                "fields": [
+                  {"name": "Nonce", "type": "long"},
+                  {"name": "Name", "type": "bytes"},
+                  {"name": "Creator", "type": "bytes"},
+                  {"name": "Royalties", "type": "int"},
+                  {"name": "Hash", "type": "hash"},
+                  {"name": "URIs", "type": {"type": "array", "items": "bytes"}},
+                  {"name": "Attributes", "type": "bytes"}
+                ]
+              }]}
+            ]
+          }}
+        ]}}
       ]
     }}},
 
