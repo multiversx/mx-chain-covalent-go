@@ -218,7 +218,7 @@
         }},
         {"name": "Nonce", "type": "long"},
 
-        {"name" :  "AccountTokenData", "type" : {"type": ["null",
+        {"name" :  "Tokens", "type" : {"type": ["null",
           { "type": "array", "items":  {
             "name": "AccountTokenData",
             "type": "record",

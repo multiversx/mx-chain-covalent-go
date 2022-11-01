@@ -1,9 +1,11 @@
 package accounts
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/alteredAccount"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/ElrondNetwork/elrond-go-core/data/api"
+	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 )
 
 type alteredAccountsProcessor struct {
@@ -15,34 +17,101 @@ func NewAlteredAccountsProcessor() *alteredAccountsProcessor {
 }
 
 // ProcessAccounts converts accounts data to a specific structure defined by avro schema
-func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*alteredAccount.AlteredAccount) ([]*schema.AccountBalanceUpdate, error) {
-	accounts := make([]*schema.AccountBalanceUpdate, 0, len(apiAlteredAccounts))
+func (ap *alteredAccountsProcessor) ProcessAccounts(notarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error) {
+	accounts := make([]*schema.AccountBalanceUpdate, 0, len(notarizedBlocks))
 
-	for _, apiAccount := range apiAlteredAccounts {
-		if apiAccount == nil {
+	for _, block := range notarizedBlocks {
+		if block == nil {
 			continue
 		}
 
-		account, err := processAccount(apiAccount)
+		accountsInBlock, err := processAlteredAccounts(block.AlteredAccounts)
 		if err != nil {
 			return nil, err
 		}
 
+		accounts = append(accounts, accountsInBlock...)
+	}
+
+	return accounts, nil
+}
+
+func processAlteredAccounts(apiAlteredAccounts []*outport.AlteredAccount) ([]*schema.AccountBalanceUpdate, error) {
+	accounts := make([]*schema.AccountBalanceUpdate, 0, len(apiAlteredAccounts))
+
+	for _, apiAlteredAccount := range apiAlteredAccounts {
+		if apiAlteredAccount == nil {
+			continue
+		}
+
+		balance, err := utility.GetBigIntBytesFromStr(apiAlteredAccount.Balance)
+		if err != nil {
+			return nil, err
+		}
+		accountTokenData, err := processAccountsTokenData(apiAlteredAccount.Tokens)
+		if err != nil {
+			return nil, err
+		}
+
+		account := &schema.AccountBalanceUpdate{
+			Address: []byte(apiAlteredAccount.Address),
+			Balance: balance,
+			Nonce:   int64(apiAlteredAccount.Nonce),
+			Tokens:  tokensOrNil(accountTokenData),
+		}
 		accounts = append(accounts, account)
 	}
 
 	return accounts, nil
 }
 
-func processAccount(apiAccount *alteredAccount.AlteredAccount) (*schema.AccountBalanceUpdate, error) {
-	balance, err := utility.GetBigIntBytesFromStr(apiAccount.Balance)
-	if err != nil {
-		return nil, err
+func processAccountsTokenData(apiTokens []*outport.AccountTokenData) ([]*schema.AccountTokenData, error) {
+	tokens := make([]*schema.AccountTokenData, 0, len(apiTokens))
+
+	for _, apiToken := range apiTokens {
+		if apiToken == nil {
+			continue
+		}
+
+		balance, err := utility.GetBigIntBytesFromStr(apiToken.Balance)
+		if err != nil {
+			return nil, err
+		}
+
+		token := &schema.AccountTokenData{
+			Nonce:      int64(apiToken.Nonce),
+			Identifier: apiToken.Identifier,
+			Balance:    balance,
+			Properties: apiToken.Properties,
+			MetaData:   processMetaData(apiToken.MetaData),
+		}
+
+		tokens = append(tokens, token)
 	}
 
-	return &schema.AccountBalanceUpdate{
-		Address: []byte(apiAccount.Address),
-		Balance: balance,
-		Nonce:   int64(apiAccount.Nonce),
-	}, nil
+	return tokens, nil
+}
+
+func processMetaData(apiMetaData *esdt.MetaData) *schema.MetaData {
+	if apiMetaData == nil {
+		return nil
+	}
+
+	return &schema.MetaData{
+		Nonce:      int64(apiMetaData.Nonce),
+		Name:       apiMetaData.Name,
+		Creator:    apiMetaData.Creator,
+		Royalties:  int32(apiMetaData.Royalties),
+		Hash:       apiMetaData.Hash,
+		URIs:       apiMetaData.URIs,
+		Attributes: apiMetaData.Attributes,
+	}
+}
+
+func tokensOrNil(accounts []*schema.AccountTokenData) []*schema.AccountTokenData {
+	if len(accounts) == 0 {
+		return nil
+	}
+
+	return accounts
 }

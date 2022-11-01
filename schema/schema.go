@@ -230,10 +230,10 @@ func (o *Event) Schema() avro.Schema {
 }
 
 type AccountBalanceUpdate struct {
-	Address          []byte
-	Balance          []byte
-	Nonce            int64
-	AccountTokenData []*AccountTokenData
+	Address []byte
+	Balance []byte
+	Nonce   int64
+	Tokens  []*AccountTokenData
 }
 
 func NewAccountBalanceUpdate() *AccountBalanceUpdate {
@@ -879,7 +879,7 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             "type": "long"
                         },
                         {
-                            "name": "AccountTokenData",
+                            "name": "Tokens",
                             "default": null,
                             "type": [
                                 "null",
@@ -1578,7 +1578,7 @@ var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseS
             "type": "long"
         },
         {
-            "name": "AccountTokenData",
+            "name": "Tokens",
             "default": null,
             "type": [
                 "null",

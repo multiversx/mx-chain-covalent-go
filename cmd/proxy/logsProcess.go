@@ -8,7 +8,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/elrond-go-core/core/check"
 	logger "github.com/ElrondNetwork/elrond-go-logger"
-	"github.com/ElrondNetwork/elrond-go/common/logging"
+	"github.com/ElrondNetwork/elrond-go-logger/file"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 func attachFileLogger(log logger.Logger, logFilePrefix string, flagsConfig config.FlagsLog) error {
 	var err error
 	if flagsConfig.SaveLogFile {
-		fileLogging, err := logging.NewFileLogging(logging.ArgsFileLogging{
+		fileLogging, err := file.NewFileLogging(file.ArgsFileLogging{
 			WorkingDir:      flagsConfig.WorkingDir,
 			DefaultLogsPath: defaultLogsPath,
 			LogFilePrefix:   logFilePrefix,
