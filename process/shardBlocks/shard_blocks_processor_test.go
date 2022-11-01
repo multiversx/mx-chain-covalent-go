@@ -36,6 +36,26 @@ func generateShardBlock() *api.NotarizedBlock {
 	}
 }
 
+func TestNewShardBlocksProcessor(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil accounts processor, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		sbp, err := NewShardBlocksProcessor(nil)
+		require.Nil(t, sbp)
+		require.Equal(t, errNilAlteredAccountsHandler, err)
+	})
+
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
+
+		sbp, err := NewShardBlocksProcessor(&processMocks.AlteredAccountsHandlerStub{})
+		require.Nil(t, err)
+		require.NotNil(t, sbp)
+	})
+}
+
 func TestProcessShardBlocks(t *testing.T) {
 	t.Parallel()
 
@@ -81,6 +101,26 @@ func TestProcessShardBlocks(t *testing.T) {
 		shardBlocks, err := sp.ProcessShardBlocks(apiBlocks)
 		require.Nil(t, err)
 		requireShardBlocksProcessedSuccessfully(t, apiBlocks[1:], shardBlocks, accountsProcessor)
+	})
+
+	t.Run("invalid rootHash, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiBlocks := generateShardBlocks(10)
+		apiBlocks[4].RootHash = "invalidRootHash"
+		shardBlocks, err := sp.ProcessShardBlocks(apiBlocks)
+		require.Nil(t, shardBlocks)
+		require.NotNil(t, err)
+	})
+
+	t.Run("invalid mini block hash, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		apiBlocks := generateShardBlocks(10)
+		apiBlocks[4].MiniBlockHashes[0] = "invalidMbHash"
+		shardBlocks, err := sp.ProcessShardBlocks(apiBlocks)
+		require.Nil(t, shardBlocks)
+		require.NotNil(t, err)
 	})
 
 	t.Run("empty altered accounts, should not fill it", func(t *testing.T) {
