@@ -91,7 +91,7 @@
           {"name": "Nonce", "type": "long"},
           {"name": "Round", "type": "long"},
           {"name": "Shard", "type": "int"},
-          {"name": "RootHash", "type": "hash"},
+          {"name": "RootHash", "type": ["null", {"name": "RootHash", "type" : "hash"}]},
           {"name": "MiniBlockHashes", "type": [ "null", {"type" : "array", "items": {"type": "hash"}}]},
           {"name": "StateChanges", "type": {"type": "array", "items":{
             "name": "AccountBalanceUpdate",

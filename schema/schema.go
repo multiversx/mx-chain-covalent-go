@@ -80,7 +80,6 @@ type ShardBlocks struct {
 func NewShardBlocks() *ShardBlocks {
 	return &ShardBlocks{
 		Hash:         make([]byte, 32),
-		RootHash:     make([]byte, 32),
 		StateChanges: make([]*AccountBalanceUpdate, 0),
 	}
 }
@@ -468,11 +467,15 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                             },
                             {
                                 "name": "RootHash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
                             },
                             {
                                 "name": "MiniBlockHashes",
@@ -1109,11 +1112,15 @@ var _ShardBlocks_schema, _ShardBlocks_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "RootHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
         },
         {
             "name": "MiniBlockHashes",
