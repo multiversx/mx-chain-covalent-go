@@ -7,13 +7,12 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/stretchr/testify/require"
 )
 
-func createNotarizedBlocks() []*api.NotarizedBlock {
+func createAlteredAccounts() []*outport.AlteredAccount {
 	alteredAcc1 := &outport.AlteredAccount{
 		Nonce:   4,
 		Address: "erd1a",
@@ -64,16 +63,7 @@ func createNotarizedBlocks() []*api.NotarizedBlock {
 		},
 	}
 
-	return []*api.NotarizedBlock{
-		{
-			Shard:           1,
-			AlteredAccounts: []*outport.AlteredAccount{alteredAcc1},
-		},
-		{
-			Shard:           2,
-			AlteredAccounts: []*outport.AlteredAccount{alteredAcc2, alteredAcc3},
-		},
-	}
+	return []*outport.AlteredAccount{alteredAcc1, alteredAcc2, alteredAcc3}
 }
 
 func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
@@ -134,22 +124,10 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		notarizedBlocks := createNotarizedBlocks()
+		alteredAccounts := createAlteredAccounts()
 
 		expectedAccounts := []*schema.AccountBalanceUpdate{processedAcc1, processedAcc2, processedAcc3}
-		res, err := ap.ProcessAccounts(notarizedBlocks)
-		require.Equal(t, expectedAccounts, res)
-		require.Nil(t, err)
-	})
-
-	t.Run("nil notarized block, should skip it", func(t *testing.T) {
-		t.Parallel()
-
-		notarizedBlocks := createNotarizedBlocks()
-		notarizedBlocks[0] = nil
-
-		expectedAccounts := []*schema.AccountBalanceUpdate{processedAcc2, processedAcc3}
-		res, err := ap.ProcessAccounts(notarizedBlocks)
+		res, err := ap.ProcessAccounts(alteredAccounts)
 		require.Equal(t, expectedAccounts, res)
 		require.Nil(t, err)
 	})
@@ -157,8 +135,8 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 	t.Run("nil altered account, should skip it", func(t *testing.T) {
 		t.Parallel()
 
-		notarizedBlocks := createNotarizedBlocks()
-		notarizedBlocks[1].AlteredAccounts[0] = nil
+		notarizedBlocks := createAlteredAccounts()
+		notarizedBlocks[1] = nil
 
 		expectedAccounts := []*schema.AccountBalanceUpdate{processedAcc1, processedAcc3}
 		res, err := ap.ProcessAccounts(notarizedBlocks)
@@ -169,13 +147,13 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 	t.Run("nil token, should skip it", func(t *testing.T) {
 		t.Parallel()
 
-		notarizedBlocks := createNotarizedBlocks()
-		notarizedBlocks[1].AlteredAccounts[0].Tokens[1] = nil
+		alteredAccounts := createAlteredAccounts()
+		alteredAccounts[1].Tokens[1] = nil
 
 		processedAcc2Copy := *processedAcc2
 		processedAcc2Copy.Tokens = []*schema.AccountTokenData{processedAcc2.Tokens[0]}
 		expectedAccounts := []*schema.AccountBalanceUpdate{processedAcc1, &processedAcc2Copy, processedAcc3}
-		res, err := ap.ProcessAccounts(notarizedBlocks)
+		res, err := ap.ProcessAccounts(alteredAccounts)
 		require.Equal(t, expectedAccounts, res)
 		require.Nil(t, err)
 	})
@@ -183,10 +161,10 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 	t.Run("invalid native balance, should return error", func(t *testing.T) {
 		t.Parallel()
 
-		notarizedBlocks := createNotarizedBlocks()
-		notarizedBlocks[1].AlteredAccounts[1].Balance = "invalidNativeBalance"
+		alteredAccounts := createAlteredAccounts()
+		alteredAccounts[1].Balance = "invalidNativeBalance"
 
-		res, err := ap.ProcessAccounts(notarizedBlocks)
+		res, err := ap.ProcessAccounts(alteredAccounts)
 		require.Nil(t, res)
 		require.NotNil(t, err)
 		require.True(t, strings.Contains(err.Error(), "invalid"))
@@ -196,10 +174,10 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 	t.Run("invalid token balance, should return error", func(t *testing.T) {
 		t.Parallel()
 
-		notarizedBlocks := createNotarizedBlocks()
-		notarizedBlocks[1].AlteredAccounts[0].Tokens[0].Balance = "invalidTokenBalance"
+		alteredAccounts := createAlteredAccounts()
+		alteredAccounts[1].Tokens[0].Balance = "invalidTokenBalance"
 
-		res, err := ap.ProcessAccounts(notarizedBlocks)
+		res, err := ap.ProcessAccounts(alteredAccounts)
 		require.Nil(t, res)
 		require.NotNil(t, err)
 		require.True(t, strings.Contains(err.Error(), "invalid"))

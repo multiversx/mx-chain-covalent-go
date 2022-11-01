@@ -3,7 +3,6 @@ package accounts
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/api"
 	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 )
@@ -17,26 +16,7 @@ func NewAlteredAccountsProcessor() *alteredAccountsProcessor {
 }
 
 // ProcessAccounts converts accounts data to a specific structure defined by avro schema
-func (ap *alteredAccountsProcessor) ProcessAccounts(notarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error) {
-	accounts := make([]*schema.AccountBalanceUpdate, 0, len(notarizedBlocks))
-
-	for _, block := range notarizedBlocks {
-		if block == nil {
-			continue
-		}
-
-		accountsInBlock, err := processAlteredAccounts(block.AlteredAccounts)
-		if err != nil {
-			return nil, err
-		}
-
-		accounts = append(accounts, accountsInBlock...)
-	}
-
-	return accounts, nil
-}
-
-func processAlteredAccounts(apiAlteredAccounts []*outport.AlteredAccount) ([]*schema.AccountBalanceUpdate, error) {
+func (ap *alteredAccountsProcessor) ProcessAccounts(apiAlteredAccounts []*outport.AlteredAccount) ([]*schema.AccountBalanceUpdate, error) {
 	accounts := make([]*schema.AccountBalanceUpdate, 0, len(apiAlteredAccounts))
 
 	for _, apiAlteredAccount := range apiAlteredAccounts {
