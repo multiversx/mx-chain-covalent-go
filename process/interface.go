@@ -3,6 +3,7 @@ package process
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/elrond-go-core/data/api"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
 
@@ -33,5 +34,5 @@ type EpochStartInfoHandler interface {
 
 // AlteredAccountsHandler defines what an account processor shall do
 type AlteredAccountsHandler interface {
-	ProcessAccounts(notarizedBlocks []*api.NotarizedBlock) ([]*schema.AccountBalanceUpdate, error)
+	ProcessAccounts(apiAlteredAccounts []*outport.AlteredAccount) ([]*schema.AccountBalanceUpdate, error)
 }

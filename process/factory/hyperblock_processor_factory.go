@@ -20,15 +20,17 @@ func CreateHyperBlockProcessor() (covalent.HyperBlockProcessor, error) {
 		return nil, err
 	}
 
-	shardBlocksHandler := shardBlocks.NewShardBlocksProcessor()
-	epochStartInfoHandler := epochStart.NewEpochStartInfoProcessor()
 	alteredAccountsHandler := accounts.NewAlteredAccountsProcessor()
+	shardBlocksHandler, err := shardBlocks.NewShardBlocksProcessor(alteredAccountsHandler)
+	if err != nil {
+		return nil, err
+	}
 
+	epochStartInfoHandler := epochStart.NewEpochStartInfoProcessor()
 	args := &process.HyperBlockProcessorArgs{
-		TransactionHandler:     transactionsHandler,
-		ShardBlockHandler:      shardBlocksHandler,
-		EpochStartInfoHandler:  epochStartInfoHandler,
-		AlteredAccountsHandler: alteredAccountsHandler,
+		TransactionHandler:    transactionsHandler,
+		ShardBlockHandler:     shardBlocksHandler,
+		EpochStartInfoHandler: epochStartInfoHandler,
 	}
 	return process.NewHyperBlockProcessor(args)
 }
