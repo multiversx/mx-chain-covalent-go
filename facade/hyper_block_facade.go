@@ -73,7 +73,10 @@ func buildUrlWithBlockQueryOptions(path string, options api.HyperBlockQueryOptio
 	query := u.Query()
 
 	setQueryParamIfTrue(query, options.WithLogs, api.UrlParameterWithLogs)
-	setQueryParamIfTrue(query, options.WithBalances, api.UrlParameterWithBalances)
+	setQueryParamIfTrue(query, options.NotarizedAtSource, api.UrlParameterNotarizedAtSource)
+	setQueryParamIfTrue(query, options.WithAlteredAccounts, api.UrlParameterWithAlteredAccounts)
+	setQueryParamIfNotEmpty(query, options.Tokens, api.UrlParameterTokens)
+	setQueryParamIfTrue(query, options.WithMetaData, api.UrlParameterWithMetaData)
 
 	u.RawQuery = query.Encode()
 	return u.String()
@@ -82,6 +85,12 @@ func buildUrlWithBlockQueryOptions(path string, options api.HyperBlockQueryOptio
 func setQueryParamIfTrue(query url.Values, option bool, urlParam string) {
 	if option {
 		query.Set(urlParam, "true")
+	}
+}
+
+func setQueryParamIfNotEmpty(query url.Values, option string, urlParam string) {
+	if len(option) > 0 {
+		query.Set(urlParam, option)
 	}
 }
 

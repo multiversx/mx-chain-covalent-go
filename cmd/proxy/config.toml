@@ -4,7 +4,6 @@ port = 8086
 # API path to get hyperBlock from covalent proxy
 hyperBlockPath = "/hyperBlock"
 
-
 # elrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
 elrondProxyUrl = "https://gateway.elrond.com"
 

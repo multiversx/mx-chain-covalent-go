@@ -163,28 +163,46 @@ func TestHyperBlockFacade_buildUrlWithBlockQueryOptions(t *testing.T) {
 	path := "path"
 
 	fullPath := buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
-		WithLogs:     false,
-		WithBalances: false,
+		WithLogs:            false,
+		WithAlteredAccounts: false,
 	})
 	require.Equal(t, path, fullPath)
 
 	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
-		WithLogs:     true,
-		WithBalances: false,
+		WithLogs:            true,
+		WithAlteredAccounts: false,
 	})
 	require.Equal(t, fmt.Sprintf("%s?%s=true", path, api.UrlParameterWithLogs), fullPath)
 
 	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
-		WithLogs:     false,
-		WithBalances: true,
+		WithLogs:            false,
+		WithAlteredAccounts: true,
 	})
-	require.Equal(t, fmt.Sprintf("%s?%s=true", path, api.UrlParameterWithBalances), fullPath)
+	require.Equal(t, fmt.Sprintf("%s?%s=true", path, api.UrlParameterWithAlteredAccounts), fullPath)
 
 	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
-		WithLogs:     true,
-		WithBalances: true,
+		WithLogs:            true,
+		WithAlteredAccounts: true,
 	})
-	require.Equal(t, fmt.Sprintf("%s?%s=true&%s=true", path, api.UrlParameterWithBalances, api.UrlParameterWithLogs), fullPath)
+	require.Equal(t, fmt.Sprintf("%s?%s=true&%s=true", path, api.UrlParameterWithAlteredAccounts, api.UrlParameterWithLogs), fullPath)
+
+	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
+		WithLogs:            true,
+		WithAlteredAccounts: true,
+		Tokens:              "all",
+		WithMetaData:        true,
+		NotarizedAtSource:   true,
+	})
+	require.Equal(t,
+		fmt.Sprintf("%s?%s=true&%s=all&%s=true&%s=true&%s=true",
+			path,
+			api.UrlParameterNotarizedAtSource,
+			api.UrlParameterTokens,
+			api.UrlParameterWithAlteredAccounts,
+			api.UrlParameterWithLogs,
+			api.UrlParameterWithMetaData,
+		),
+		fullPath)
 }
 
 func TestHyperBlockFacade_GetHyperBlock_ErrorCases(t *testing.T) {
