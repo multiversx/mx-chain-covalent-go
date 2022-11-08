@@ -6,6 +6,7 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 )
 
@@ -48,7 +49,7 @@ func NewHyperBlockFacade(
 }
 
 // GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options in covalent format
-func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
 	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
 
@@ -56,19 +57,19 @@ func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options api.Hype
 }
 
 // GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options in covalent format
-func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
 	fullPath := hpf.getFullPathWithOptions(blockByHashPath, options)
 
 	return hpf.getHyperBlock(fullPath)
 }
 
-func (hpf *hyperBlockFacade) getFullPathWithOptions(path string, options api.HyperBlockQueryOptions) string {
+func (hpf *hyperBlockFacade) getFullPathWithOptions(path string, options config.HyperBlockQueryOptions) string {
 	pathWithOptions := buildUrlWithBlockQueryOptions(path, options)
 	return fmt.Sprintf("%s%s", hpf.elrondProxyUrl, pathWithOptions)
 }
 
-func buildUrlWithBlockQueryOptions(path string, options api.HyperBlockQueryOptions) string {
+func buildUrlWithBlockQueryOptions(path string, options config.HyperBlockQueryOptions) string {
 	u := url.URL{Path: path}
 	query := u.Query()
 

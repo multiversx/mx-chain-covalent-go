@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
@@ -99,7 +100,7 @@ func TestHyperBlockFacade_GetHyperBlockByNonce(t *testing.T) {
 
 	facade, _ := NewHyperBlockFacade(elrondProxyUrl, encoder, elrondEndPoint, processor)
 
-	block, err := facade.GetHyperBlockByNonce(4, api.HyperBlockQueryOptions{})
+	block, err := facade.GetHyperBlockByNonce(4, config.HyperBlockQueryOptions{})
 	require.Nil(t, err)
 	require.Equal(t, &api.CovalentHyperBlockApiResponse{
 		Data:  encodedBlock,
@@ -148,7 +149,7 @@ func TestHyperBlockFacade_GetHyperBlockByHash(t *testing.T) {
 
 	facade, _ := NewHyperBlockFacade(elrondProxyUrl, encoder, elrondEndPoint, processor)
 
-	block, err := facade.GetHyperBlockByHash(requestedHash, api.HyperBlockQueryOptions{})
+	block, err := facade.GetHyperBlockByHash(requestedHash, config.HyperBlockQueryOptions{})
 	require.Nil(t, err)
 	require.Equal(t, &api.CovalentHyperBlockApiResponse{
 		Data:  encodedBlock,
@@ -162,31 +163,31 @@ func TestHyperBlockFacade_buildUrlWithBlockQueryOptions(t *testing.T) {
 
 	path := "path"
 
-	fullPath := buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
+	fullPath := buildUrlWithBlockQueryOptions(path, config.HyperBlockQueryOptions{
 		WithLogs:            false,
 		WithAlteredAccounts: false,
 	})
 	require.Equal(t, path, fullPath)
 
-	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
+	fullPath = buildUrlWithBlockQueryOptions(path, config.HyperBlockQueryOptions{
 		WithLogs:            true,
 		WithAlteredAccounts: false,
 	})
 	require.Equal(t, fmt.Sprintf("%s?%s=true", path, api.UrlParameterWithLogs), fullPath)
 
-	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
+	fullPath = buildUrlWithBlockQueryOptions(path, config.HyperBlockQueryOptions{
 		WithLogs:            false,
 		WithAlteredAccounts: true,
 	})
 	require.Equal(t, fmt.Sprintf("%s?%s=true", path, api.UrlParameterWithAlteredAccounts), fullPath)
 
-	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
+	fullPath = buildUrlWithBlockQueryOptions(path, config.HyperBlockQueryOptions{
 		WithLogs:            true,
 		WithAlteredAccounts: true,
 	})
 	require.Equal(t, fmt.Sprintf("%s?%s=true&%s=true", path, api.UrlParameterWithAlteredAccounts, api.UrlParameterWithLogs), fullPath)
 
-	fullPath = buildUrlWithBlockQueryOptions(path, api.HyperBlockQueryOptions{
+	fullPath = buildUrlWithBlockQueryOptions(path, config.HyperBlockQueryOptions{
 		WithLogs:            true,
 		WithAlteredAccounts: true,
 		Tokens:              "all",

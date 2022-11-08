@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock/apiMocks"
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/gin-gonic/gin"
@@ -59,7 +60,7 @@ func TestNewHyperBlockProxy(t *testing.T) {
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		proxy, err := api.NewHyperBlockProxy(&apiMocks.HyperBlockFacadeStub{})
+		proxy, err := api.NewHyperBlockProxy(&apiMocks.HyperBlockFacadeStub{}, config.HyperBlockQueryOptions{})
 		require.Nil(t, err)
 		require.NotNil(t, proxy)
 	})
@@ -67,7 +68,7 @@ func TestNewHyperBlockProxy(t *testing.T) {
 	t.Run("nil facade, should return error", func(t *testing.T) {
 		t.Parallel()
 
-		proxy, err := api.NewHyperBlockProxy(nil)
+		proxy, err := api.NewHyperBlockProxy(nil, config.HyperBlockQueryOptions{})
 		require.Nil(t, proxy)
 		require.Equal(t, api.ErrNilHyperBlockFacade, err)
 	})
@@ -103,12 +104,12 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 			Code:  "success",
 		}
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlockByNonceCalled: func(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+			GetHyperBlockByNonceCalled: func(nonce uint64, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 				require.Equal(t, requestedNonce, nonce)
 				return blockResponse, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade)
+		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
 		ws := startProxyServer(proxy)
 		requestPath := fmt.Sprintf("%s/by-nonce/%d", hyperBlockPath, requestedNonce)
 		apiResp := sendRequest(t, ws, requestPath, http.StatusOK)
@@ -120,12 +121,12 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 
 		getHyperBlockFromFacadeCalled := false
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlockByNonceCalled: func(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+			GetHyperBlockByNonceCalled: func(nonce uint64, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 				getHyperBlockFromFacadeCalled = true
 				return nil, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade)
+		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-nonce/abc", hyperBlockPath)
@@ -141,11 +142,11 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 
 		errFacade := errors.New("error getting hyper block from facade")
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlockByNonceCalled: func(nonce uint64, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+			GetHyperBlockByNonceCalled: func(nonce uint64, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 				return nil, errFacade
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade)
+		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-nonce/4", hyperBlockPath)
@@ -171,12 +172,12 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 			Code:  "success",
 		}
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlockByHashCalled: func(hash string, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+			GetHyperBlockByHashCalled: func(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 				require.Equal(t, requestedHash, hash)
 				return blockResponse, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade)
+		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
 		ws := startProxyServer(proxy)
 		requestPath := fmt.Sprintf("%s/by-hash/%s", hyperBlockPath, requestedHash)
 		apiResp := sendRequest(t, ws, requestPath, http.StatusOK)
@@ -188,12 +189,12 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 
 		getHyperBlockFromFacadeCalled := false
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlockByHashCalled: func(hash string, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+			GetHyperBlockByHashCalled: func(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 				getHyperBlockFromFacadeCalled = true
 				return nil, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade)
+		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-hash/zx", hyperBlockPath)
@@ -209,11 +210,11 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 
 		errFacade := errors.New("error getting hyper block from facade")
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlockByHashCalled: func(hash string, options api.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+			GetHyperBlockByHashCalled: func(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 				return nil, errFacade
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade)
+		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-hash/ff", hyperBlockPath)

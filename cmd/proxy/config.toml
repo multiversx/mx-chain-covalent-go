@@ -4,6 +4,22 @@ port = 8086
 # API path to get hyperBlock from covalent proxy
 hyperBlockPath = "/hyperBlock"
 
+[hyperBlockQueryOptions]
+    # hyper block query parameter for Elrond proxy to fetch logs
+    withLogs = true
+
+    # hyper block query parameter for Elrond proxy to fetch altered accounts
+    withAlteredAccounts = true
+
+    # hyper block query parameter for Elrond proxy to fetch hyper blocks notarized at source
+    notarizedAtSource = true
+
+    # hyper block query parameter for Elrond proxy to fetch all tokens in altered accounts
+    tokens = "all"
+
+    # hyper block query parameter for Elrond proxy to fetch all tokens meta data in altered accounts
+    withMetaData = true
+
 # elrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
 elrondProxyUrl = "https://gateway.elrond.com"
 
