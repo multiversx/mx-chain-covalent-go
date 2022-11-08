@@ -147,7 +147,7 @@ func NewMetaData() *MetaData {
 	return &MetaData{
 		Name:       []byte{},
 		Creator:    []byte{},
-		Hash:       make([]byte, 32),
+		Hash:       []byte{},
 		URIs:       make([][]byte, 0),
 		Attributes: []byte{},
 	}
@@ -570,11 +570,7 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                                                                                 },
                                                                                 {
                                                                                     "name": "Hash",
-                                                                                    "type": {
-                                                                                        "type": "fixed",
-                                                                                        "size": 32,
-                                                                                        "name": "hash"
-                                                                                    }
+                                                                                    "type": "bytes"
                                                                                 },
                                                                                 {
                                                                                     "name": "URIs",
@@ -1215,11 +1211,7 @@ var _ShardBlocks_schema, _ShardBlocks_schema_err = avro.ParseSchema(`{
                                                             },
                                                             {
                                                                 "name": "Hash",
-                                                                "type": {
-                                                                    "type": "fixed",
-                                                                    "size": 32,
-                                                                    "name": "hash"
-                                                                }
+                                                                "type": "bytes"
                                                             },
                                                             {
                                                                 "name": "URIs",
@@ -1323,11 +1315,7 @@ var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseS
                                             },
                                             {
                                                 "name": "Hash",
-                                                "type": {
-                                                    "type": "fixed",
-                                                    "size": 32,
-                                                    "name": "hash"
-                                                }
+                                                "type": "bytes"
                                             },
                                             {
                                                 "name": "URIs",
@@ -1400,11 +1388,7 @@ var _AccountTokenData_schema, _AccountTokenData_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "Hash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
+                            "type": "bytes"
                         },
                         {
                             "name": "URIs",
@@ -1447,11 +1431,7 @@ var _MetaData_schema, _MetaData_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Hash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "type": "bytes"
         },
         {
             "name": "URIs",

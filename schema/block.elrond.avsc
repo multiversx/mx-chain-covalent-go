@@ -130,7 +130,7 @@
                         {"name": "Name", "type": "bytes"},
                         {"name": "Creator", "type": "bytes"},
                         {"name": "Royalties", "type": "int"},
-                        {"name": "Hash", "type": "hash"},
+                        {"name": "Hash", "type": "bytes"},
                         {"name": "URIs", "type": {"type": "array", "items": "bytes"}},
                         {"name": "Attributes", "type": "bytes"}
                       ]
