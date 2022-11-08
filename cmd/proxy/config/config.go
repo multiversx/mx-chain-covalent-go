@@ -20,8 +20,8 @@ type HyperBlockQueryOptions struct {
 	WithLogs            bool   `toml:"withLogs"`
 	WithAlteredAccounts bool   `toml:"withLogs"`
 	NotarizedAtSource   bool   `toml:"notarizedAtSource"`
-	Tokens              string `toml:"tokens"`
 	WithMetaData        bool   `toml:"withMetaData"`
+	Tokens              string `toml:"tokens"`
 }
 
 // LoadConfig will load the Config from the provided file

@@ -135,7 +135,7 @@ func (o *AccountTokenData) Schema() avro.Schema {
 
 type MetaData struct {
 	Nonce      int64
-	Name       []byte
+	Name       string
 	Creator    []byte
 	Royalties  int32
 	Hash       []byte
@@ -145,8 +145,7 @@ type MetaData struct {
 
 func NewMetaData() *MetaData {
 	return &MetaData{
-		Name:       []byte{},
-		Creator:    []byte{},
+		Creator:    make([]byte, 62),
 		Hash:       []byte{},
 		URIs:       make([][]byte, 0),
 		Attributes: []byte{},
@@ -558,11 +557,15 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                                                                                 },
                                                                                 {
                                                                                     "name": "Name",
-                                                                                    "type": "bytes"
+                                                                                    "type": "string"
                                                                                 },
                                                                                 {
                                                                                     "name": "Creator",
-                                                                                    "type": "bytes"
+                                                                                    "type": {
+                                                                                        "type": "fixed",
+                                                                                        "size": 62,
+                                                                                        "name": "address"
+                                                                                    }
                                                                                 },
                                                                                 {
                                                                                     "name": "Royalties",
@@ -1199,11 +1202,15 @@ var _ShardBlocks_schema, _ShardBlocks_schema_err = avro.ParseSchema(`{
                                                             },
                                                             {
                                                                 "name": "Name",
-                                                                "type": "bytes"
+                                                                "type": "string"
                                                             },
                                                             {
                                                                 "name": "Creator",
-                                                                "type": "bytes"
+                                                                "type": {
+                                                                    "type": "fixed",
+                                                                    "size": 62,
+                                                                    "name": "address"
+                                                                }
                                                             },
                                                             {
                                                                 "name": "Royalties",
@@ -1303,11 +1310,15 @@ var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseS
                                             },
                                             {
                                                 "name": "Name",
-                                                "type": "bytes"
+                                                "type": "string"
                                             },
                                             {
                                                 "name": "Creator",
-                                                "type": "bytes"
+                                                "type": {
+                                                    "type": "fixed",
+                                                    "size": 62,
+                                                    "name": "address"
+                                                }
                                             },
                                             {
                                                 "name": "Royalties",
@@ -1376,11 +1387,15 @@ var _AccountTokenData_schema, _AccountTokenData_schema_err = avro.ParseSchema(`{
                         },
                         {
                             "name": "Name",
-                            "type": "bytes"
+                            "type": "string"
                         },
                         {
                             "name": "Creator",
-                            "type": "bytes"
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
                         },
                         {
                             "name": "Royalties",
@@ -1419,11 +1434,15 @@ var _MetaData_schema, _MetaData_schema_err = avro.ParseSchema(`{
         },
         {
             "name": "Name",
-            "type": "bytes"
+            "type": "string"
         },
         {
             "name": "Creator",
-            "type": "bytes"
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
         },
         {
             "name": "Royalties",
