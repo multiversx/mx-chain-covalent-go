@@ -4,6 +4,13 @@ port = 8086
 # API path to get hyperBlock from covalent proxy
 hyperBlockPath = "/hyperBlock"
 
+# elrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
+elrondProxyUrl = "https://gateway.elrond.com"
+
+# requestTimeoutSec represents the maximum number of seconds a request can last until throwing an error
+# A Timeout of zero means no timeout.
+requestTimeOutSec = 80
+
 [hyperBlockQueryOptions]
     # hyper block query parameter for Elrond proxy to fetch logs
     withLogs = true
@@ -19,10 +26,3 @@ hyperBlockPath = "/hyperBlock"
 
     # hyper block query parameter for Elrond proxy to fetch all tokens meta data in altered accounts
     withMetaData = true
-
-# elrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
-elrondProxyUrl = "https://gateway.elrond.com"
-
-# requestTimeoutSec represents the maximum number of seconds a request can last until throwing an error
-# A Timeout of zero means no timeout.
-requestTimeOutSec = 80
