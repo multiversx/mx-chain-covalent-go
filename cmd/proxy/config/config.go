@@ -15,6 +15,7 @@ type Config struct {
 	HyperBlockQueryOptions HyperBlockQueryOptions `toml:"hyperBlockQueryOptions"`
 }
 
+// HyperBlockQueryOptions holds the hyper block query params options
 type HyperBlockQueryOptions struct {
 	WithLogs            bool   `toml:"withLogs"`
 	WithAlteredAccounts bool   `toml:"withLogs"`
