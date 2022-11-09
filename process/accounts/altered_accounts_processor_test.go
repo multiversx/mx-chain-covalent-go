@@ -7,7 +7,6 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 	"github.com/stretchr/testify/require"
 )
@@ -50,10 +49,10 @@ func createAlteredAccounts() []*outport.AlteredAccount {
 				Identifier: "identifier3",
 				Balance:    "555",
 				Properties: "properties3",
-				MetaData: &esdt.MetaData{
+				MetaData: &outport.TokenMetaData{
 					Nonce:      6,
-					Name:       []byte("name"),
-					Creator:    []byte("creator"),
+					Name:       "name",
+					Creator:    "creator",
 					Royalties:  666,
 					Hash:       []byte("hash"),
 					URIs:       [][]byte{[]byte("uri1"), []byte("uri2")},
@@ -110,7 +109,7 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 				Properties: "properties3",
 				MetaData: &schema.MetaData{
 					Nonce:      6,
-					Name:       []byte("name"),
+					Name:       "name",
 					Creator:    []byte("creator"),
 					Royalties:  666,
 					Hash:       []byte("hash"),

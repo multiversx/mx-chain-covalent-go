@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,8 +27,8 @@ type ElrondHyperBlockEndpointHandler interface {
 
 // HyperBlockFacadeHandler defines the actions needed for fetching of hyperBlocks from Elrond proxy in covalent format
 type HyperBlockFacadeHandler interface {
-	GetHyperBlockByNonce(nonce uint64, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
-	GetHyperBlockByHash(hash string, options HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
+	GetHyperBlockByNonce(nonce uint64, options config.HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
+	GetHyperBlockByHash(hash string, options config.HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
 }
 
 // HyperBlockProxy is the covalent proxy. It should be able to fetch hyper blocks from

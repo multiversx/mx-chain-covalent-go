@@ -3,7 +3,6 @@ package accounts
 import (
 	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/esdt"
 	"github.com/ElrondNetwork/elrond-go-core/data/outport"
 )
 
@@ -72,7 +71,7 @@ func processAccountsTokenData(apiTokens []*outport.AccountTokenData) ([]*schema.
 	return tokens, nil
 }
 
-func processMetaData(apiMetaData *esdt.MetaData) *schema.MetaData {
+func processMetaData(apiMetaData *outport.TokenMetaData) *schema.MetaData {
 	if apiMetaData == nil {
 		return nil
 	}
@@ -80,7 +79,7 @@ func processMetaData(apiMetaData *esdt.MetaData) *schema.MetaData {
 	return &schema.MetaData{
 		Nonce:      int64(apiMetaData.Nonce),
 		Name:       apiMetaData.Name,
-		Creator:    apiMetaData.Creator,
+		Creator:    []byte(apiMetaData.Creator),
 		Royalties:  int32(apiMetaData.Royalties),
 		Hash:       apiMetaData.Hash,
 		URIs:       apiMetaData.URIs,

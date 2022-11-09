@@ -5,23 +5,29 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/gin-gonic/gin"
 )
 
 type hyperBlockProxy struct {
 	hyperBlockFacade HyperBlockFacadeHandler
+	options          config.HyperBlockQueryOptions
 }
 
 // NewHyperBlockProxy will create a covalent proxy, able to fetch hyper block requests
 // from Elrond and return them in covalent format
-func NewHyperBlockProxy(hyperBlockFacade HyperBlockFacadeHandler) (*hyperBlockProxy, error) {
+func NewHyperBlockProxy(
+	hyperBlockFacade HyperBlockFacadeHandler,
+	hyperBlockQueryOptions config.HyperBlockQueryOptions,
+) (*hyperBlockProxy, error) {
 	if hyperBlockFacade == nil {
 		return nil, errNilHyperBlockFacade
 	}
 
 	return &hyperBlockProxy{
 		hyperBlockFacade: hyperBlockFacade,
+		options:          hyperBlockQueryOptions,
 	}, nil
 }
 
@@ -33,7 +39,7 @@ func (hbp *hyperBlockProxy) GetHyperBlockByNonce(c *gin.Context) {
 		return
 	}
 
-	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlockByNonce(nonce, options)
+	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlockByNonce(nonce, hbp.options)
 	if err != nil {
 		respondWithInternalError(c, err)
 		return
@@ -59,7 +65,7 @@ func (hbp *hyperBlockProxy) GetHyperBlockByHash(c *gin.Context) {
 		return
 	}
 
-	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlockByHash(hash, options)
+	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlockByHash(hash, hbp.options)
 	if err != nil {
 		respondWithInternalError(c, err)
 		return

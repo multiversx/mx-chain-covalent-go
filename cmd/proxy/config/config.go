@@ -8,10 +8,20 @@ import (
 
 // Config holds the config for covalent proxy
 type Config struct {
-	Port              uint32 `toml:"port"`
-	HyperBlockPath    string `toml:"hyperBlockPath"`
-	ElrondProxyUrl    string `toml:"elrondProxyUrl"`
-	RequestTimeOutSec uint64 `toml:"requestTimeOutSec"`
+	Port                   uint32                 `toml:"port"`
+	HyperBlockPath         string                 `toml:"hyperBlockPath"`
+	ElrondProxyUrl         string                 `toml:"elrondProxyUrl"`
+	RequestTimeOutSec      uint64                 `toml:"requestTimeOutSec"`
+	HyperBlockQueryOptions HyperBlockQueryOptions `toml:"hyperBlockQueryOptions"`
+}
+
+// HyperBlockQueryOptions holds the hyper block query params options
+type HyperBlockQueryOptions struct {
+	WithLogs            bool   `toml:"withLogs"`
+	WithAlteredAccounts bool   `toml:"withLogs"`
+	NotarizedAtSource   bool   `toml:"notarizedAtSource"`
+	WithMetaData        bool   `toml:"withMetaData"`
+	Tokens              string `toml:"tokens"`
 }
 
 // LoadConfig will load the Config from the provided file

@@ -127,10 +127,10 @@
                       "type": "record",
                       "fields": [
                         {"name": "Nonce", "type": "long"},
-                        {"name": "Name", "type": "bytes"},
-                        {"name": "Creator", "type": "bytes"},
+                        {"name": "Name", "type": "string"},
+                        {"name": "Creator", "type": "address"},
                         {"name": "Royalties", "type": "int"},
-                        {"name": "Hash", "type": "hash"},
+                        {"name": "Hash", "type": "bytes"},
                         {"name": "URIs", "type": {"type": "array", "items": "bytes"}},
                         {"name": "Attributes", "type": "bytes"}
                       ]
