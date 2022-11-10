@@ -38,12 +38,12 @@ for historical balances (--operation-mode historical-balances when starting the 
 
 ## Endpoints
 
-- `/hyperblock/by-nonce/:nonce` (GET) --> returns a hyperBlock by nonce, with transactions included
-- `/hyperblock/by-hash/:hash` (GET) --> returns a hyperBlock by hash, with transactions included
+- `/hyperblock/by-nonce/:nonce` (GET) --> returns a hyperblock by nonce, with transactions included
+- `/hyperblock/by-hash/:hash` (GET) --> returns a hyperblock by hash, with transactions included
 
 ## Avro schema update
 
-In case you want to modify the existing avro schema, after you finish your changes, you need to re-generate the
+In case you want to modify the existing avro schema, after finishing your changes, you need to re-generate the
 corresponding code, by:
 
 - Running `go generate` from `schema/codegen.go`
