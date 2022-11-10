@@ -1,6 +1,6 @@
 # covalent-indexer-go
 
-Covalent indexer acts as a second proxy layer over Elrond's Proxy by providing avro encoded hyper blocks.
+Covalent indexer acts as an extra proxy layer over Elrond's Proxy by providing avro encoded hyper blocks.
 
 ## How it works
 
@@ -29,7 +29,7 @@ Data field contains a byte array corresponding to the encoded avro schema.
 In `cmd/proxy/config.toml` one can find:
 
 1. Elrond & Covalent proxy configuration(e.g. `port`, `elrondProxyUrl`, etc.)
-2. `hyperBlockQueryOptions` used to format hyperBlock query for Elrond proxy. E.g.: following Covalent
+2. `hyperBlockQueryOptions` used to format hyperblock queries for Elrond proxy. E.g.: following Covalent
    request: `localhost:port/hyperblock/by-nonce/4`, having `withAlteredAccounts = true` and `tokens = all` will trigger
    the following request : `elrondProxy:port/hyperblock/by-nonce/4?withAlteredAccounts=true&tokens=all`
 
