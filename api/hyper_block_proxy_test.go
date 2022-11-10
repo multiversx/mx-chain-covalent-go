@@ -22,7 +22,7 @@ func init() {
 	gin.SetMode(gin.TestMode)
 }
 
-const hyperBlockPath = "/hyperBlock"
+const hyperBlockPath = "/hyperblock"
 
 func startProxyServer(proxy api.HyperBlockProxy) *gin.Engine {
 	ws := gin.New()
