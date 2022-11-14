@@ -12,7 +12,6 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
-	"github.com/ElrondNetwork/elrond-go/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -181,7 +180,7 @@ func TestTransactionProcessor_ProcessTransactions(t *testing.T) {
 
 	t.Run("should work with sender = metachain", func(t *testing.T) {
 		apiTxs := generateApiTxs(1)
-		apiTxs[0].Sender = common.MetachainShardName
+		apiTxs[0].Sender = utility.MetachainShardName
 		ret, err := txp.ProcessTransactions(apiTxs)
 		require.Nil(t, err)
 		requireTransactionsProcessedSuccessfully(t, apiTxs, ret, logHandler, receiptHandler)

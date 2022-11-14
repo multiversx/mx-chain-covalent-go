@@ -11,7 +11,6 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock/apiMocks"
-	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/elodina/go-avro"
 	"github.com/stretchr/testify/require"
 )
@@ -71,7 +70,7 @@ func TestHyperBlockFacade_GetHyperBlockByNonce(t *testing.T) {
 			Hash: "hash",
 		}},
 		Error: "",
-		Code:  shared.ReturnCodeSuccess,
+		Code:  api.ReturnCodeSuccess,
 	}
 	elrondEndPoint := &apiMocks.ElrondHyperBlockEndPointStub{
 		GetHyperBlockCalled: func(path string) (*api.ElrondHyperBlockApiResponse, error) {
@@ -105,7 +104,7 @@ func TestHyperBlockFacade_GetHyperBlockByNonce(t *testing.T) {
 	require.Equal(t, &api.CovalentHyperBlockApiResponse{
 		Data:  encodedBlock,
 		Error: "",
-		Code:  shared.ReturnCodeSuccess,
+		Code:  api.ReturnCodeSuccess,
 	}, block)
 }
 
@@ -120,7 +119,7 @@ func TestHyperBlockFacade_GetHyperBlockByHash(t *testing.T) {
 			Hash: "hash",
 		}},
 		Error: "",
-		Code:  shared.ReturnCodeSuccess,
+		Code:  api.ReturnCodeSuccess,
 	}
 	elrondEndPoint := &apiMocks.ElrondHyperBlockEndPointStub{
 		GetHyperBlockCalled: func(path string) (*api.ElrondHyperBlockApiResponse, error) {
@@ -154,7 +153,7 @@ func TestHyperBlockFacade_GetHyperBlockByHash(t *testing.T) {
 	require.Equal(t, &api.CovalentHyperBlockApiResponse{
 		Data:  encodedBlock,
 		Error: "",
-		Code:  shared.ReturnCodeSuccess,
+		Code:  api.ReturnCodeSuccess,
 	}, block)
 }
 

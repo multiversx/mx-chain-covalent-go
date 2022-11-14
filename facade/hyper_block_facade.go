@@ -7,7 +7,6 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	"github.com/ElrondNetwork/elrond-go/api/shared"
 )
 
 const hyperBlockPathByNonce = "/hyperblock/by-nonce"
@@ -114,6 +113,6 @@ func (hpf *hyperBlockFacade) getHyperBlock(path string) (*api.CovalentHyperBlock
 	return &api.CovalentHyperBlockApiResponse{
 		Data:  hyperBlockSchemaAvroBytes,
 		Error: "",
-		Code:  shared.ReturnCodeSuccess,
+		Code:  api.ReturnCodeSuccess,
 	}, nil
 }
