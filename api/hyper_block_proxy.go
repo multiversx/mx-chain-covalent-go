@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/gin-gonic/gin"
 )
 
@@ -85,7 +84,14 @@ func getHashFromRequest(c *gin.Context) (string, error) {
 }
 
 func respondWithInternalError(c *gin.Context, err error) {
-	shared.RespondWith(c, http.StatusInternalServerError, nil, err.Error(), shared.ReturnCodeInternalError)
+	c.JSON(
+		http.StatusInternalServerError,
+		CovalentHyperBlockApiResponse{
+			Data:  nil,
+			Error: err.Error(),
+			Code:  ReturnCodeInternalError,
+		},
+	)
 }
 
 func respondWithBadRequest(c *gin.Context, err error) {
@@ -94,7 +100,7 @@ func respondWithBadRequest(c *gin.Context, err error) {
 		CovalentHyperBlockApiResponse{
 			Data:  nil,
 			Error: err.Error(),
-			Code:  shared.ReturnCodeRequestError,
+			Code:  ReturnCodeRequestError,
 		},
 	)
 }

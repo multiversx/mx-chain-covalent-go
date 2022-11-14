@@ -13,7 +13,6 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock/apiMocks"
-	"github.com/ElrondNetwork/elrond-go/api/shared"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
@@ -133,7 +132,7 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 		apiResp := sendRequest(t, ws, requestPath, http.StatusBadRequest)
 		require.False(t, getHyperBlockFromFacadeCalled)
 		require.Empty(t, apiResp.Data)
-		require.Equal(t, apiResp.Code, shared.ReturnCodeRequestError)
+		require.Equal(t, apiResp.Code, api.ReturnCodeRequestError)
 		require.True(t, strings.Contains(apiResp.Error, "abc"))
 	})
 
@@ -154,7 +153,7 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 		require.Equal(t, &api.CovalentHyperBlockApiResponse{
 			Data:  nil,
 			Error: errFacade.Error(),
-			Code:  shared.ReturnCodeInternalError,
+			Code:  api.ReturnCodeInternalError,
 		}, apiResp)
 	})
 }
@@ -201,7 +200,7 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 		apiResp := sendRequest(t, ws, requestPath, http.StatusBadRequest)
 		require.False(t, getHyperBlockFromFacadeCalled)
 		require.Empty(t, apiResp.Data)
-		require.Equal(t, apiResp.Code, shared.ReturnCodeRequestError)
+		require.Equal(t, apiResp.Code, api.ReturnCodeRequestError)
 		require.Equal(t, apiResp.Error, api.ErrInvalidBlockHash.Error())
 	})
 
@@ -222,7 +221,7 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 		require.Equal(t, &api.CovalentHyperBlockApiResponse{
 			Data:  nil,
 			Error: errFacade.Error(),
-			Code:  shared.ReturnCodeInternalError,
+			Code:  api.ReturnCodeInternalError,
 		}, apiResp)
 	})
 }

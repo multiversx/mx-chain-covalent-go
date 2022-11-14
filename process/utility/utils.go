@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go/common"
 )
 
 // UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
@@ -83,7 +82,7 @@ func GetBigIntBytesSliceFromStringSlice(in []string) ([][]byte, error) {
 // GetAddressOrMetachainAddr checks if the corresponding address is metachain. This func should only be used for sender addresses.
 // If so, it returns a 62 byte array address(by padding with zeros), otherwise converts the address string to byte slice.
 func GetAddressOrMetachainAddr(address string) []byte {
-	if address != common.MetachainShardName {
+	if address != MetachainShardName {
 		return []byte(address)
 	}
 
