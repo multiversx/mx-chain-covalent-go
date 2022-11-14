@@ -4,7 +4,7 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
 )
 
-// ReturnCode defines the type defines to identify return codes
+// ReturnCode identifies api return codes
 type ReturnCode string
 
 // ReturnCodeSuccess defines a successful request
