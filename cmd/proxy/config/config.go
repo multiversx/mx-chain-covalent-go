@@ -20,7 +20,6 @@ type HyperBlockQueryOptions struct {
 	WithLogs            bool   `toml:"withLogs"`
 	WithAlteredAccounts bool   `toml:"withLogs"`
 	NotarizedAtSource   bool   `toml:"notarizedAtSource"`
-	WithMetaData        bool   `toml:"withMetaData"`
 	Tokens              string `toml:"tokens"`
 }
 

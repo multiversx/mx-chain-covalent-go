@@ -62,29 +62,12 @@ func processAccountsTokenData(apiTokens []*outport.AccountTokenData) ([]*schema.
 			Identifier: apiToken.Identifier,
 			Balance:    balance,
 			Properties: apiToken.Properties,
-			MetaData:   processMetaData(apiToken.MetaData),
 		}
 
 		tokens = append(tokens, token)
 	}
 
 	return tokens, nil
-}
-
-func processMetaData(apiMetaData *outport.TokenMetaData) *schema.MetaData {
-	if apiMetaData == nil {
-		return nil
-	}
-
-	return &schema.MetaData{
-		Nonce:      int64(apiMetaData.Nonce),
-		Name:       apiMetaData.Name,
-		Creator:    []byte(apiMetaData.Creator),
-		Royalties:  int32(apiMetaData.Royalties),
-		Hash:       apiMetaData.Hash,
-		URIs:       apiMetaData.URIs,
-		Attributes: apiMetaData.Attributes,
-	}
 }
 
 func tokensOrNil(accounts []*schema.AccountTokenData) []*schema.AccountTokenData {

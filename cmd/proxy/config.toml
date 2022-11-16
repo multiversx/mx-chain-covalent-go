@@ -23,6 +23,3 @@ requestTimeOutSec = 80
 
     # hyper block query parameter for Elrond proxy to fetch all tokens in altered accounts
     tokens = "all"
-
-    # hyper block query parameter for Elrond proxy to fetch all tokens meta data in altered accounts
-    withMetaData = true

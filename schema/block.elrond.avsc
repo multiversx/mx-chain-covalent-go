@@ -120,21 +120,7 @@
                       "precision": 1000,
                       "scale": 0
                     }},
-                    {"name" : "Properties", "type" :  "string"},
-
-                    {"name": "MetaData", "type": ["null", {
-                      "name": "MetaData",
-                      "type": "record",
-                      "fields": [
-                        {"name": "Nonce", "type": "long"},
-                        {"name": "Name", "type": "string"},
-                        {"name": "Creator", "type": "address"},
-                        {"name": "Royalties", "type": "int"},
-                        {"name": "Hash", "type": "bytes"},
-                        {"name": "URIs", "type": {"type": "array", "items": "bytes"}},
-                        {"name": "Attributes", "type": "bytes"}
-                      ]
-                    }]}
+                    {"name" : "Properties", "type" :  "string"}
                   ]
                 }}
               ]}}
