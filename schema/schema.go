@@ -117,7 +117,6 @@ type AccountTokenData struct {
 	Identifier string
 	Balance    []byte
 	Properties string
-	MetaData   *MetaData
 }
 
 func NewAccountTokenData() *AccountTokenData {
@@ -131,32 +130,6 @@ func (o *AccountTokenData) Schema() avro.Schema {
 		panic(_AccountTokenData_schema_err)
 	}
 	return _AccountTokenData_schema
-}
-
-type MetaData struct {
-	Nonce      int64
-	Name       string
-	Creator    []byte
-	Royalties  int32
-	Hash       []byte
-	URIs       [][]byte
-	Attributes []byte
-}
-
-func NewMetaData() *MetaData {
-	return &MetaData{
-		Creator:    make([]byte, 62),
-		Hash:       []byte{},
-		URIs:       make([][]byte, 0),
-		Attributes: []byte{},
-	}
-}
-
-func (o *MetaData) Schema() avro.Schema {
-	if _MetaData_schema_err != nil {
-		panic(_MetaData_schema_err)
-	}
-	return _MetaData_schema
 }
 
 type Transaction struct {
@@ -541,54 +514,6 @@ var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
                                                                 {
                                                                     "name": "Properties",
                                                                     "type": "string"
-                                                                },
-                                                                {
-                                                                    "name": "MetaData",
-                                                                    "default": null,
-                                                                    "type": [
-                                                                        "null",
-                                                                        {
-                                                                            "type": "record",
-                                                                            "name": "MetaData",
-                                                                            "fields": [
-                                                                                {
-                                                                                    "name": "Nonce",
-                                                                                    "type": "long"
-                                                                                },
-                                                                                {
-                                                                                    "name": "Name",
-                                                                                    "type": "string"
-                                                                                },
-                                                                                {
-                                                                                    "name": "Creator",
-                                                                                    "type": {
-                                                                                        "type": "fixed",
-                                                                                        "size": 62,
-                                                                                        "name": "address"
-                                                                                    }
-                                                                                },
-                                                                                {
-                                                                                    "name": "Royalties",
-                                                                                    "type": "int"
-                                                                                },
-                                                                                {
-                                                                                    "name": "Hash",
-                                                                                    "type": "bytes"
-                                                                                },
-                                                                                {
-                                                                                    "name": "URIs",
-                                                                                    "type": {
-                                                                                        "type": "array",
-                                                                                        "items": "bytes"
-                                                                                    }
-                                                                                },
-                                                                                {
-                                                                                    "name": "Attributes",
-                                                                                    "type": "bytes"
-                                                                                }
-                                                                            ]
-                                                                        }
-                                                                    ]
                                                                 }
                                                             ]
                                                         }
@@ -1186,54 +1111,6 @@ var _ShardBlocks_schema, _ShardBlocks_schema_err = avro.ParseSchema(`{
                                             {
                                                 "name": "Properties",
                                                 "type": "string"
-                                            },
-                                            {
-                                                "name": "MetaData",
-                                                "default": null,
-                                                "type": [
-                                                    "null",
-                                                    {
-                                                        "type": "record",
-                                                        "name": "MetaData",
-                                                        "fields": [
-                                                            {
-                                                                "name": "Nonce",
-                                                                "type": "long"
-                                                            },
-                                                            {
-                                                                "name": "Name",
-                                                                "type": "string"
-                                                            },
-                                                            {
-                                                                "name": "Creator",
-                                                                "type": {
-                                                                    "type": "fixed",
-                                                                    "size": 62,
-                                                                    "name": "address"
-                                                                }
-                                                            },
-                                                            {
-                                                                "name": "Royalties",
-                                                                "type": "int"
-                                                            },
-                                                            {
-                                                                "name": "Hash",
-                                                                "type": "bytes"
-                                                            },
-                                                            {
-                                                                "name": "URIs",
-                                                                "type": {
-                                                                    "type": "array",
-                                                                    "items": "bytes"
-                                                                }
-                                                            },
-                                                            {
-                                                                "name": "Attributes",
-                                                                "type": "bytes"
-                                                            }
-                                                        ]
-                                                    }
-                                                ]
                                             }
                                         ]
                                     }
@@ -1294,54 +1171,6 @@ var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseS
                             {
                                 "name": "Properties",
                                 "type": "string"
-                            },
-                            {
-                                "name": "MetaData",
-                                "default": null,
-                                "type": [
-                                    "null",
-                                    {
-                                        "type": "record",
-                                        "name": "MetaData",
-                                        "fields": [
-                                            {
-                                                "name": "Nonce",
-                                                "type": "long"
-                                            },
-                                            {
-                                                "name": "Name",
-                                                "type": "string"
-                                            },
-                                            {
-                                                "name": "Creator",
-                                                "type": {
-                                                    "type": "fixed",
-                                                    "size": 62,
-                                                    "name": "address"
-                                                }
-                                            },
-                                            {
-                                                "name": "Royalties",
-                                                "type": "int"
-                                            },
-                                            {
-                                                "name": "Hash",
-                                                "type": "bytes"
-                                            },
-                                            {
-                                                "name": "URIs",
-                                                "type": {
-                                                    "type": "array",
-                                                    "items": "bytes"
-                                                }
-                                            },
-                                            {
-                                                "name": "Attributes",
-                                                "type": "bytes"
-                                            }
-                                        ]
-                                    }
-                                ]
                             }
                         ]
                     }
@@ -1371,97 +1200,6 @@ var _AccountTokenData_schema, _AccountTokenData_schema_err = avro.ParseSchema(`{
         {
             "name": "Properties",
             "type": "string"
-        },
-        {
-            "name": "MetaData",
-            "default": null,
-            "type": [
-                "null",
-                {
-                    "type": "record",
-                    "name": "MetaData",
-                    "fields": [
-                        {
-                            "name": "Nonce",
-                            "type": "long"
-                        },
-                        {
-                            "name": "Name",
-                            "type": "string"
-                        },
-                        {
-                            "name": "Creator",
-                            "type": {
-                                "type": "fixed",
-                                "size": 62,
-                                "name": "address"
-                            }
-                        },
-                        {
-                            "name": "Royalties",
-                            "type": "int"
-                        },
-                        {
-                            "name": "Hash",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "URIs",
-                            "type": {
-                                "type": "array",
-                                "items": "bytes"
-                            }
-                        },
-                        {
-                            "name": "Attributes",
-                            "type": "bytes"
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-}`)
-
-// Generated by codegen. Please do not modify.
-var _MetaData_schema, _MetaData_schema_err = avro.ParseSchema(`{
-    "type": "record",
-    "name": "MetaData",
-    "fields": [
-        {
-            "name": "Nonce",
-            "type": "long"
-        },
-        {
-            "name": "Name",
-            "type": "string"
-        },
-        {
-            "name": "Creator",
-            "type": {
-                "type": "fixed",
-                "size": 62,
-                "name": "address"
-            }
-        },
-        {
-            "name": "Royalties",
-            "type": "int"
-        },
-        {
-            "name": "Hash",
-            "type": "bytes"
-        },
-        {
-            "name": "URIs",
-            "type": {
-                "type": "array",
-                "items": "bytes"
-            }
-        },
-        {
-            "name": "Attributes",
-            "type": "bytes"
         }
     ]
 }`)

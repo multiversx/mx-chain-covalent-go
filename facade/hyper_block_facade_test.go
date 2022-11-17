@@ -190,17 +190,15 @@ func TestHyperBlockFacade_buildUrlWithBlockQueryOptions(t *testing.T) {
 		WithLogs:            true,
 		WithAlteredAccounts: true,
 		Tokens:              "all",
-		WithMetaData:        true,
 		NotarizedAtSource:   true,
 	})
 	require.Equal(t,
-		fmt.Sprintf("%s?%s=true&%s=all&%s=true&%s=true&%s=true",
+		fmt.Sprintf("%s?%s=true&%s=all&%s=true&%s=true",
 			path,
 			api.UrlParameterNotarizedAtSource,
 			api.UrlParameterTokens,
 			api.UrlParameterWithAlteredAccounts,
 			api.UrlParameterWithLogs,
-			api.UrlParameterWithMetaData,
 		),
 		fullPath)
 }

@@ -76,7 +76,6 @@ func buildUrlWithBlockQueryOptions(path string, options config.HyperBlockQueryOp
 	setQueryParamIfTrue(query, options.NotarizedAtSource, api.UrlParameterNotarizedAtSource)
 	setQueryParamIfTrue(query, options.WithAlteredAccounts, api.UrlParameterWithAlteredAccounts)
 	setQueryParamIfNotEmpty(query, options.Tokens, api.UrlParameterTokens)
-	setQueryParamIfTrue(query, options.WithMetaData, api.UrlParameterWithMetaData)
 
 	u.RawQuery = query.Encode()
 	return u.String()

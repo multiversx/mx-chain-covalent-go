@@ -9,6 +9,4 @@ const (
 	UrlParameterWithAlteredAccounts = "withAlteredAccounts"
 	// UrlParameterTokens represents the name of an URL parameter to query altered accounts with tokens
 	UrlParameterTokens = "tokens"
-	// UrlParameterWithMetaData represents the name of an URL parameter to query meta data for altered accounts with tokens
-	UrlParameterWithMetaData = "withMetadata"
 )

@@ -28,14 +28,12 @@ func createAlteredAccounts() []*outport.AlteredAccount {
 				Identifier: "identifier1",
 				Balance:    "111",
 				Properties: "properties1",
-				MetaData:   nil,
 			},
 			{
 				Nonce:      2,
 				Identifier: "identifier2",
 				Balance:    "222",
 				Properties: "properties2",
-				MetaData:   nil,
 			},
 		},
 	}
@@ -49,15 +47,6 @@ func createAlteredAccounts() []*outport.AlteredAccount {
 				Identifier: "identifier3",
 				Balance:    "555",
 				Properties: "properties3",
-				MetaData: &outport.TokenMetaData{
-					Nonce:      6,
-					Name:       "name",
-					Creator:    "creator",
-					Royalties:  666,
-					Hash:       []byte("hash"),
-					URIs:       [][]byte{[]byte("uri1"), []byte("uri2")},
-					Attributes: []byte("attributes"),
-				},
 			},
 		},
 	}
@@ -86,14 +75,12 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 				Identifier: "identifier1",
 				Balance:    big.NewInt(111).Bytes(),
 				Properties: "properties1",
-				MetaData:   nil,
 			},
 			{
 				Nonce:      2,
 				Identifier: "identifier2",
 				Balance:    big.NewInt(222).Bytes(),
 				Properties: "properties2",
-				MetaData:   nil,
 			},
 		},
 	}
@@ -107,15 +94,6 @@ func TestAlteredAccountsProcessor_ProcessAccounts(t *testing.T) {
 				Identifier: "identifier3",
 				Balance:    big.NewInt(555).Bytes(),
 				Properties: "properties3",
-				MetaData: &schema.MetaData{
-					Nonce:      6,
-					Name:       "name",
-					Creator:    []byte("creator"),
-					Royalties:  666,
-					Hash:       []byte("hash"),
-					URIs:       [][]byte{[]byte("uri1"), []byte("uri2")},
-					Attributes: []byte("attributes"),
-				},
 			},
 		},
 	}
