@@ -34,3 +34,10 @@ type CovalentHyperBlockApiResponse struct {
 	Error string     `json:"error"`
 	Code  ReturnCode `json:"code"`
 }
+
+// CovalentHyperBlocksApiResponse is the hyper blocks dto response for Covalent
+type CovalentHyperBlocksApiResponse struct {
+	Data  [][]byte   `json:"data"`
+	Error string     `json:"error"`
+	Code  ReturnCode `json:"code"`
+}

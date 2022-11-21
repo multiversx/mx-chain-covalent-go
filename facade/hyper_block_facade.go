@@ -49,26 +49,38 @@ func NewHyperBlockFacade(
 
 // GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options in covalent format
 func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
-	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
-	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
-
+	fullPath := hpf.getHyperBlockByNonceFullPath(nonce, options)
 	return hpf.getHyperBlock(fullPath)
 }
 
 // GetHyperBlocksByInterval will fetch the hyper blocks from Elrond proxy with provided nonces interval and options in covalent format
-func (hpf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
-	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, noncesInterval.Start)
-	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
+func (hpf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
+	if noncesInterval.Start > noncesInterval.End {
+		return nil, errInvalidNoncesInterval
+	}
 
-	return hpf.getHyperBlock(fullPath)
+	// Dummy implementation with no parallel bulk requests. This implementation will follow in next PR
+	encodedHyperBlocks := make([][]byte, 0, noncesInterval.End-noncesInterval.Start)
+	for nonce := noncesInterval.Start; nonce <= noncesInterval.End; nonce++ {
+		fullPath := hpf.getHyperBlockByNonceFullPath(nonce, options)
+		encodedHyperBlock, err := hpf.getHyperBlockAvroBytes(fullPath)
+		if err != nil {
+			return nil, err
+		}
+
+		encodedHyperBlocks = append(encodedHyperBlocks, encodedHyperBlock)
+	}
+
+	return &api.CovalentHyperBlocksApiResponse{
+		Data:  encodedHyperBlocks,
+		Error: "",
+		Code:  api.ReturnCodeSuccess,
+	}, nil
 }
 
-// GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options in covalent format
-func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
-	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
-	fullPath := hpf.getFullPathWithOptions(blockByHashPath, options)
-
-	return hpf.getHyperBlock(fullPath)
+func (hpf *hyperBlockFacade) getHyperBlockByNonceFullPath(nonce uint64, options config.HyperBlockQueryOptions) string {
+	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, nonce)
+	return hpf.getFullPathWithOptions(blockByNoncePath, options)
 }
 
 func (hpf *hyperBlockFacade) getFullPathWithOptions(path string, options config.HyperBlockQueryOptions) string {
@@ -101,7 +113,7 @@ func setQueryParamIfNotEmpty(query url.Values, option string, urlParam string) {
 	}
 }
 
-func (hpf *hyperBlockFacade) getHyperBlock(path string) (*api.CovalentHyperBlockApiResponse, error) {
+func (hpf *hyperBlockFacade) getHyperBlockAvroBytes(path string) ([]byte, error) {
 	elrondHyperBlock, err := hpf.elrondEndpoint.GetHyperBlock(path)
 	if err != nil {
 		return nil, err
@@ -112,7 +124,11 @@ func (hpf *hyperBlockFacade) getHyperBlock(path string) (*api.CovalentHyperBlock
 		return nil, err
 	}
 
-	hyperBlockSchemaAvroBytes, err := hpf.encoder.Encode(hyperBlockSchema)
+	return hpf.encoder.Encode(hyperBlockSchema)
+}
+
+func (hpf *hyperBlockFacade) getHyperBlock(path string) (*api.CovalentHyperBlockApiResponse, error) {
+	hyperBlockSchemaAvroBytes, err := hpf.getHyperBlockAvroBytes(path)
 	if err != nil {
 		return nil, err
 	}
@@ -122,4 +138,12 @@ func (hpf *hyperBlockFacade) getHyperBlock(path string) (*api.CovalentHyperBlock
 		Error: "",
 		Code:  api.ReturnCodeSuccess,
 	}, nil
+}
+
+// GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options in covalent format
+func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
+	fullPath := hpf.getFullPathWithOptions(blockByHashPath, options)
+
+	return hpf.getHyperBlock(fullPath)
 }
