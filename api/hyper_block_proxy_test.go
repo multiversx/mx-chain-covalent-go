@@ -65,7 +65,7 @@ func sendRequest(t *testing.T, ws *gin.Engine, path string, expectedStatus int) 
 	return apiResp
 }
 
-func sendRequestHyperBlocks(t *testing.T, ws *gin.Engine, path string, expectedStatus int) *api.CovalentHyperBlocksApiResponse {
+func sendHyperBlocksRequest(t *testing.T, ws *gin.Engine, path string, expectedStatus int) *api.CovalentHyperBlocksApiResponse {
 	body := serveHTTPRequest(t, ws, path, expectedStatus)
 
 	apiResp := &api.CovalentHyperBlocksApiResponse{}
@@ -220,7 +220,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 		ws := startProxyServer(proxy)
 		requestPath := fmt.Sprintf("%s?startNonce=%d&endNonce=%d", hyperBlocksPath, startNonce, endNonce)
 
-		apiResp := sendRequestHyperBlocks(t, ws, requestPath, http.StatusOK)
+		apiResp := sendHyperBlocksRequest(t, ws, requestPath, http.StatusOK)
 		require.Equal(t, apiResp, blockResponse)
 	})
 
@@ -238,7 +238,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s?startNonce=abc&endNonce=8", hyperBlocksPath)
-		apiResp := sendRequestHyperBlocks(t, ws, requestPath, http.StatusBadRequest)
+		apiResp := sendHyperBlocksRequest(t, ws, requestPath, http.StatusBadRequest)
 		require.False(t, getHyperBlockFromFacadeCalled)
 		require.Empty(t, apiResp.Data)
 		require.Equal(t, apiResp.Code, api.ReturnCodeRequestError)
@@ -259,7 +259,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s?startNonce=4&endNonce=cde", hyperBlocksPath)
-		apiResp := sendRequestHyperBlocks(t, ws, requestPath, http.StatusBadRequest)
+		apiResp := sendHyperBlocksRequest(t, ws, requestPath, http.StatusBadRequest)
 		require.False(t, getHyperBlockFromFacadeCalled)
 		require.Empty(t, apiResp.Data)
 		require.Equal(t, apiResp.Code, api.ReturnCodeRequestError)
@@ -280,7 +280,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s?startNonce=4", hyperBlocksPath)
-		apiResp := sendRequestHyperBlocks(t, ws, requestPath, http.StatusBadRequest)
+		apiResp := sendHyperBlocksRequest(t, ws, requestPath, http.StatusBadRequest)
 		require.False(t, getHyperBlockFromFacadeCalled)
 		require.Empty(t, apiResp.Data)
 		require.Equal(t, apiResp.Code, api.ReturnCodeRequestError)
@@ -301,7 +301,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s?startNonce=4&endNonce=8", hyperBlocksPath)
-		apiResp := sendRequestHyperBlocks(t, ws, requestPath, http.StatusInternalServerError)
+		apiResp := sendHyperBlocksRequest(t, ws, requestPath, http.StatusInternalServerError)
 		require.Equal(t, &api.CovalentHyperBlocksApiResponse{
 			Data:  nil,
 			Error: errFacade.Error(),

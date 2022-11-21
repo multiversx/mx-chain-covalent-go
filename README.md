@@ -40,6 +40,7 @@ for historical balances (--operation-mode historical-balances when starting the 
 
 - `/hyperblock/by-nonce/:nonce` (GET) --> returns a hyperblock by nonce, with transactions included
 - `/hyperblock/by-hash/:hash` (GET) --> returns a hyperblock by hash, with transactions included
+- `/hyperblocks?startNonce=4&endNonce=8` (GET) --> returns an array of encoded hyperblocks in `[startNonce, endNonce]` interval
 
 ## Avro schema update
 
