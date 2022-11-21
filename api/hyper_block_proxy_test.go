@@ -59,7 +59,7 @@ func TestNewHyperBlockProxy(t *testing.T) {
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		proxy, err := api.NewHyperBlockProxy(&apiMocks.HyperBlockFacadeStub{}, config.HyperBlockQueryOptions{})
+		proxy, err := api.NewHyperBlockProxy(&apiMocks.HyperBlockFacadeStub{}, &config.Config{})
 		require.Nil(t, err)
 		require.NotNil(t, proxy)
 	})
@@ -67,7 +67,7 @@ func TestNewHyperBlockProxy(t *testing.T) {
 	t.Run("nil facade, should return error", func(t *testing.T) {
 		t.Parallel()
 
-		proxy, err := api.NewHyperBlockProxy(nil, config.HyperBlockQueryOptions{})
+		proxy, err := api.NewHyperBlockProxy(nil, &config.Config{})
 		require.Nil(t, proxy)
 		require.Equal(t, api.ErrNilHyperBlockFacade, err)
 	})
@@ -108,7 +108,7 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 				return blockResponse, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
+		proxy, _ := api.NewHyperBlockProxy(facade, &config.Config{})
 		ws := startProxyServer(proxy)
 		requestPath := fmt.Sprintf("%s/by-nonce/%d", hyperBlockPath, requestedNonce)
 		apiResp := sendRequest(t, ws, requestPath, http.StatusOK)
@@ -125,7 +125,7 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 				return nil, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
+		proxy, _ := api.NewHyperBlockProxy(facade, &config.Config{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-nonce/abc", hyperBlockPath)
@@ -145,7 +145,7 @@ func TestHyperBlockProxy_GetHyperBlockByNonce(t *testing.T) {
 				return nil, errFacade
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
+		proxy, _ := api.NewHyperBlockProxy(facade, &config.Config{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-nonce/4", hyperBlockPath)
@@ -176,7 +176,7 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 				return blockResponse, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
+		proxy, _ := api.NewHyperBlockProxy(facade, &config.Config{})
 		ws := startProxyServer(proxy)
 		requestPath := fmt.Sprintf("%s/by-hash/%s", hyperBlockPath, requestedHash)
 		apiResp := sendRequest(t, ws, requestPath, http.StatusOK)
@@ -193,7 +193,7 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 				return nil, nil
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
+		proxy, _ := api.NewHyperBlockProxy(facade, &config.Config{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-hash/zx", hyperBlockPath)
@@ -213,7 +213,7 @@ func TestHyperBlockProxy_GetHyperBlockByHash(t *testing.T) {
 				return nil, errFacade
 			},
 		}
-		proxy, _ := api.NewHyperBlockProxy(facade, config.HyperBlockQueryOptions{})
+		proxy, _ := api.NewHyperBlockProxy(facade, &config.Config{})
 		ws := startProxyServer(proxy)
 
 		requestPath := fmt.Sprintf("%s/by-hash/ff", hyperBlockPath)

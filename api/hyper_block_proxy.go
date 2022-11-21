@@ -13,13 +13,14 @@ import (
 type hyperBlockProxy struct {
 	hyperBlockFacade HyperBlockFacadeHandler
 	options          config.HyperBlockQueryOptions
+	batchSize        uint32
 }
 
 // NewHyperBlockProxy will create a covalent proxy, able to fetch hyper block requests
 // from Elrond and return them in covalent format
 func NewHyperBlockProxy(
 	hyperBlockFacade HyperBlockFacadeHandler,
-	hyperBlockQueryOptions config.HyperBlockQueryOptions,
+	cfg *config.Config,
 ) (*hyperBlockProxy, error) {
 	if hyperBlockFacade == nil {
 		return nil, errNilHyperBlockFacade
@@ -27,7 +28,8 @@ func NewHyperBlockProxy(
 
 	return &hyperBlockProxy{
 		hyperBlockFacade: hyperBlockFacade,
-		options:          hyperBlockQueryOptions,
+		options:          cfg.HyperBlockQueryOptions,
+		batchSize:        cfg.HyperBlocksBatchSize,
 	}, nil
 }
 
@@ -57,7 +59,7 @@ func getNonceFromRequest(c *gin.Context) (uint64, error) {
 	return strconv.ParseUint(nonceStr, 10, 64)
 }
 
-// GetHyperBlocksByNonce will fetch requested hyper blocks from start to end nonce
+// GetHyperBlocksByInterval will fetch requested hyper blocks from start to end nonce
 func (hbp *hyperBlockProxy) GetHyperBlocksByInterval(c *gin.Context) {
 	nonceInterval, err := getIntervalFromRequest(c)
 	if err != nil {

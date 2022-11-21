@@ -11,6 +11,7 @@ type Config struct {
 	Port                   uint32                 `toml:"port"`
 	HyperBlockPath         string                 `toml:"hyperBlockPath"`
 	HyperBlocksPath        string                 `toml:"hyperBlocksPath"`
+	HyperBlocksBatchSize   uint32                 `toml:"hyperBlocksBatchSize"`
 	ElrondProxyUrl         string                 `toml:"elrondProxyUrl"`
 	RequestTimeOutSec      uint64                 `toml:"requestTimeOutSec"`
 	HyperBlockQueryOptions HyperBlockQueryOptions `toml:"hyperBlockQueryOptions"`
