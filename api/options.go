@@ -10,3 +10,9 @@ const (
 	// UrlParameterTokens represents the name of an URL parameter to query altered accounts with tokens
 	UrlParameterTokens = "tokens"
 )
+
+// Interval defines a [start,end] interval
+type Interval struct {
+	Start uint64
+	End   uint64
+}

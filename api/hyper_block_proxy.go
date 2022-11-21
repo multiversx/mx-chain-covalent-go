@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -54,6 +55,55 @@ func getNonceFromRequest(c *gin.Context) (uint64, error) {
 	}
 
 	return strconv.ParseUint(nonceStr, 10, 64)
+}
+
+// GetHyperBlocksByNonce will fetch requested hyper blocks from start to end nonce
+func (hbp *hyperBlockProxy) GetHyperBlocksByInterval(c *gin.Context) {
+	nonceInterval, err := getIntervalFromRequest(c)
+	if err != nil {
+		respondWithBadRequest(c, err)
+		return
+	}
+	fmt.Println(fmt.Sprintf("%v", nonceInterval))
+
+	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlocksByInterval(nonceInterval, hbp.options)
+	if err != nil {
+		respondWithInternalError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, hyperBlockApiResponse)
+}
+
+func getIntervalFromRequest(c *gin.Context) (*Interval, error) {
+	startNonce, err := parseUintUrlParam(c, "startNonce")
+	if err != nil {
+		return nil, err
+	}
+
+	endNonce, err := parseUintUrlParam(c, "endNonce")
+	if err != nil {
+		return nil, err
+	}
+
+	return &Interval{
+		Start: startNonce,
+		End:   endNonce,
+	}, nil
+}
+
+func parseUintUrlParam(c *gin.Context, name string) (uint64, error) {
+	param := c.Request.URL.Query().Get(name)
+	if param == "" {
+		return 0, nil
+	}
+
+	value, err := strconv.ParseUint(param, 10, 32)
+	if err != nil {
+		return 0, err
+	}
+
+	return value, nil
 }
 
 // GetHyperBlockByHash will fetch requested hyper block request by hash

@@ -55,6 +55,14 @@ func (hpf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options config.H
 	return hpf.getHyperBlock(fullPath)
 }
 
+// GetHyperBlocksByInterval will fetch the hyper blocks from Elrond proxy with provided nonces interval and options in covalent format
+func (hpf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
+	blockByNoncePath := fmt.Sprintf("%s/%d", hyperBlockPathByNonce, noncesInterval.Start)
+	fullPath := hpf.getFullPathWithOptions(blockByNoncePath, options)
+
+	return hpf.getHyperBlock(fullPath)
+}
+
 // GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options in covalent format
 func (hpf *hyperBlockFacade) GetHyperBlockByHash(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
