@@ -10,6 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	startNonce = "startNonce"
+	endNonce   = "endNonce"
+)
+
 type hyperBlockProxy struct {
 	hyperBlockFacade HyperBlockFacadeHandler
 	options          config.HyperBlockQueryOptions
@@ -24,6 +29,9 @@ func NewHyperBlockProxy(
 ) (*hyperBlockProxy, error) {
 	if hyperBlockFacade == nil {
 		return nil, errNilHyperBlockFacade
+	}
+	if cfg.HyperBlocksBatchSize == 0 {
+		return nil, fmt.Errorf("%w; expected non zero value", errInvalidHyperBlocksBatchSize)
 	}
 
 	return &hyperBlockProxy{
@@ -61,14 +69,13 @@ func getNonceFromRequest(c *gin.Context) (uint64, error) {
 
 // GetHyperBlocksByInterval will fetch requested hyper blocks from start to end nonce
 func (hbp *hyperBlockProxy) GetHyperBlocksByInterval(c *gin.Context) {
-	nonceInterval, err := getIntervalFromRequest(c)
+	noncesInterval, err := getIntervalFromRequest(c)
 	if err != nil {
 		respondWithBadRequest(c, err)
 		return
 	}
-	fmt.Println(fmt.Sprintf("%v", nonceInterval))
 
-	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlocksByInterval(nonceInterval, hbp.options)
+	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlocksByInterval(noncesInterval, hbp.options)
 	if err != nil {
 		respondWithInternalError(c, err)
 		return
@@ -78,34 +85,29 @@ func (hbp *hyperBlockProxy) GetHyperBlocksByInterval(c *gin.Context) {
 }
 
 func getIntervalFromRequest(c *gin.Context) (*Interval, error) {
-	startNonce, err := parseUintUrlParam(c, "startNonce")
+	start, err := getUIntUrlParam(c, startNonce)
 	if err != nil {
 		return nil, err
 	}
 
-	endNonce, err := parseUintUrlParam(c, "endNonce")
+	end, err := getUIntUrlParam(c, endNonce)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Interval{
-		Start: startNonce,
-		End:   endNonce,
+		Start: start,
+		End:   end,
 	}, nil
 }
 
-func parseUintUrlParam(c *gin.Context, name string) (uint64, error) {
+func getUIntUrlParam(c *gin.Context, name string) (uint64, error) {
 	param := c.Request.URL.Query().Get(name)
 	if param == "" {
-		return 0, nil
+		return 0, fmt.Errorf("%w: %s", errMissingQueryParameter, name)
 	}
 
-	value, err := strconv.ParseUint(param, 10, 32)
-	if err != nil {
-		return 0, err
-	}
-
-	return value, nil
+	return strconv.ParseUint(param, 10, 32)
 }
 
 // GetHyperBlockByHash will fetch requested hyper block request by hash
