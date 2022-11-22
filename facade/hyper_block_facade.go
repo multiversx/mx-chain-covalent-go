@@ -58,24 +58,10 @@ func (hbf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options config.H
 
 // GetHyperBlocksByInterval will fetch the hyper blocks from Elrond proxy with provided nonces interval and options in covalent format
 func (hbf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
-	batches, err := hbf.createBatchRequests(noncesInterval, config.HyperBlocksQueryOptions{
-		QueryOptions: options,
-		BatchSize:    10,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	requests := make([]string, 0)
-	for _, batch := range batches {
-		requests = append(requests, batch...)
-	}
-
 	responses, err := hbf.getBlocksByNonces(noncesInterval, config.HyperBlocksQueryOptions{
 		QueryOptions: options,
 		BatchSize:    10,
 	})
-	//responses, err := hbf.requestBatchesConcurrently(batches, noncesInterval.End-noncesInterval.Start+1)
 	if err != nil {
 		return nil, err
 	}
