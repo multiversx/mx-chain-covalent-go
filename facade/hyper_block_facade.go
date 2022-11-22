@@ -68,7 +68,10 @@ func (hbf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interv
 		requests = append(requests, batch...)
 	}
 
-	responses, err := hbf.getBlocksByNonces(requests)
+	responses, err := hbf.getBlocksByNonces(noncesInterval, config.HyperBlocksQueryOptions{
+		QueryOptions: options,
+		BatchSize:    10,
+	})
 	//responses, err := hbf.requestBatchesConcurrently(batches, noncesInterval.End-noncesInterval.Start+1)
 	if err != nil {
 		return nil, err

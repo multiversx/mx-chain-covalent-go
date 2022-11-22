@@ -87,18 +87,25 @@ type encodedHyperBlock struct {
 	encodedBytes []byte
 }
 
-func (hbf *hyperBlockFacade) getBlocksByNonces(requests []string) ([][]byte, error) {
+func (hbf *hyperBlockFacade) getBlocksByNonces(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) ([][]byte, error) {
+	if noncesInterval.Start > noncesInterval.End {
+		return nil, errInvalidNoncesInterval
+	}
+
 	maxGoroutines := 20
 	done := make(chan struct{}, maxGoroutines)
 	wg := &sync.WaitGroup{}
 
-	results := make([][]byte, 0, len(requests))
+	results := make([][]byte, noncesInterval.End-noncesInterval.Start+1)
 	mutex := sync.Mutex{}
-	for _, request := range requests {
+	currIdx := uint32(0)
+	for nonce := noncesInterval.Start; nonce <= noncesInterval.End; nonce++ {
 		done <- struct{}{}
 		wg.Add(1)
+
+		request := hbf.getHyperBlockByNonceFullPath(nonce, options.QueryOptions)
 		fmt.Println("sending request: ", request)
-		go func(req string) {
+		go func(req string, idx uint32) {
 			res, err := hbf.getBlockByRequest(req, done, wg)
 			if err != nil {
 				// TODO treat error
@@ -106,10 +113,12 @@ func (hbf *hyperBlockFacade) getBlocksByNonces(requests []string) ([][]byte, err
 			}
 
 			mutex.Lock()
-			results = append(results, res)
+			results[idx] = res
 			mutex.Unlock()
 
-		}(request)
+		}(request, currIdx)
+
+		currIdx++
 	}
 
 	wg.Wait()
