@@ -7,10 +7,13 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 const hyperBlockPathByNonce = "/hyperblock/by-nonce"
 const hyperBlockPathByHash = "/hyperblock/by-hash"
+
+var log = logger.GetOrCreate("facade")
 
 type hyperBlockFacade struct {
 	elrondProxyUrl string

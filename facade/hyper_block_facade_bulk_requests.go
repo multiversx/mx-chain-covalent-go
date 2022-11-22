@@ -11,6 +11,8 @@ import (
 	"github.com/ElrondNetwork/elrond-go-core/core"
 )
 
+const maxRequestsRetrial = 10
+
 func (hbf *hyperBlockFacade) createBatchRequests(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) ([][]string, error) {
 	if noncesInterval.Start > noncesInterval.End {
 		return nil, errInvalidNoncesInterval
@@ -99,36 +101,57 @@ func (hbf *hyperBlockFacade) getBlocksByNonces(noncesInterval *api.Interval, opt
 	results := make([][]byte, noncesInterval.End-noncesInterval.Start+1)
 	mutex := sync.Mutex{}
 	currIdx := uint32(0)
-	for nonce := noncesInterval.Start; nonce <= noncesInterval.End; nonce++ {
+
+	var requestError error
+	for nonce := noncesInterval.Start; nonce <= noncesInterval.End && requestError != nil; nonce++ {
 		done <- struct{}{}
 		wg.Add(1)
 
 		request := hbf.getHyperBlockByNonceFullPath(nonce, options.QueryOptions)
-		fmt.Println("sending request: ", request)
 		go func(req string, idx uint32) {
-			res, err := hbf.getBlockByRequest(req, done, wg)
+			res, err := hbf.getHyperBlockWithRetrials(req, done, wg)
+
+			mutex.Lock()
+			defer mutex.Unlock()
+
 			if err != nil {
-				// TODO treat error
+				requestError = err
 				return
 			}
 
-			mutex.Lock()
 			results[idx] = res
-			mutex.Unlock()
-
 		}(request, currIdx)
 
 		currIdx++
 	}
 
 	wg.Wait()
-	return results, nil
+
+	if requestError != nil {
+		return nil, fmt.Errorf("one or more errors occurred; last known error: %w", requestError)
+	}
+	return results, requestError
 }
 
-func (hbf *hyperBlockFacade) getBlockByRequest(request string, done chan struct{}, wg *sync.WaitGroup) ([]byte, error) {
+func (hbf *hyperBlockFacade) getHyperBlockWithRetrials(request string, done chan struct{}, wg *sync.WaitGroup) ([]byte, error) {
 	defer func() {
 		<-done
 		wg.Done()
 	}()
-	return hbf.getHyperBlockAvroBytes(request)
+
+	ctRetrials := 0
+	for ctRetrials < maxRequestsRetrial {
+		res, err := hbf.getHyperBlockAvroBytes(request)
+		if err == nil {
+			return res, nil
+		}
+
+		ctRetrials++
+		log.Warn("could not get hyperblock; retrying...",
+			"request", request,
+			"error", err,
+			"num retrials", ctRetrials)
+	}
+
+	return nil, fmt.Errorf("%w from request = %s after num of retrials = %d", errCouldNotGetHyperBlock, request, maxRequestsRetrial)
 }
