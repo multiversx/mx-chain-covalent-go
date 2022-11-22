@@ -55,24 +55,27 @@ func (hbf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options config.H
 
 // GetHyperBlocksByInterval will fetch the hyper blocks from Elrond proxy with provided nonces interval and options in covalent format
 func (hbf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
-	if noncesInterval.Start > noncesInterval.End {
-		return nil, errInvalidNoncesInterval
+	batches, err := hbf.createBatchRequests(noncesInterval, config.HyperBlocksQueryOptions{
+		QueryOptions: options,
+		BatchSize:    10,
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	// Dummy implementation with no parallel bulk requests. This implementation will follow in next PR
-	encodedHyperBlocks := make([][]byte, 0, noncesInterval.End-noncesInterval.Start+1)
-	for nonce := noncesInterval.Start; nonce <= noncesInterval.End; nonce++ {
-		fullPath := hbf.getHyperBlockByNonceFullPath(nonce, options)
-		encodedHyperBlock, err := hbf.getHyperBlockAvroBytes(fullPath)
-		if err != nil {
-			return nil, err
-		}
+	requests := make([]string, 0)
+	for _, batch := range batches {
+		requests = append(requests, batch...)
+	}
 
-		encodedHyperBlocks = append(encodedHyperBlocks, encodedHyperBlock)
+	responses, err := hbf.getBlocksByNonces(requests)
+	//responses, err := hbf.requestBatchesConcurrently(batches, noncesInterval.End-noncesInterval.Start+1)
+	if err != nil {
+		return nil, err
 	}
 
 	return &api.CovalentHyperBlocksApiResponse{
-		Data:  encodedHyperBlocks,
+		Data:  responses,
 		Error: "",
 		Code:  api.ReturnCodeSuccess,
 	}, nil

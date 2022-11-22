@@ -3,6 +3,8 @@ package facade
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
@@ -273,4 +275,88 @@ func TestHyperBlockFacade_GetHyperBlock_ErrorCases(t *testing.T) {
 		require.Nil(t, block)
 		require.Equal(t, errEncoder, err)
 	})
+}
+
+func getNonceFromRequest(t *testing.T, request string) uint64 {
+	splits := strings.Split(request, "/")
+	numSplits := len(splits)
+	require.True(t, numSplits >= 1)
+
+	nonceFromRequestStr := splits[numSplits-1]
+	nonceFromRequestInt, err := strconv.Atoi(nonceFromRequestStr)
+	require.Nil(t, err)
+
+	return uint64(nonceFromRequestInt)
+}
+
+func requireNonceInInterval(t *testing.T, nonce uint64, interval *api.Interval) {
+	require.True(t, nonce >= interval.Start && nonce <= interval.End)
+}
+
+func TestHyperBlockFacade_GetHyperBlocksByInterval(t *testing.T) {
+	t.Parallel()
+
+	elrondProxyUrl := "url"
+
+	requestedInterval := &api.Interval{
+		Start: 4,
+		End:   45,
+	}
+
+	elrondEndPoint := &apiMocks.ElrondHyperBlockEndPointStub{
+		GetHyperBlockCalled: func(path string) (*api.ElrondHyperBlockApiResponse, error) {
+			nonceFromRequest := getNonceFromRequest(t, path)
+			requireNonceInInterval(t, nonceFromRequest, requestedInterval)
+			require.Equal(t, fmt.Sprintf("%s%s/%d", elrondProxyUrl, hyperBlockPathByNonce, nonceFromRequest), path)
+
+			return &api.ElrondHyperBlockApiResponse{
+				Data: api.ElrondHyperBlockApiResponsePayload{
+					HyperBlock: hyperBlock.HyperBlock{
+						Nonce: nonceFromRequest,
+					}},
+				Error: "",
+				Code:  api.ReturnCodeSuccess,
+			}, nil
+		},
+	}
+
+	processor := &mock.HyperBlockProcessorStub{
+		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schema.HyperBlock, error) {
+			requireNonceInInterval(t, hyperBlock.Nonce, requestedInterval)
+			return &schema.HyperBlock{
+				Nonce: int64(hyperBlock.Nonce),
+			}, nil
+		},
+	}
+
+	encoder := &mock.AvroEncoderStub{
+		EncodeCalled: func(record avro.AvroRecord) ([]byte, error) {
+			hyperBlockRecord, castOk := record.(*schema.HyperBlock)
+			require.True(t, castOk)
+
+			requireNonceInInterval(t, uint64(hyperBlockRecord.Nonce), requestedInterval)
+			encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", hyperBlockRecord.Nonce))
+			return encodedBlock, nil
+		},
+	}
+
+	facade, _ := NewHyperBlockFacade(elrondProxyUrl, encoder, elrondEndPoint, processor)
+
+	expectedEncodedHyperBlocks := make([][]byte, 0)
+	for nonce := requestedInterval.Start; nonce <= requestedInterval.End; nonce++ {
+		encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", nonce))
+		expectedEncodedHyperBlocks = append(expectedEncodedHyperBlocks, encodedBlock)
+	}
+
+	blocks, err := facade.GetHyperBlocksByInterval(&api.Interval{
+		Start: 4,
+		End:   45,
+	}, config.HyperBlockQueryOptions{})
+	require.Nil(t, err)
+	require.Len(t, blocks.Data, 45-4+1)
+	//require.Equal(t, &api.CovalentHyperBlocksApiResponse{
+	//	Data:  expectedEncodedHyperBlocks,
+	//	Error: "",
+	//	Code:  api.ReturnCodeSuccess,
+	//}, blocks)
 }
