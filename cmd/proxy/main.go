@@ -94,12 +94,13 @@ func createServer(cfg *config.Config) (api.HTTPServer, error) {
 		return nil, err
 	}
 
-	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade, cfg.HyperBlockQueryOptions)
+	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade, *cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	router := gin.Default()
+	router.GET(fmt.Sprintf("%s", cfg.HyperBlocksPath), hyperBlockProxy.GetHyperBlocksByInterval)
 	router.GET(fmt.Sprintf("%s/by-nonce/:nonce", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByNonce)
 	router.GET(fmt.Sprintf("%s/by-hash/:hash", cfg.HyperBlockPath), hyperBlockProxy.GetHyperBlockByHash)
 
