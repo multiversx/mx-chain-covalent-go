@@ -60,7 +60,7 @@ func (hbf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interv
 	}
 
 	// Dummy implementation with no parallel bulk requests. This implementation will follow in next PR
-	encodedHyperBlocks := make([][]byte, 0, noncesInterval.End-noncesInterval.Start)
+	encodedHyperBlocks := make([][]byte, 0, noncesInterval.End-noncesInterval.Start+1)
 	for nonce := noncesInterval.Start; nonce <= noncesInterval.End; nonce++ {
 		fullPath := hbf.getHyperBlockByNonceFullPath(nonce, options)
 		encodedHyperBlock, err := hbf.getHyperBlockAvroBytes(fullPath)

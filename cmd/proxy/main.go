@@ -94,7 +94,7 @@ func createServer(cfg *config.Config) (api.HTTPServer, error) {
 		return nil, err
 	}
 
-	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade, cfg)
+	hyperBlockProxy, err := api.NewHyperBlockProxy(hyperBlockFacade, *cfg)
 	if err != nil {
 		return nil, err
 	}

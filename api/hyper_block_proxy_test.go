@@ -74,8 +74,8 @@ func sendHyperBlocksRequest(t *testing.T, ws *gin.Engine, path string, expectedS
 	return apiResp
 }
 
-func getConfig() *config.Config {
-	return &config.Config{
+func getConfig() config.Config {
+	return config.Config{
 		HyperBlocksBatchSize: 10,
 	}
 }
@@ -102,7 +102,7 @@ func TestNewHyperBlockProxy(t *testing.T) {
 	t.Run("invalid hyper blocks batch size, should return error", func(t *testing.T) {
 		t.Parallel()
 
-		proxy, err := api.NewHyperBlockProxy(&apiMocks.HyperBlockFacadeStub{}, &config.Config{})
+		proxy, err := api.NewHyperBlockProxy(&apiMocks.HyperBlockFacadeStub{}, config.Config{})
 		require.Nil(t, proxy)
 		require.ErrorIs(t, err, api.ErrInvalidHyperBlocksBatchSize)
 	})

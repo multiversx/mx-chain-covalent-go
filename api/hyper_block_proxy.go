@@ -25,7 +25,7 @@ type hyperBlockProxy struct {
 // from Elrond and return them in covalent format
 func NewHyperBlockProxy(
 	hyperBlockFacade HyperBlockFacadeHandler,
-	cfg *config.Config,
+	cfg config.Config,
 ) (*hyperBlockProxy, error) {
 	if hyperBlockFacade == nil {
 		return nil, errNilHyperBlockFacade
