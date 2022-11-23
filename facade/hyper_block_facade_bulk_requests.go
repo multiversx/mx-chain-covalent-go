@@ -65,11 +65,8 @@ func (hbf *hyperBlockFacade) getHyperBlocksByNonces(noncesInterval *api.Interval
 	if requestError != nil {
 		return nil, fmt.Errorf("one or more errors occurred; last known error: %w", requestError)
 	}
-	if len(results) != int(expectedNumOfResults) {
-		return nil, fmt.Errorf("%w, expected to return %d, only got %d", errCouldNotGetAllHyperBlocks, expectedNumOfResults, len(results))
-	}
 
-	return results, requestError
+	return sanityCheckResult(results)
 }
 
 func (hbf *hyperBlockFacade) getHyperBlockWithRetrials(request string) ([]byte, error) {
@@ -98,4 +95,18 @@ func (hbf *hyperBlockFacade) getHyperBlockWithRetrials(request string) ([]byte, 
 func calcRetryBackOffTime(attemptNumber int) time.Duration {
 	exp := math.Exp2(float64(attemptNumber))
 	return time.Duration(exp) * waitTimeRetrialsMs * time.Millisecond
+}
+
+func sanityCheckResult(encodedHyperBlocks [][]byte) ([][]byte, error) {
+	for idx, encodedHyperBlock := range encodedHyperBlocks {
+		if len(encodedHyperBlock) == 0 {
+			return nil, fmt.Errorf("%w, expected to return %d hyper blocks, found empty hyper block at index %d",
+				errCouldNotGetAllHyperBlocks,
+				len(encodedHyperBlocks),
+				idx,
+			)
+		}
+	}
+
+	return encodedHyperBlocks, nil
 }
