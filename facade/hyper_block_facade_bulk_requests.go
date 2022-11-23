@@ -7,6 +7,7 @@ import (
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
+	"github.com/ElrondNetwork/elrond-go-core/core"
 )
 
 const (
@@ -22,11 +23,11 @@ func (hbf *hyperBlockFacade) getHyperBlocksByNonces(noncesInterval *api.Interval
 		return nil, errInvalidBatchSize
 	}
 
-	maxGoroutines := options.BatchSize
+	expectedNumOfResults := noncesInterval.End - noncesInterval.Start + 1
+	maxGoroutines := core.MinUint64(uint64(options.BatchSize), expectedNumOfResults)
 	done := make(chan struct{}, maxGoroutines)
 	wg := &sync.WaitGroup{}
 
-	expectedNumOfResults := noncesInterval.End - noncesInterval.Start + 1
 	results := make([][]byte, expectedNumOfResults)
 	mutex := sync.Mutex{}
 	currIdx := uint32(0)
@@ -38,10 +39,14 @@ func (hbf *hyperBlockFacade) getHyperBlocksByNonces(noncesInterval *api.Interval
 
 		request := hbf.getHyperBlockByNonceFullPath(nonce, options.QueryOptions)
 		go func(req string, idx uint32) {
-			res, err := hbf.getHyperBlockWithRetrials(req, done, wg)
+			res, err := hbf.getHyperBlockWithRetrials(req)
 
 			mutex.Lock()
-			defer mutex.Unlock()
+			defer func() {
+				<-done
+				wg.Done()
+				mutex.Unlock()
+			}()
 
 			if err != nil {
 				requestError = err
@@ -66,12 +71,7 @@ func (hbf *hyperBlockFacade) getHyperBlocksByNonces(noncesInterval *api.Interval
 	return results, requestError
 }
 
-func (hbf *hyperBlockFacade) getHyperBlockWithRetrials(request string, done chan struct{}, wg *sync.WaitGroup) ([]byte, error) {
-	defer func() {
-		<-done
-		wg.Done()
-	}()
-
+func (hbf *hyperBlockFacade) getHyperBlockWithRetrials(request string) ([]byte, error) {
 	ctRetrials := 0
 	for ctRetrials < maxRequestsRetrial {
 		res, err := hbf.getHyperBlockAvroBytes(request)
