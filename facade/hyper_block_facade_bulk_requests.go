@@ -3,14 +3,18 @@ package facade
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
 )
 
-const maxRequestsRetrial = 10
+const (
+	maxRequestsRetrial = 10
+	waitTimeRetrialsMs = 50
+)
 
-func (hbf *hyperBlockFacade) getBlocksByNonces(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) ([][]byte, error) {
+func (hbf *hyperBlockFacade) getHyperBlocksByNonces(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) ([][]byte, error) {
 	if noncesInterval.Start > noncesInterval.End {
 		return nil, errInvalidNoncesInterval
 	}
@@ -72,6 +76,8 @@ func (hbf *hyperBlockFacade) getHyperBlockWithRetrials(request string, done chan
 			"request", request,
 			"error", err,
 			"num retrials", ctRetrials)
+
+		time.Sleep(waitTimeRetrialsMs * time.Millisecond)
 	}
 
 	return nil, fmt.Errorf("%w from request = %s after num of retrials = %d", errCouldNotGetHyperBlock, request, maxRequestsRetrial)

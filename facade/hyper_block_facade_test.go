@@ -362,7 +362,9 @@ func TestHyperBlockFacade_GetHyperBlocksByInterval(t *testing.T) {
 	blocks, err := facade.GetHyperBlocksByInterval(&api.Interval{
 		Start: 4,
 		End:   45,
-	}, config.HyperBlockQueryOptions{})
+	}, config.HyperBlocksQueryOptions{
+		BatchSize: 10,
+	})
 	require.Nil(t, err)
 	require.Equal(t, &api.CovalentHyperBlocksApiResponse{
 		Data:  expectedEncodedHyperBlocks,

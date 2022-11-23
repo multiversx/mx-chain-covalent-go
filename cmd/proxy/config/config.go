@@ -28,7 +28,7 @@ type HyperBlockQueryOptions struct {
 // HyperBlocksQueryOptions holds the hyper blocks query params options
 type HyperBlocksQueryOptions struct {
 	QueryOptions HyperBlockQueryOptions
-	BatchSize    uint64
+	BatchSize    uint32
 }
 
 // LoadConfig will load the Config from the provided file

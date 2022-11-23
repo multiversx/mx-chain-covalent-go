@@ -8,7 +8,7 @@ hyperBlockPath = "/hyperblock"
 hyperBlocksPath = "/hyperblocks"
 
 # When fetching multiple hyperblocks, requests will be grouped in hyperBlocksBatchSize and parallelized
-hyperBlocksBatchSize = 10
+hyperBlocksBatchSize = 20
 
 # elrondProxyUrl url used to fetch hyperBlocks from Elrond; e.g.: https://gateway.elrond.com for mainnet
 elrondProxyUrl = "https://gateway.elrond.com"
