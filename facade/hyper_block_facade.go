@@ -7,10 +7,13 @@ import (
 	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
 	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
+	logger "github.com/ElrondNetwork/elrond-go-logger"
 )
 
 const hyperBlockPathByNonce = "/hyperblock/by-nonce"
 const hyperBlockPathByHash = "/hyperblock/by-hash"
+
+var log = logger.GetOrCreate("facade")
 
 type hyperBlockFacade struct {
 	elrondProxyUrl string
@@ -54,21 +57,10 @@ func (hbf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options config.H
 }
 
 // GetHyperBlocksByInterval will fetch the hyper blocks from Elrond proxy with provided nonces interval and options in covalent format
-func (hbf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
-	if noncesInterval.Start > noncesInterval.End {
-		return nil, errInvalidNoncesInterval
-	}
-
-	// Dummy implementation with no parallel bulk requests. This implementation will follow in next PR
-	encodedHyperBlocks := make([][]byte, 0, noncesInterval.End-noncesInterval.Start+1)
-	for nonce := noncesInterval.Start; nonce <= noncesInterval.End; nonce++ {
-		fullPath := hbf.getHyperBlockByNonceFullPath(nonce, options)
-		encodedHyperBlock, err := hbf.getHyperBlockAvroBytes(fullPath)
-		if err != nil {
-			return nil, err
-		}
-
-		encodedHyperBlocks = append(encodedHyperBlocks, encodedHyperBlock)
+func (hbf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
+	encodedHyperBlocks, err := hbf.getHyperBlocksByNonces(noncesInterval, options)
+	if err != nil {
+		return nil, err
 	}
 
 	return &api.CovalentHyperBlocksApiResponse{

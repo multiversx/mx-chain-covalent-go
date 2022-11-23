@@ -25,6 +25,12 @@ type HyperBlockQueryOptions struct {
 	Tokens              string `toml:"tokens"`
 }
 
+// HyperBlocksQueryOptions holds the hyper blocks query params options
+type HyperBlocksQueryOptions struct {
+	QueryOptions HyperBlockQueryOptions
+	BatchSize    uint32
+}
+
 // LoadConfig will load the Config from the provided file
 func LoadConfig(tomlFile string) (*Config, error) {
 	tomlBytes, err := ioutil.ReadFile(tomlFile)

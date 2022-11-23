@@ -75,7 +75,11 @@ func (hbp *hyperBlockProxy) GetHyperBlocksByInterval(c *gin.Context) {
 		return
 	}
 
-	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlocksByInterval(noncesInterval, hbp.options)
+	options := config.HyperBlocksQueryOptions{
+		QueryOptions: hbp.options,
+		BatchSize:    hbp.batchSize,
+	}
+	hyperBlockApiResponse, err := hbp.hyperBlockFacade.GetHyperBlocksByInterval(noncesInterval, options)
 	if err != nil {
 		respondWithInternalError(c, err)
 		return

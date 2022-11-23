@@ -3,6 +3,9 @@ package facade
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/ElrondNetwork/covalent-indexer-go/api"
@@ -272,5 +275,355 @@ func TestHyperBlockFacade_GetHyperBlock_ErrorCases(t *testing.T) {
 		block, err := facade.getHyperBlock(elrondProxyUrl)
 		require.Nil(t, block)
 		require.Equal(t, errEncoder, err)
+	})
+}
+
+func getNonceFromRequest(t *testing.T, request string) uint64 {
+	splits := strings.Split(request, "/")
+	numSplits := len(splits)
+	require.True(t, numSplits >= 1)
+
+	nonceFromRequestStr := splits[numSplits-1]
+	nonceFromRequestInt, err := strconv.Atoi(nonceFromRequestStr)
+	require.Nil(t, err)
+
+	return uint64(nonceFromRequestInt)
+}
+
+func requireNonceInInterval(t *testing.T, nonce uint64, interval *api.Interval) {
+	require.True(t, nonce >= interval.Start && nonce <= interval.End)
+}
+
+func TestHyperBlockFacade_GetHyperBlocksByInterval(t *testing.T) {
+	t.Parallel()
+
+	elrondProxyUrl := "url"
+
+	interval := &api.Interval{
+		Start: 4,
+		End:   45,
+	}
+	numNonces := interval.End - interval.Start + 1
+
+	elrondEndPointCallsCt := uint64(0)
+	processHyperBlocksCt := uint64(0)
+	encodeCt := uint64(0)
+
+	elrondEndPoint := &apiMocks.ElrondHyperBlockEndPointStub{
+		GetHyperBlockCalled: func(path string) (*api.ElrondHyperBlockApiResponse, error) {
+			atomic.AddUint64(&elrondEndPointCallsCt, 1)
+
+			nonceFromRequest := getNonceFromRequest(t, path)
+			requireNonceInInterval(t, nonceFromRequest, interval)
+			require.Equal(t, fmt.Sprintf("%s%s/%d", elrondProxyUrl, hyperBlockPathByNonce, nonceFromRequest), path)
+
+			return &api.ElrondHyperBlockApiResponse{
+				Data: api.ElrondHyperBlockApiResponsePayload{
+					HyperBlock: hyperBlock.HyperBlock{
+						Nonce: nonceFromRequest,
+					}},
+				Error: "",
+				Code:  api.ReturnCodeSuccess,
+			}, nil
+		},
+	}
+
+	processor := &mock.HyperBlockProcessorStub{
+		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schema.HyperBlock, error) {
+			atomic.AddUint64(&processHyperBlocksCt, 1)
+
+			requireNonceInInterval(t, hyperBlock.Nonce, interval)
+			return &schema.HyperBlock{
+				Nonce: int64(hyperBlock.Nonce),
+			}, nil
+		},
+	}
+
+	encoder := &mock.AvroEncoderStub{
+		EncodeCalled: func(record avro.AvroRecord) ([]byte, error) {
+			atomic.AddUint64(&encodeCt, 1)
+
+			hyperBlockRecord, castOk := record.(*schema.HyperBlock)
+			require.True(t, castOk)
+
+			requireNonceInInterval(t, uint64(hyperBlockRecord.Nonce), interval)
+			encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", hyperBlockRecord.Nonce))
+			return encodedBlock, nil
+		},
+	}
+
+	facade, _ := NewHyperBlockFacade(elrondProxyUrl, encoder, elrondEndPoint, processor)
+
+	expectedEncodedHyperBlocks := make([][]byte, 0)
+	for nonce := interval.Start; nonce <= interval.End; nonce++ {
+		encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", nonce))
+		expectedEncodedHyperBlocks = append(expectedEncodedHyperBlocks, encodedBlock)
+	}
+	options := config.HyperBlocksQueryOptions{
+		BatchSize: 10,
+	}
+	blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+	require.Nil(t, err)
+	require.Equal(t, &api.CovalentHyperBlocksApiResponse{
+		Data:  expectedEncodedHyperBlocks,
+		Error: "",
+		Code:  api.ReturnCodeSuccess,
+	}, blocks)
+
+	require.Equal(t, numNonces, elrondEndPointCallsCt)
+	require.Equal(t, numNonces, processHyperBlocksCt)
+	require.Equal(t, numNonces, encodeCt)
+}
+
+func TestHyperBlockFacade_GetHyperBlocksByInterval_CouldNotFetchAllHyperBlocks_ExpectError(t *testing.T) {
+	t.Parallel()
+
+	elrondProxyUrl := "url"
+
+	interval := &api.Interval{
+		Start: 4,
+		End:   45,
+	}
+
+	elrondEndPointCallsCt := uint64(0)
+	processHyperBlocksCt := uint64(0)
+	encodeCt := uint64(0)
+
+	expectedErr := errors.New("could not get hyper block")
+	invalidNonce := uint64(40)
+	elrondEndPoint := &apiMocks.ElrondHyperBlockEndPointStub{
+		GetHyperBlockCalled: func(path string) (*api.ElrondHyperBlockApiResponse, error) {
+			atomic.AddUint64(&elrondEndPointCallsCt, 1)
+
+			nonceFromRequest := getNonceFromRequest(t, path)
+			requireNonceInInterval(t, nonceFromRequest, interval)
+			require.Equal(t, fmt.Sprintf("%s%s/%d", elrondProxyUrl, hyperBlockPathByNonce, nonceFromRequest), path)
+
+			if nonceFromRequest == invalidNonce {
+				return nil, expectedErr
+			}
+
+			return &api.ElrondHyperBlockApiResponse{
+				Data: api.ElrondHyperBlockApiResponsePayload{
+					HyperBlock: hyperBlock.HyperBlock{
+						Nonce: nonceFromRequest,
+					}},
+				Error: "",
+				Code:  api.ReturnCodeSuccess,
+			}, nil
+		},
+	}
+
+	processor := &mock.HyperBlockProcessorStub{
+		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schema.HyperBlock, error) {
+			atomic.AddUint64(&processHyperBlocksCt, 1)
+
+			requireNonceInInterval(t, hyperBlock.Nonce, interval)
+			return &schema.HyperBlock{
+				Nonce: int64(hyperBlock.Nonce),
+			}, nil
+		},
+	}
+
+	encoder := &mock.AvroEncoderStub{
+		EncodeCalled: func(record avro.AvroRecord) ([]byte, error) {
+			atomic.AddUint64(&encodeCt, 1)
+
+			hyperBlockRecord, castOk := record.(*schema.HyperBlock)
+			require.True(t, castOk)
+
+			requireNonceInInterval(t, uint64(hyperBlockRecord.Nonce), interval)
+			encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", hyperBlockRecord.Nonce))
+			return encodedBlock, nil
+		},
+	}
+
+	facade, _ := NewHyperBlockFacade(elrondProxyUrl, encoder, elrondEndPoint, processor)
+
+	expectedEncodedHyperBlocks := make([][]byte, 0)
+	for nonce := interval.Start; nonce <= interval.End; nonce++ {
+		encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", nonce))
+		expectedEncodedHyperBlocks = append(expectedEncodedHyperBlocks, encodedBlock)
+	}
+
+	options := config.HyperBlocksQueryOptions{
+		BatchSize: 10,
+	}
+	blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+	require.Nil(t, blocks)
+	require.True(t, strings.Contains(err.Error(), errCouldNotGetHyperBlock.Error()))
+	require.True(t, strings.Contains(err.Error(), expectedErr.Error()))
+	require.True(t, strings.Contains(err.Error(), fmt.Sprintf("%s%s/%d", elrondProxyUrl, hyperBlockPathByNonce, invalidNonce)))
+	require.True(t, strings.Contains(err.Error(), fmt.Sprintf("%d", maxRequestsRetrial)))
+
+	require.Equal(t, uint64(41)+maxRequestsRetrial, elrondEndPointCallsCt) // 41 calls in [4,40] + maxRequestsRetrial
+	require.Equal(t, uint64(41), processHyperBlocksCt)                     // 41 calls in [4,40]
+	require.Equal(t, uint64(41), encodeCt)                                 // 41 calls in [4,40]
+}
+
+func TestHyperBlockFacade_GetHyperBlocksByInterval_GetHyperBlockAfterNumRetrials(t *testing.T) {
+	t.Parallel()
+
+	elrondProxyUrl := "url"
+
+	interval := &api.Interval{
+		Start: 4,
+		End:   45,
+	}
+	numNonces := interval.End - interval.Start + 1
+
+	elrondEndPointCallsCt := uint64(0)
+	processHyperBlocksCt := uint64(0)
+	encodeCt := uint64(0)
+
+	expectedErr := errors.New("could not get hyper block")
+	invalidNonce := uint64(40)
+	numRetrials := 0
+	maxNumRetrials := maxRequestsRetrial / 2
+	elrondEndPoint := &apiMocks.ElrondHyperBlockEndPointStub{
+		GetHyperBlockCalled: func(path string) (*api.ElrondHyperBlockApiResponse, error) {
+			atomic.AddUint64(&elrondEndPointCallsCt, 1)
+
+			nonceFromRequest := getNonceFromRequest(t, path)
+			requireNonceInInterval(t, nonceFromRequest, interval)
+			require.Equal(t, fmt.Sprintf("%s%s/%d", elrondProxyUrl, hyperBlockPathByNonce, nonceFromRequest), path)
+
+			if nonceFromRequest == invalidNonce && numRetrials < maxNumRetrials {
+				numRetrials++
+				return nil, expectedErr
+			}
+
+			return &api.ElrondHyperBlockApiResponse{
+				Data: api.ElrondHyperBlockApiResponsePayload{
+					HyperBlock: hyperBlock.HyperBlock{
+						Nonce: nonceFromRequest,
+					}},
+				Error: "",
+				Code:  api.ReturnCodeSuccess,
+			}, nil
+		},
+	}
+
+	processor := &mock.HyperBlockProcessorStub{
+		ProcessCalled: func(hyperBlock *hyperBlock.HyperBlock) (*schema.HyperBlock, error) {
+			atomic.AddUint64(&processHyperBlocksCt, 1)
+
+			requireNonceInInterval(t, hyperBlock.Nonce, interval)
+			return &schema.HyperBlock{
+				Nonce: int64(hyperBlock.Nonce),
+			}, nil
+		},
+	}
+
+	encoder := &mock.AvroEncoderStub{
+		EncodeCalled: func(record avro.AvroRecord) ([]byte, error) {
+			atomic.AddUint64(&encodeCt, 1)
+
+			hyperBlockRecord, castOk := record.(*schema.HyperBlock)
+			require.True(t, castOk)
+
+			requireNonceInInterval(t, uint64(hyperBlockRecord.Nonce), interval)
+			encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", hyperBlockRecord.Nonce))
+			return encodedBlock, nil
+		},
+	}
+
+	facade, _ := NewHyperBlockFacade(elrondProxyUrl, encoder, elrondEndPoint, processor)
+
+	expectedEncodedHyperBlocks := make([][]byte, 0)
+	for nonce := interval.Start; nonce <= interval.End; nonce++ {
+		encodedBlock := []byte(fmt.Sprintf("encodedBlock%d", nonce))
+		expectedEncodedHyperBlocks = append(expectedEncodedHyperBlocks, encodedBlock)
+	}
+	options := config.HyperBlocksQueryOptions{
+		BatchSize: 10,
+	}
+	blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+	require.Nil(t, err)
+	require.Equal(t, &api.CovalentHyperBlocksApiResponse{
+		Data:  expectedEncodedHyperBlocks,
+		Error: "",
+		Code:  api.ReturnCodeSuccess,
+	}, blocks)
+
+	require.Equal(t, numNonces+uint64(numRetrials), elrondEndPointCallsCt)
+	require.Equal(t, numNonces, processHyperBlocksCt)
+	require.Equal(t, numNonces, encodeCt)
+}
+
+func TestHyperBlockFacade_GetHyperBlocksByInterval_IntervalEdgeCases(t *testing.T) {
+	t.Parallel()
+
+	t.Run("invalid nonces interval, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		facade, _ := NewHyperBlockFacade("url",
+			&mock.AvroEncoderStub{},
+			&apiMocks.ElrondHyperBlockEndPointStub{},
+			&mock.HyperBlockProcessorStub{},
+		)
+
+		interval := &api.Interval{
+			Start: 10,
+			End:   9,
+		}
+		options := config.HyperBlocksQueryOptions{
+			BatchSize: 10,
+		}
+		blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+		require.Nil(t, blocks)
+		require.Equal(t, errInvalidNoncesInterval, err)
+	})
+
+	t.Run("invalid batch size, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		facade, _ := NewHyperBlockFacade("url",
+			&mock.AvroEncoderStub{},
+			&apiMocks.ElrondHyperBlockEndPointStub{},
+			&mock.HyperBlockProcessorStub{},
+		)
+
+		interval := &api.Interval{
+			Start: 10,
+			End:   12,
+		}
+		options := config.HyperBlocksQueryOptions{
+			BatchSize: 0,
+		}
+		blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+		require.Nil(t, blocks)
+		require.Equal(t, errInvalidBatchSize, err)
+	})
+
+	t.Run("start interval = end interval, should only return one encoded hyper block", func(t *testing.T) {
+		t.Parallel()
+
+		encodedHyperBlock := []byte("encodedHyperBlock")
+		encoder := &mock.AvroEncoderStub{
+			EncodeCalled: func(record avro.AvroRecord) ([]byte, error) {
+				return encodedHyperBlock, nil
+			},
+		}
+		facade, _ := NewHyperBlockFacade("url",
+			encoder,
+			&apiMocks.ElrondHyperBlockEndPointStub{},
+			&mock.HyperBlockProcessorStub{},
+		)
+
+		interval := &api.Interval{
+			Start: 10,
+			End:   10,
+		}
+		options := config.HyperBlocksQueryOptions{
+			BatchSize: 10,
+		}
+		blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+		require.Nil(t, err)
+		require.Equal(t, &api.CovalentHyperBlocksApiResponse{
+			Data:  [][]byte{encodedHyperBlock},
+			Error: "",
+			Code:  api.ReturnCodeSuccess,
+		}, blocks)
 	})
 }

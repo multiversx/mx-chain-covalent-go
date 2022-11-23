@@ -207,7 +207,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 			Code:  "success",
 		}
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
+			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
 				require.Equal(t, &api.Interval{
 					Start: startNonce,
 					End:   endNonce,
@@ -229,7 +229,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 
 		getHyperBlockFromFacadeCalled := false
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
+			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
 				getHyperBlockFromFacadeCalled = true
 				return nil, nil
 			},
@@ -250,7 +250,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 
 		getHyperBlockFromFacadeCalled := false
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
+			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
 				getHyperBlockFromFacadeCalled = true
 				return nil, nil
 			},
@@ -271,7 +271,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 
 		getHyperBlockFromFacadeCalled := false
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
+			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
 				getHyperBlockFromFacadeCalled = true
 				return nil, nil
 			},
@@ -293,7 +293,7 @@ func TestHyperBlockProxy_GetHyperBlocksByInterval(t *testing.T) {
 
 		errFacade := errors.New("error getting hyper block from facade")
 		facade := &apiMocks.HyperBlockFacadeStub{
-			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
+			GetHyperBlocksByIntervalCalled: func(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
 				return nil, errFacade
 			},
 		}

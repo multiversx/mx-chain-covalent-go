@@ -29,7 +29,7 @@ type ElrondHyperBlockEndpointHandler interface {
 type HyperBlockFacadeHandler interface {
 	GetHyperBlockByNonce(nonce uint64, options config.HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
 	GetHyperBlockByHash(hash string, options config.HyperBlockQueryOptions) (*CovalentHyperBlockApiResponse, error)
-	GetHyperBlocksByInterval(noncesInterval *Interval, options config.HyperBlockQueryOptions) (*CovalentHyperBlocksApiResponse, error)
+	GetHyperBlocksByInterval(noncesInterval *Interval, options config.HyperBlocksQueryOptions) (*CovalentHyperBlocksApiResponse, error)
 }
 
 // HyperBlockProxy is the covalent proxy. It should be able to fetch hyper blocks from
