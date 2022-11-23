@@ -23,7 +23,8 @@ func (hbf *hyperBlockFacade) getHyperBlocksByNonces(noncesInterval *api.Interval
 	done := make(chan struct{}, maxGoroutines)
 	wg := &sync.WaitGroup{}
 
-	results := make([][]byte, noncesInterval.End-noncesInterval.Start+1)
+	expectedNumResults := noncesInterval.End - noncesInterval.Start + 1
+	results := make([][]byte, expectedNumResults)
 	mutex := sync.Mutex{}
 	currIdx := uint32(0)
 
@@ -55,6 +56,10 @@ func (hbf *hyperBlockFacade) getHyperBlocksByNonces(noncesInterval *api.Interval
 	if requestError != nil {
 		return nil, fmt.Errorf("one or more errors occurred; last known error: %w", requestError)
 	}
+	if len(results) != int(expectedNumResults) {
+		return nil, fmt.Errorf("%w, expected to return %d, only got %d", errCouldNotGetAllHyperBlocks, expectedNumResults, len(results))
+	}
+
 	return results, requestError
 }
 

@@ -13,3 +13,5 @@ var errNilHyperBlockEndpointHandler = errors.New("nil hyper block endpoint handl
 var errInvalidNoncesInterval = errors.New("invalid nonces interval")
 
 var errCouldNotGetHyperBlock = errors.New("could not get hyper block")
+
+var errCouldNotGetAllHyperBlocks = errors.New("could not get all hyper blocks")

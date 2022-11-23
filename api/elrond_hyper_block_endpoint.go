@@ -28,8 +28,6 @@ func NewElrondHyperBlockEndPoint(httpClient HTTPClient) (*elrondHyperBlockEndPoi
 
 // GetHyperBlock will fetch an ElrondHyperBlockApiResponse from provided path
 func (hpe *elrondHyperBlockEndPoint) GetHyperBlock(path string) (*ElrondHyperBlockApiResponse, error) {
-
-	//TryAgain:
 	resp, err := hpe.httpClient.Get(path)
 	if err != nil {
 		return nil, err
@@ -43,12 +41,6 @@ func (hpe *elrondHyperBlockEndPoint) GetHyperBlock(path string) (*ElrondHyperBlo
 			}
 		}
 	}()
-
-	//if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode == http.StatusRequestTimeout {
-	//	_ = resp.Body.Close()
-	//	time.Sleep(time.Second)
-	//	goto TryAgain
-	//}
 
 	responseBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
