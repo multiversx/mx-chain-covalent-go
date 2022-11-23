@@ -2,6 +2,7 @@ package facade
 
 import (
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -80,13 +81,21 @@ func (hbf *hyperBlockFacade) getHyperBlockWithRetrials(request string) ([]byte, 
 		}
 
 		ctRetrials++
+		sleepDuration := calcRetryBackOffTime(ctRetrials)
 		log.Warn("could not get hyperblock; retrying...",
 			"request", request,
 			"error", err,
-			"num retrials", ctRetrials)
+			"num retrials", ctRetrials,
+			"sleep duration", sleepDuration,
+		)
 
-		time.Sleep(waitTimeRetrialsMs * time.Millisecond)
+		time.Sleep(sleepDuration)
 	}
 
 	return nil, fmt.Errorf("%w from request = %s after num of retrials = %d", errCouldNotGetHyperBlock, request, maxRequestsRetrial)
+}
+
+func calcRetryBackOffTime(attemptNumber int) time.Duration {
+	exp := math.Exp2(float64(attemptNumber))
+	return time.Duration(exp) * waitTimeRetrialsMs * time.Millisecond
 }
