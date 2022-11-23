@@ -456,9 +456,9 @@ func TestHyperBlockFacade_GetHyperBlocksByInterval_CouldNotFetchAllHyperBlocks_E
 	require.True(t, strings.Contains(err.Error(), fmt.Sprintf("%s%s/%d", elrondProxyUrl, hyperBlockPathByNonce, invalidNonce)))
 	require.True(t, strings.Contains(err.Error(), fmt.Sprintf("%d", maxRequestsRetrial)))
 
-	require.Equal(t, uint64(51), elrondEndPointCallsCt) // 41 calls in [4,40] + 10 retrials
-	require.Equal(t, uint64(41), processHyperBlocksCt)  // 41 calls in [4,40]
-	require.Equal(t, uint64(41), encodeCt)              // 41 calls in [4,40]
+	require.Equal(t, uint64(41)+maxRequestsRetrial, elrondEndPointCallsCt) // 41 calls in [4,40] + maxRequestsRetrial
+	require.Equal(t, uint64(41), processHyperBlocksCt)                     // 41 calls in [4,40]
+	require.Equal(t, uint64(41), encodeCt)                                 // 41 calls in [4,40]
 }
 
 func TestHyperBlockFacade_GetHyperBlocksByInterval_GetHyperBlockAfterNumRetrials(t *testing.T) {
@@ -549,4 +549,81 @@ func TestHyperBlockFacade_GetHyperBlocksByInterval_GetHyperBlockAfterNumRetrials
 	require.Equal(t, numNonces+uint64(numRetrials), elrondEndPointCallsCt)
 	require.Equal(t, numNonces, processHyperBlocksCt)
 	require.Equal(t, numNonces, encodeCt)
+}
+
+func TestHyperBlockFacade_GetHyperBlocksByInterval_IntervalEdgeCases(t *testing.T) {
+	t.Parallel()
+
+	t.Run("invalid nonces interval, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		facade, _ := NewHyperBlockFacade("url",
+			&mock.AvroEncoderStub{},
+			&apiMocks.ElrondHyperBlockEndPointStub{},
+			&mock.HyperBlockProcessorStub{},
+		)
+
+		interval := &api.Interval{
+			Start: 10,
+			End:   9,
+		}
+		options := config.HyperBlocksQueryOptions{
+			BatchSize: 10,
+		}
+		blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+		require.Nil(t, blocks)
+		require.Equal(t, errInvalidNoncesInterval, err)
+	})
+
+	t.Run("invalid batch size, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		facade, _ := NewHyperBlockFacade("url",
+			&mock.AvroEncoderStub{},
+			&apiMocks.ElrondHyperBlockEndPointStub{},
+			&mock.HyperBlockProcessorStub{},
+		)
+
+		interval := &api.Interval{
+			Start: 10,
+			End:   12,
+		}
+		options := config.HyperBlocksQueryOptions{
+			BatchSize: 0,
+		}
+		blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+		require.Nil(t, blocks)
+		require.Equal(t, errInvalidBatchSize, err)
+	})
+
+	t.Run("start interval = end interval, should only return one encoded hyper block", func(t *testing.T) {
+		t.Parallel()
+
+		encodedHyperBlock := []byte("encodedHyperBlock")
+		encoder := &mock.AvroEncoderStub{
+			EncodeCalled: func(record avro.AvroRecord) ([]byte, error) {
+				return encodedHyperBlock, nil
+			},
+		}
+		facade, _ := NewHyperBlockFacade("url",
+			encoder,
+			&apiMocks.ElrondHyperBlockEndPointStub{},
+			&mock.HyperBlockProcessorStub{},
+		)
+
+		interval := &api.Interval{
+			Start: 10,
+			End:   10,
+		}
+		options := config.HyperBlocksQueryOptions{
+			BatchSize: 10,
+		}
+		blocks, err := facade.GetHyperBlocksByInterval(interval, options)
+		require.Nil(t, err)
+		require.Equal(t, &api.CovalentHyperBlocksApiResponse{
+			Data:  [][]byte{encodedHyperBlock},
+			Error: "",
+			Code:  api.ReturnCodeSuccess,
+		}, blocks)
+	})
 }
