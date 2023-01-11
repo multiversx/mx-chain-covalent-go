@@ -16,13 +16,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewElrondHyperBlockEndPoint(t *testing.T) {
+func TestNewMultiversxHyperBlockEndPoint(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should work", func(t *testing.T) {
 		t.Parallel()
 
-		endPoint, err := NewElrondHyperBlockEndPoint(&mock.HTTPClientStub{})
+		endPoint, err := NewMultiversxHyperBlockEndPoint(&mock.HTTPClientStub{})
 		require.NotNil(t, endPoint)
 		require.Nil(t, err)
 	})
@@ -30,18 +30,18 @@ func TestNewElrondHyperBlockEndPoint(t *testing.T) {
 	t.Run("nil http client, should return error", func(t *testing.T) {
 		t.Parallel()
 
-		endPoint, err := NewElrondHyperBlockEndPoint(nil)
+		endPoint, err := NewMultiversxHyperBlockEndPoint(nil)
 		require.Nil(t, endPoint)
 		require.Equal(t, errNilHttpServer, err)
 	})
 }
 
-func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
+func TestMultiversxHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 	t.Parallel()
 
 	path := "path"
-	expectedElrondApiResponse := &ElrondHyperBlockApiResponse{
-		Data: ElrondHyperBlockApiResponsePayload{
+	expectedMultiversxApiResponse := &MultiversxHyperBlockApiResponse{
+		Data: MultiversxHyperBlockApiResponsePayload{
 			HyperBlock: hyperBlock.HyperBlock{
 				Hash: "hash",
 			},
@@ -49,7 +49,7 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 		Error: "",
 		Code:  "success",
 	}
-	bodyResponse, errMarshal := json.Marshal(expectedElrondApiResponse)
+	bodyResponse, errMarshal := json.Marshal(expectedMultiversxApiResponse)
 	require.Nil(t, errMarshal)
 
 	t.Run("should work", func(t *testing.T) {
@@ -66,10 +66,10 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 			},
 		}
 
-		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
-		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		multiversxEndPoint, _ := NewMultiversxHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := multiversxEndPoint.GetHyperBlock(path)
 		require.Nil(t, err)
-		require.Equal(t, expectedElrondApiResponse, hyperBlockApiResponse)
+		require.Equal(t, expectedMultiversxApiResponse, hyperBlockApiResponse)
 	})
 
 	t.Run("close response body failed, should work anyway and return no error", func(t *testing.T) {
@@ -94,10 +94,10 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 			},
 		}
 
-		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
-		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		multiversxEndPoint, _ := NewMultiversxHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := multiversxEndPoint.GetHyperBlock(path)
 		require.Nil(t, err)
-		require.Equal(t, expectedElrondApiResponse, hyperBlockApiResponse)
+		require.Equal(t, expectedMultiversxApiResponse, hyperBlockApiResponse)
 	})
 
 	t.Run("could not get response from http client, should return error", func(t *testing.T) {
@@ -110,8 +110,8 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 			},
 		}
 
-		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
-		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		multiversxEndPoint, _ := NewMultiversxHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := multiversxEndPoint.GetHyperBlock(path)
 		require.Nil(t, hyperBlockApiResponse)
 		require.Equal(t, errHttpClient, err)
 	})
@@ -141,8 +141,8 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 			},
 		}
 
-		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
-		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		multiversxEndPoint, _ := NewMultiversxHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := multiversxEndPoint.GetHyperBlock(path)
 		require.Nil(t, hyperBlockApiResponse)
 		require.Equal(t, errReadBytes, err)
 		require.True(t, wasReaderClosed)
@@ -167,8 +167,8 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 			},
 		}
 
-		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
-		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		multiversxEndPoint, _ := NewMultiversxHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := multiversxEndPoint.GetHyperBlock(path)
 		require.Nil(t, hyperBlockApiResponse)
 		require.NotNil(t, err)
 	})
@@ -187,8 +187,8 @@ func TestElrondHyperBlockEndPoint_GetHyperBlock(t *testing.T) {
 			},
 		}
 
-		elrondEndPoint, _ := NewElrondHyperBlockEndPoint(client)
-		hyperBlockApiResponse, err := elrondEndPoint.GetHyperBlock(path)
+		multiversxEndPoint, _ := NewMultiversxHyperBlockEndPoint(client)
+		hyperBlockApiResponse, err := multiversxEndPoint.GetHyperBlock(path)
 		require.Nil(t, hyperBlockApiResponse)
 		require.NotNil(t, err)
 		require.True(t, strings.Contains(err.Error(), strconv.Itoa(http.StatusBadRequest)))

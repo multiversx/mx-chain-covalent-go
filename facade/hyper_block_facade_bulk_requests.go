@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/multiversx/mx-chain-core-go/core"
 	"github.com/multiversx/mx-chain-covalent-go/api"
 	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
-	"github.com/multiversx/mx-chain-core-go/core"
 )
 
 const (

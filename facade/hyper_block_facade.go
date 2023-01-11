@@ -16,21 +16,21 @@ const hyperBlockPathByHash = "/hyperblock/by-hash"
 var log = logger.GetOrCreate("facade")
 
 type hyperBlockFacade struct {
-	elrondProxyUrl string
-	processor      covalent.HyperBlockProcessor
-	elrondEndpoint api.ElrondHyperBlockEndpointHandler
-	encoder        AvroEncoder
+	multiversxProxyUrl string
+	processor          covalent.HyperBlockProcessor
+	multiversxEndpoint api.MultiversxHyperBlockEndpointHandler
+	encoder            AvroEncoder
 }
 
-// NewHyperBlockFacade will create a hyper block facade, which can fetch hyper blocks from Elrond proxy
+// NewHyperBlockFacade will create a hyper block facade, which can fetch hyper blocks from Multiversx proxy
 func NewHyperBlockFacade(
-	elrondProxyUrl string,
+	multiversxProxyUrl string,
 	avroEncoder AvroEncoder,
-	elrondHyperBlockEndpoint api.ElrondHyperBlockEndpointHandler,
+	multiversxHyperBlockEndpoint api.MultiversxHyperBlockEndpointHandler,
 	hyperBlockProcessor covalent.HyperBlockProcessor,
 ) (*hyperBlockFacade, error) {
-	if len(elrondProxyUrl) == 0 {
-		return nil, errEmptyElrondProxyUrl
+	if len(multiversxProxyUrl) == 0 {
+		return nil, errEmptyMultiversxProxyUrl
 	}
 	if avroEncoder == nil {
 		return nil, errNilAvroEncoder
@@ -38,25 +38,25 @@ func NewHyperBlockFacade(
 	if hyperBlockProcessor == nil {
 		return nil, errNilHyperBlockProcessor
 	}
-	if elrondHyperBlockEndpoint == nil {
+	if multiversxHyperBlockEndpoint == nil {
 		return nil, errNilHyperBlockEndpointHandler
 	}
 
 	return &hyperBlockFacade{
-		elrondProxyUrl: elrondProxyUrl,
-		processor:      hyperBlockProcessor,
-		encoder:        avroEncoder,
-		elrondEndpoint: elrondHyperBlockEndpoint,
+		multiversxProxyUrl: multiversxProxyUrl,
+		processor:          hyperBlockProcessor,
+		encoder:            avroEncoder,
+		multiversxEndpoint: multiversxHyperBlockEndpoint,
 	}, nil
 }
 
-// GetHyperBlockByNonce will fetch the hyper block from Elrond proxy with provided nonce and options in covalent format
+// GetHyperBlockByNonce will fetch the hyper block from Multiversx proxy with provided nonce and options in covalent format
 func (hbf *hyperBlockFacade) GetHyperBlockByNonce(nonce uint64, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 	fullPath := hbf.getHyperBlockByNonceFullPath(nonce, options)
 	return hbf.getHyperBlock(fullPath)
 }
 
-// GetHyperBlocksByInterval will fetch the hyper blocks from Elrond proxy with provided nonces interval and options in covalent format
+// GetHyperBlocksByInterval will fetch the hyper blocks from Multiversx proxy with provided nonces interval and options in covalent format
 func (hbf *hyperBlockFacade) GetHyperBlocksByInterval(noncesInterval *api.Interval, options config.HyperBlocksQueryOptions) (*api.CovalentHyperBlocksApiResponse, error) {
 	encodedHyperBlocks, err := hbf.getHyperBlocksByNonces(noncesInterval, options)
 	if err != nil {
@@ -77,7 +77,7 @@ func (hbf *hyperBlockFacade) getHyperBlockByNonceFullPath(nonce uint64, options 
 
 func (hbf *hyperBlockFacade) getFullPathWithOptions(path string, options config.HyperBlockQueryOptions) string {
 	pathWithOptions := buildUrlWithBlockQueryOptions(path, options)
-	return fmt.Sprintf("%s%s", hbf.elrondProxyUrl, pathWithOptions)
+	return fmt.Sprintf("%s%s", hbf.multiversxProxyUrl, pathWithOptions)
 }
 
 func buildUrlWithBlockQueryOptions(path string, options config.HyperBlockQueryOptions) string {
@@ -106,12 +106,12 @@ func setQueryParamIfNotEmpty(query url.Values, option string, urlParam string) {
 }
 
 func (hbf *hyperBlockFacade) getHyperBlockAvroBytes(path string) ([]byte, error) {
-	elrondHyperBlock, err := hbf.elrondEndpoint.GetHyperBlock(path)
+	multiversxHyperBlock, err := hbf.multiversxEndpoint.GetHyperBlock(path)
 	if err != nil {
 		return nil, err
 	}
 
-	hyperBlockSchema, err := hbf.processor.Process(&elrondHyperBlock.Data.HyperBlock)
+	hyperBlockSchema, err := hbf.processor.Process(&multiversxHyperBlock.Data.HyperBlock)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (hbf *hyperBlockFacade) getHyperBlock(path string) (*api.CovalentHyperBlock
 	}, nil
 }
 
-// GetHyperBlockByHash will fetch the hyper block from Elrond proxy with provided hash and options in covalent format
+// GetHyperBlockByHash will fetch the hyper block from Multiversx proxy with provided hash and options in covalent format
 func (hbf *hyperBlockFacade) GetHyperBlockByHash(hash string, options config.HyperBlockQueryOptions) (*api.CovalentHyperBlockApiResponse, error) {
 	blockByHashPath := fmt.Sprintf("%s/%s", hyperBlockPathByHash, hash)
 	fullPath := hbf.getFullPathWithOptions(blockByHashPath, options)

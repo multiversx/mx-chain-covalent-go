@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
 	"github.com/gin-gonic/gin"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
 )
 
 const (
@@ -22,7 +22,7 @@ type hyperBlockProxy struct {
 }
 
 // NewHyperBlockProxy will create a covalent proxy, able to fetch hyper block requests
-// from Elrond and return them in covalent format
+// from Multiversx and return them in covalent format
 func NewHyperBlockProxy(
 	hyperBlockFacade HyperBlockFacadeHandler,
 	cfg config.Config,

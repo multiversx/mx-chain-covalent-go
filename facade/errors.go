@@ -2,7 +2,7 @@ package facade
 
 import "errors"
 
-var errEmptyElrondProxyUrl = errors.New("empty proxy url provided")
+var errEmptyMultiversxProxyUrl = errors.New("empty proxy url provided")
 
 var errNilAvroEncoder = errors.New("nil avro encoder provided")
 

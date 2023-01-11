@@ -8,12 +8,12 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/multiversx/mx-chain-covalent-go/api"
 	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
 	"github.com/multiversx/mx-chain-covalent-go/facade"
 	"github.com/multiversx/mx-chain-covalent-go/process/factory"
 	"github.com/multiversx/mx-chain-covalent-go/process/utility"
-	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli"
 )
 
@@ -25,12 +25,12 @@ const (
 func main() {
 	app := cli.NewApp()
 	app.Name = "Covalent proxy indexer tool"
-	app.Usage = "This is the entry point for covalent proxy indexer tool. It acts as a proxy to fetch hyperblocks from Elrond  It converts hyperblocks data and provides API calls for covalent in their desired format"
+	app.Usage = "This is the entry point for covalent proxy indexer tool. It acts as a proxy to fetch hyperblocks from Multiversx  It converts hyperblocks data and provides API calls for covalent in their desired format"
 	app.Flags = getFlags()
 	app.Authors = []cli.Author{
 		{
-			Name:  "The Elrond Team",
-			Email: "contact@elrond.com",
+			Name:  "The Multiversx Team",
+			Email: "contact@multiversx.com",
 		},
 	}
 
@@ -73,7 +73,7 @@ func startProxy(ctx *cli.Context) error {
 
 func createServer(cfg *config.Config) (api.HTTPServer, error) {
 	httpClient := api.NewDefaultHttpClient(cfg.RequestTimeOutSec)
-	elrondHyperBlockEndpointHandler, err := api.NewElrondHyperBlockEndPoint(httpClient)
+	multiversxHyperBlockEndpointHandler, err := api.NewMultiversxHyperBlockEndPoint(httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -85,9 +85,9 @@ func createServer(cfg *config.Config) (api.HTTPServer, error) {
 
 	avroEncoder := &utility.AvroMarshaller{}
 	hyperBlockFacade, err := facade.NewHyperBlockFacade(
-		cfg.ElrondProxyUrl,
+		cfg.MultiversxProxyUrl,
 		avroEncoder,
-		elrondHyperBlockEndpointHandler,
+		multiversxHyperBlockEndpointHandler,
 		hyperBlockProcessor,
 	)
 	if err != nil {
