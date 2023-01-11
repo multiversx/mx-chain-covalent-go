@@ -1,6 +1,6 @@
 package main
 
-import logger "github.com/ElrondNetwork/elrond-go-logger"
+import logger "github.com/multiversx/mx-chain-logger-go"
 
 var (
 	log = logger.GetOrCreate("main")

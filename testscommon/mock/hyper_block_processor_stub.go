@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/multiversx/mx-chain-covalent-go/hyperBlock"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
 )
 
 // HyperBlockProcessorStub -

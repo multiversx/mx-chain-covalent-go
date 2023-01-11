@@ -1,14 +1,14 @@
 # covalent-indexer-go
 
-Covalent indexer acts as an extra proxy layer over Elrond's Proxy by providing avro encoded hyper blocks.
+Covalent indexer acts as an extra proxy layer over Multiversx' Proxy by providing avro encoded hyper blocks.
 
 ## How it works
 
 1. Covalent proxy hyperBlock request is triggered(e.g.: `http://127.0.0.1:7952/hyperblock/by-nonce/37`).
-2. Covalent proxy will interrogate the backing Elrond proxy via REST API to fetch requested hyperBlock using query
+2. Covalent proxy will interrogate the backing Multiversx proxy via REST API to fetch requested hyperBlock using query
    parameters defined in the config(`cmd/proxy/config.toml`).
-3. Received data from Elrond proxy will be converted to defined avro schema (`schema/block.elrond.avsc`)
-4. Covalent proxy response will have the following format (compatible with Elrond proxy API responses):
+3. Received data from Multiversx proxy will be converted to defined avro schema (`schema/block.multiversx.avsc`)
+4. Covalent proxy response will have the following format (compatible with Multiversx proxy API responses):
 
 ```  
 {
@@ -28,12 +28,12 @@ Data field contains a byte array corresponding to the encoded avro schema.
 
 In `cmd/proxy/config.toml` one can find:
 
-1. Elrond & Covalent proxy configuration(e.g. `port`, `elrondProxyUrl`, etc.)
-2. `hyperBlockQueryOptions` used to format hyperblock queries for Elrond proxy. E.g.: following Covalent
+1. Multiversx & Covalent proxy configuration(e.g. `port`, `multiversxProxyUrl`, etc.)
+2. `hyperBlockQueryOptions` used to format hyperblock queries for Multiversx proxy. E.g.: following Covalent
    request: `localhost:port/hyperblock/by-nonce/4`, having `withAlteredAccounts = true` and `tokens = all` will trigger
-   the following request : `elrondProxy:port/hyperblock/by-nonce/4?withAlteredAccounts=true&tokens=all`
+   the following request : `multiversxProxy:port/hyperblock/by-nonce/4?withAlteredAccounts=true&tokens=all`
 
-_Please note that altered-accounts endpoints will only work if the backing observers of the Elrond Proxy have support
+_Please note that altered-accounts endpoints will only work if the backing observers of the Multiversx Proxy have support
 for historical balances (--operation-mode historical-balances when starting the node)_
 
 ## Endpoints

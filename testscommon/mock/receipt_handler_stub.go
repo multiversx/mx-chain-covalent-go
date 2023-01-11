@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
+	"github.com/multiversx/mx-chain-core-go/data/transaction"
 )
 
 // ReceiptHandlerStub -

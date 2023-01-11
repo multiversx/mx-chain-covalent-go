@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
+	"github.com/multiversx/mx-chain-covalent-go/hyperBlock"
 )
 
 // ReturnCode identifies api return codes
@@ -16,15 +16,15 @@ const ReturnCodeInternalError ReturnCode = "internal_issue"
 // ReturnCodeRequestError defines a request which hasn't been executed successfully due to a bad request received
 const ReturnCodeRequestError ReturnCode = "bad_request"
 
-// ElrondHyperBlockApiResponse is the expected hyper block dto response from Elrond proxy
-type ElrondHyperBlockApiResponse struct {
-	Data  ElrondHyperBlockApiResponsePayload `json:"data"`
-	Error string                             `json:"error"`
-	Code  ReturnCode                         `json:"code"`
+// MultiversxHyperBlockApiResponse is the expected hyper block dto response from Multiversx proxy
+type MultiversxHyperBlockApiResponse struct {
+	Data  MultiversxHyperBlockApiResponsePayload `json:"data"`
+	Error string                                 `json:"error"`
+	Code  ReturnCode                             `json:"code"`
 }
 
-// ElrondHyperBlockApiResponsePayload wraps a hyperBlock
-type ElrondHyperBlockApiResponsePayload struct {
+// MultiversxHyperBlockApiResponsePayload wraps a hyperBlock
+type MultiversxHyperBlockApiResponsePayload struct {
 	HyperBlock hyperBlock.HyperBlock `json:"hyperblock"`
 }
 

@@ -3,8 +3,8 @@ package hyperBlock
 import (
 	"time"
 
-	"github.com/ElrondNetwork/elrond-go-core/data/api"
-	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
+	"github.com/multiversx/mx-chain-core-go/data/api"
+	"github.com/multiversx/mx-chain-core-go/data/transaction"
 )
 
 // HyperBlock contains all fully executed (both in source and in destination shards) transactions notarized in a given metaBlock

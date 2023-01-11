@@ -6,28 +6,28 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	logger "github.com/multiversx/mx-chain-logger-go"
 )
 
 var log = logger.GetOrCreate("api")
 
-type elrondHyperBlockEndPoint struct {
+type multiversxHyperBlockEndPoint struct {
 	httpClient HTTPClient
 }
 
-// NewElrondHyperBlockEndPoint will create a handler which can fetch hyper blocks from Elrond gateway
-func NewElrondHyperBlockEndPoint(httpClient HTTPClient) (*elrondHyperBlockEndPoint, error) {
+// NewMultiversxHyperBlockEndPoint will create a handler which can fetch hyper blocks from Multiversx gateway
+func NewMultiversxHyperBlockEndPoint(httpClient HTTPClient) (*multiversxHyperBlockEndPoint, error) {
 	if httpClient == nil {
 		return nil, errNilHttpServer
 	}
 
-	return &elrondHyperBlockEndPoint{
+	return &multiversxHyperBlockEndPoint{
 		httpClient: httpClient,
 	}, nil
 }
 
-// GetHyperBlock will fetch an ElrondHyperBlockApiResponse from provided path
-func (hpe *elrondHyperBlockEndPoint) GetHyperBlock(path string) (*ElrondHyperBlockApiResponse, error) {
+// GetHyperBlock will fetch an MultiversxHyperBlockApiResponse from provided path
+func (hpe *multiversxHyperBlockEndPoint) GetHyperBlock(path string) (*MultiversxHyperBlockApiResponse, error) {
 	resp, err := hpe.httpClient.Get(path)
 	if err != nil {
 		return nil, err
@@ -47,14 +47,14 @@ func (hpe *elrondHyperBlockEndPoint) GetHyperBlock(path string) (*ElrondHyperBlo
 		return nil, err
 	}
 
-	var response ElrondHyperBlockApiResponse
+	var response MultiversxHyperBlockApiResponse
 	err = json.Unmarshal(responseBodyBytes, &response)
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code: %d, elrond proxy response error: %s", resp.StatusCode, response.Error)
+		return nil, fmt.Errorf("status code: %d, multiversx proxy response error: %s", resp.StatusCode, response.Error)
 	}
 
 	return &response, nil

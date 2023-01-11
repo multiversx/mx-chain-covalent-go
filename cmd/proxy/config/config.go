@@ -12,7 +12,7 @@ type Config struct {
 	HyperBlockPath         string                 `toml:"hyperBlockPath"`
 	HyperBlocksPath        string                 `toml:"hyperBlocksPath"`
 	HyperBlocksBatchSize   uint32                 `toml:"hyperBlocksBatchSize"`
-	ElrondProxyUrl         string                 `toml:"elrondProxyUrl"`
+	MultiversxProxyUrl     string                 `toml:"multiversxProxyUrl"`
 	RequestTimeOutSec      uint64                 `toml:"requestTimeOutSec"`
 	HyperBlockQueryOptions HyperBlockQueryOptions `toml:"hyperBlockQueryOptions"`
 }

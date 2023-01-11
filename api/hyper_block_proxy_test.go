@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock/apiMocks"
+	"github.com/multiversx/mx-chain-covalent-go/api"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
+	"github.com/multiversx/mx-chain-covalent-go/testscommon/mock/apiMocks"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )

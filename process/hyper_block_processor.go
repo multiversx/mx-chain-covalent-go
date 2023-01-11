@@ -3,9 +3,9 @@ package process
 import (
 	"encoding/hex"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
+	"github.com/multiversx/mx-chain-covalent-go/hyperBlock"
+	"github.com/multiversx/mx-chain-covalent-go/process/utility"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
 )
 
 // HyperBlockProcessorArgs holds all input dependencies required
