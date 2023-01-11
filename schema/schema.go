@@ -2,94 +2,40 @@ package schema
 
 import "github.com/elodina/go-avro"
 
-type BlockResult struct {
-	Block        *Block
-	Transactions []*Transaction
-	SCResults    []*SCResult
-	Receipts     []*Receipt
-	Logs         []*Log
-	StateChanges []*AccountBalanceUpdate
+type HyperBlock struct {
+	Hash                   []byte
+	PrevBlockHash          []byte
+	StateRootHash          []byte
+	Nonce                  int64
+	Round                  int64
+	Epoch                  int32
+	NumTxs                 int32
+	AccumulatedFees        []byte
+	DeveloperFees          []byte
+	AccumulatedFeesInEpoch []byte
+	DeveloperFeesInEpoch   []byte
+	Timestamp              int64
+	EpochStartInfo         *EpochStartInfo
+	ShardBlocks            []*ShardBlocks
+	Transactions           []*Transaction
+	Status                 string
 }
 
-func NewBlockResult() *BlockResult {
-	return &BlockResult{
-		Block:        NewBlock(),
-		Transactions: make([]*Transaction, 0),
-		SCResults:    make([]*SCResult, 0),
-		Receipts:     make([]*Receipt, 0),
-		Logs:         make([]*Log, 0),
-		StateChanges: make([]*AccountBalanceUpdate, 0),
+func NewHyperBlock() *HyperBlock {
+	return &HyperBlock{
+		Hash:                   make([]byte, 32),
+		AccumulatedFees:        []byte{},
+		DeveloperFees:          []byte{},
+		AccumulatedFeesInEpoch: []byte{},
+		DeveloperFeesInEpoch:   []byte{},
 	}
 }
 
-func (o *BlockResult) Schema() avro.Schema {
-	if _BlockResult_schema_err != nil {
-		panic(_BlockResult_schema_err)
+func (o *HyperBlock) Schema() avro.Schema {
+	if _HyperBlock_schema_err != nil {
+		panic(_HyperBlock_schema_err)
 	}
-	return _BlockResult_schema
-}
-
-type Block struct {
-	Nonce                 int64
-	Round                 int64
-	Epoch                 int32
-	Hash                  []byte
-	MiniBlocks            []*MiniBlock
-	NotarizedBlocksHashes [][]byte
-	Proposer              int64
-	Validators            []int64
-	PubKeysBitmap         []byte
-	Size                  int64
-	Timestamp             int64
-	StateRootHash         []byte
-	PrevHash              []byte
-	ShardID               int32
-	TxCount               int32
-	AccumulatedFees       []byte
-	DeveloperFees         []byte
-	EpochStartBlock       bool
-	EpochStartInfo        *EpochStartInfo
-}
-
-func NewBlock() *Block {
-	return &Block{
-		Hash:            make([]byte, 32),
-		Validators:      make([]int64, 0),
-		PubKeysBitmap:   []byte{},
-		StateRootHash:   make([]byte, 32),
-		AccumulatedFees: []byte{},
-		DeveloperFees:   []byte{},
-	}
-}
-
-func (o *Block) Schema() avro.Schema {
-	if _Block_schema_err != nil {
-		panic(_Block_schema_err)
-	}
-	return _Block_schema
-}
-
-type MiniBlock struct {
-	Hash            []byte
-	SenderShardID   int32
-	ReceiverShardID int32
-	Type            int32
-	Timestamp       int64
-	TxHashes        [][]byte
-}
-
-func NewMiniBlock() *MiniBlock {
-	return &MiniBlock{
-		Hash:     make([]byte, 32),
-		TxHashes: make([][]byte, 0),
-	}
-}
-
-func (o *MiniBlock) Schema() avro.Schema {
-	if _MiniBlock_schema_err != nil {
-		panic(_MiniBlock_schema_err)
-	}
-	return _MiniBlock_schema
+	return _HyperBlock_schema
 }
 
 type EpochStartInfo struct {
@@ -99,7 +45,7 @@ type EpochStartInfo struct {
 	RewardsPerBlock                  []byte
 	RewardsForProtocolSustainability []byte
 	NodePrice                        []byte
-	PrevEpochStartRound              int32
+	PrevEpochStartRound              int64
 	PrevEpochStartHash               []byte
 }
 
@@ -121,37 +67,145 @@ func (o *EpochStartInfo) Schema() avro.Schema {
 	return _EpochStartInfo_schema
 }
 
+type ShardBlocks struct {
+	Hash            []byte
+	Nonce           int64
+	Round           int64
+	Shard           int32
+	RootHash        []byte
+	MiniBlockHashes [][]byte
+	StateChanges    []*AccountBalanceUpdate
+}
+
+func NewShardBlocks() *ShardBlocks {
+	return &ShardBlocks{
+		Hash:         make([]byte, 32),
+		StateChanges: make([]*AccountBalanceUpdate, 0),
+	}
+}
+
+func (o *ShardBlocks) Schema() avro.Schema {
+	if _ShardBlocks_schema_err != nil {
+		panic(_ShardBlocks_schema_err)
+	}
+	return _ShardBlocks_schema
+}
+
+type AccountBalanceUpdate struct {
+	Address []byte
+	Balance []byte
+	Nonce   int64
+	Tokens  []*AccountTokenData
+}
+
+func NewAccountBalanceUpdate() *AccountBalanceUpdate {
+	return &AccountBalanceUpdate{
+		Address: make([]byte, 62),
+		Balance: []byte{},
+	}
+}
+
+func (o *AccountBalanceUpdate) Schema() avro.Schema {
+	if _AccountBalanceUpdate_schema_err != nil {
+		panic(_AccountBalanceUpdate_schema_err)
+	}
+	return _AccountBalanceUpdate_schema
+}
+
+type AccountTokenData struct {
+	Nonce      int64
+	Identifier string
+	Balance    []byte
+	Properties string
+}
+
+func NewAccountTokenData() *AccountTokenData {
+	return &AccountTokenData{
+		Balance: []byte{},
+	}
+}
+
+func (o *AccountTokenData) Schema() avro.Schema {
+	if _AccountTokenData_schema_err != nil {
+		panic(_AccountTokenData_schema_err)
+	}
+	return _AccountTokenData_schema
+}
+
 type Transaction struct {
-	Hash             []byte
-	MiniBlockHash    []byte
-	BlockHash        []byte
-	Nonce            int64
-	Round            int64
-	Value            []byte
-	Receiver         []byte
-	Sender           []byte
-	ReceiverShard    int32
-	SenderShard      int32
-	GasPrice         int64
-	GasLimit         int64
-	Data             []byte
-	Signature        []byte
-	Timestamp        int64
-	SenderUserName   []byte
-	ReceiverUserName []byte
+	Type                              string
+	ProcessingTypeOnSource            string
+	ProcessingTypeOnDestination       string
+	Hash                              []byte
+	Nonce                             int64
+	Round                             int64
+	Epoch                             int32
+	Value                             []byte
+	Receiver                          []byte
+	Sender                            []byte
+	SenderUserName                    []byte
+	ReceiverUserName                  []byte
+	GasPrice                          int64
+	GasLimit                          int64
+	Data                              []byte
+	CodeMetadata                      []byte
+	Code                              []byte
+	PreviousTransactionHash           []byte
+	OriginalTransactionHash           []byte
+	ReturnMessage                     string
+	OriginalSender                    []byte
+	Signature                         []byte
+	SourceShard                       int32
+	DestinationShard                  int32
+	BlockNonce                        int64
+	BlockHash                         []byte
+	NotarizedAtSourceInMetaNonce      int64
+	NotarizedAtSourceInMetaHash       []byte
+	NotarizedAtDestinationInMetaNonce int64
+	NotarizedAtDestinationInMetaHash  []byte
+	MiniBlockType                     string
+	MiniBlockHash                     []byte
+	HyperBlockNonce                   int64
+	HyperBlockHash                    []byte
+	Timestamp                         int64
+	Receipt                           *Receipt
+	Log                               *Log
+	Status                            string
+	Tokens                            []string
+	ESDTValues                        [][]byte
+	Receivers                         [][]byte
+	ReceiversShardIDs                 []int32
+	Operation                         string
+	Function                          string
+	InitiallyPaidFee                  []byte
+	IsRelayed                         bool
+	IsRefund                          bool
+	CallType                          string
+	RelayerAddress                    []byte
+	RelayedValue                      []byte
+	ChainID                           string
+	Version                           int32
+	Options                           int32
 }
 
 func NewTransaction() *Transaction {
 	return &Transaction{
-		Hash:             make([]byte, 32),
-		MiniBlockHash:    make([]byte, 32),
-		BlockHash:        make([]byte, 32),
-		Value:            []byte{},
-		Receiver:         make([]byte, 62),
-		Sender:           make([]byte, 62),
-		Data:             []byte{},
-		SenderUserName:   []byte{},
-		ReceiverUserName: []byte{},
+		Hash:              make([]byte, 32),
+		Value:             []byte{},
+		Receiver:          make([]byte, 62),
+		Sender:            make([]byte, 62),
+		SenderUserName:    []byte{},
+		ReceiverUserName:  []byte{},
+		Data:              []byte{},
+		CodeMetadata:      []byte{},
+		Code:              []byte{},
+		MiniBlockHash:     make([]byte, 32),
+		Tokens:            make([]string, 0),
+		ESDTValues:        make([][]byte, 0),
+		Receivers:         make([][]byte, 0),
+		ReceiversShardIDs: make([]int32, 0),
+		InitiallyPaidFee:  []byte{},
+		RelayedValue:      []byte{},
 	}
 }
 
@@ -162,65 +216,19 @@ func (o *Transaction) Schema() avro.Schema {
 	return _Transaction_schema
 }
 
-type SCResult struct {
-	Hash           []byte
-	Nonce          int64
-	GasLimit       int64
-	GasPrice       int64
-	Value          []byte
-	Sender         []byte
-	Receiver       []byte
-	RelayerAddr    []byte
-	RelayedValue   []byte
-	Code           []byte
-	Data           []byte
-	PrevTxHash     []byte
-	OriginalTxHash []byte
-	CallType       int32
-	CodeMetadata   []byte
-	ReturnMessage  []byte
-	Timestamp      int64
-}
-
-func NewSCResult() *SCResult {
-	return &SCResult{
-		Hash:           make([]byte, 32),
-		Value:          []byte{},
-		Sender:         make([]byte, 62),
-		Receiver:       make([]byte, 62),
-		RelayedValue:   []byte{},
-		Code:           []byte{},
-		Data:           []byte{},
-		PrevTxHash:     make([]byte, 32),
-		OriginalTxHash: make([]byte, 32),
-		CodeMetadata:   []byte{},
-		ReturnMessage:  []byte{},
-	}
-}
-
-func (o *SCResult) Schema() avro.Schema {
-	if _SCResult_schema_err != nil {
-		panic(_SCResult_schema_err)
-	}
-	return _SCResult_schema
-}
-
 type Receipt struct {
-	Hash      []byte
-	Value     []byte
-	Sender    []byte
-	Data      []byte
-	TxHash    []byte
-	Timestamp int64
+	TxHash []byte
+	Value  []byte
+	Sender []byte
+	Data   []byte
 }
 
 func NewReceipt() *Receipt {
 	return &Receipt{
-		Hash:   make([]byte, 32),
+		TxHash: make([]byte, 32),
 		Value:  []byte{},
 		Sender: make([]byte, 62),
 		Data:   []byte{},
-		TxHash: make([]byte, 32),
 	}
 }
 
@@ -232,14 +240,12 @@ func (o *Receipt) Schema() avro.Schema {
 }
 
 type Log struct {
-	ID      []byte
 	Address []byte
 	Events  []*Event
 }
 
 func NewLog() *Log {
 	return &Log{
-		ID:     make([]byte, 32),
 		Events: make([]*Event, 0),
 	}
 }
@@ -273,477 +279,798 @@ func (o *Event) Schema() avro.Schema {
 	return _Event_schema
 }
 
-type AccountBalanceUpdate struct {
-	Address []byte
-	Balance []byte
-	Nonce   int64
-}
-
-func NewAccountBalanceUpdate() *AccountBalanceUpdate {
-	return &AccountBalanceUpdate{
-		Address: make([]byte, 62),
-		Balance: []byte{},
-	}
-}
-
-func (o *AccountBalanceUpdate) Schema() avro.Schema {
-	if _AccountBalanceUpdate_schema_err != nil {
-		panic(_AccountBalanceUpdate_schema_err)
-	}
-	return _AccountBalanceUpdate_schema
-}
-
 // Generated by codegen. Please do not modify.
-var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
+var _HyperBlock_schema, _HyperBlock_schema_err = avro.ParseSchema(`{
     "type": "record",
     "namespace": "com.covalenthq.block.schema",
-    "name": "BlockResult",
+    "name": "HyperBlock",
     "fields": [
         {
-            "name": "Block",
+            "name": "Hash",
             "type": {
-                "type": "record",
-                "name": "Block",
-                "fields": [
-                    {
-                        "name": "Nonce",
-                        "type": "long"
-                    },
-                    {
-                        "name": "Round",
-                        "type": "long"
-                    },
-                    {
-                        "name": "Epoch",
-                        "type": "int"
-                    },
-                    {
-                        "name": "Hash",
-                        "type": {
-                            "type": "fixed",
-                            "size": 32,
-                            "name": "hash"
-                        }
-                    },
-                    {
-                        "name": "MiniBlocks",
-                        "default": null,
-                        "type": [
-                            "null",
-                            {
-                                "type": "array",
-                                "items": {
-                                    "type": "record",
-                                    "name": "MiniBlock",
-                                    "fields": [
-                                        {
-                                            "name": "Hash",
-                                            "type": {
-                                                "type": "fixed",
-                                                "size": 32,
-                                                "name": "hash"
-                                            }
-                                        },
-                                        {
-                                            "name": "SenderShardID",
-                                            "type": "int"
-                                        },
-                                        {
-                                            "name": "ReceiverShardID",
-                                            "type": "int"
-                                        },
-                                        {
-                                            "name": "Type",
-                                            "type": "int"
-                                        },
-                                        {
-                                            "name": "Timestamp",
-                                            "type": "long"
-                                        },
-                                        {
-                                            "name": "TxHashes",
-                                            "type": {
-                                                "type": "array",
-                                                "items": "bytes"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "NotarizedBlocksHashes",
-                        "default": null,
-                        "type": [
-                            "null",
-                            {
-                                "type": "array",
-                                "items": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
+        },
+        {
+            "name": "PrevBlockHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "StateRootHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "Nonce",
+            "type": "long"
+        },
+        {
+            "name": "Round",
+            "type": "long"
+        },
+        {
+            "name": "Epoch",
+            "type": "int"
+        },
+        {
+            "name": "NumTxs",
+            "type": "int"
+        },
+        {
+            "name": "AccumulatedFees",
+            "type": "bytes"
+        },
+        {
+            "name": "DeveloperFees",
+            "type": "bytes"
+        },
+        {
+            "name": "AccumulatedFeesInEpoch",
+            "type": "bytes"
+        },
+        {
+            "name": "DeveloperFeesInEpoch",
+            "type": "bytes"
+        },
+        {
+            "name": "Timestamp",
+            "type": "long"
+        },
+        {
+            "name": "EpochStartInfo",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "record",
+                    "name": "EpochStartInfo",
+                    "fields": [
+                        {
+                            "name": "TotalSupply",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "TotalToDistribute",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "TotalNewlyMinted",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "RewardsPerBlock",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "RewardsForProtocolSustainability",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "NodePrice",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "PrevEpochStartRound",
+                            "type": "long"
+                        },
+                        {
+                            "name": "PrevEpochStartHash",
+                            "default": null,
+                            "type": [
+                                "null",
+                                {
                                     "type": "fixed",
                                     "size": 32,
                                     "name": "hash"
                                 }
-                            }
-                        ]
-                    },
-                    {
-                        "name": "Proposer",
-                        "type": "long"
-                    },
-                    {
-                        "name": "Validators",
-                        "type": {
-                            "type": "array",
-                            "items": "long"
-                        }
-                    },
-                    {
-                        "name": "PubKeysBitmap",
-                        "type": "bytes"
-                    },
-                    {
-                        "name": "Size",
-                        "type": "long"
-                    },
-                    {
-                        "name": "Timestamp",
-                        "type": "long"
-                    },
-                    {
-                        "name": "StateRootHash",
-                        "type": {
-                            "type": "fixed",
-                            "size": 32,
-                            "name": "hash"
-                        }
-                    },
-                    {
-                        "name": "PrevHash",
-                        "default": null,
-                        "type": [
-                            "null",
-                            {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        ]
-                    },
-                    {
-                        "name": "ShardID",
-                        "type": "int"
-                    },
-                    {
-                        "name": "TxCount",
-                        "type": "int"
-                    },
-                    {
-                        "name": "AccumulatedFees",
-                        "type": "bytes"
-                    },
-                    {
-                        "name": "DeveloperFees",
-                        "type": "bytes"
-                    },
-                    {
-                        "name": "EpochStartBlock",
-                        "type": "boolean"
-                    },
-                    {
-                        "name": "EpochStartInfo",
-                        "default": null,
-                        "type": [
-                            "null",
-                            {
-                                "type": "record",
-                                "name": "EpochStartInfo",
-                                "fields": [
-                                    {
-                                        "name": "TotalSupply",
-                                        "type": "bytes"
-                                    },
-                                    {
-                                        "name": "TotalToDistribute",
-                                        "type": "bytes"
-                                    },
-                                    {
-                                        "name": "TotalNewlyMinted",
-                                        "type": "bytes"
-                                    },
-                                    {
-                                        "name": "RewardsPerBlock",
-                                        "type": "bytes"
-                                    },
-                                    {
-                                        "name": "RewardsForProtocolSustainability",
-                                        "type": "bytes"
-                                    },
-                                    {
-                                        "name": "NodePrice",
-                                        "type": "bytes"
-                                    },
-                                    {
-                                        "name": "PrevEpochStartRound",
-                                        "type": "int"
-                                    },
-                                    {
-                                        "name": "PrevEpochStartHash",
-                                        "default": null,
-                                        "type": [
-                                            "null",
-                                            {
-                                                "type": "fixed",
-                                                "size": 32,
-                                                "name": "hash"
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        },
-        {
-            "name": "Transactions",
-            "type": {
-                "type": "array",
-                "items": {
-                    "type": "record",
-                    "name": "Transaction",
-                    "fields": [
-                        {
-                            "name": "Hash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
-                            "name": "MiniBlockHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
-                            "name": "BlockHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
-                            "name": "Nonce",
-                            "type": "long"
-                        },
-                        {
-                            "name": "Round",
-                            "type": "long"
-                        },
-                        {
-                            "name": "Value",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Receiver",
-                            "type": {
-                                "type": "fixed",
-                                "size": 62,
-                                "name": "address"
-                            }
-                        },
-                        {
-                            "name": "Sender",
-                            "type": {
-                                "type": "fixed",
-                                "size": 62,
-                                "name": "address"
-                            }
-                        },
-                        {
-                            "name": "ReceiverShard",
-                            "type": "int"
-                        },
-                        {
-                            "name": "SenderShard",
-                            "type": "int"
-                        },
-                        {
-                            "name": "GasPrice",
-                            "type": "long"
-                        },
-                        {
-                            "name": "GasLimit",
-                            "type": "long"
-                        },
-                        {
-                            "name": "Data",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Signature",
-                            "default": null,
-                            "type": [
-                                "null",
-                                {
-                                    "type": "fixed",
-                                    "size": 64,
-                                    "name": "signature"
-                                }
                             ]
-                        },
-                        {
-                            "name": "Timestamp",
-                            "type": "long"
-                        },
-                        {
-                            "name": "SenderUserName",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "ReceiverUserName",
-                            "type": "bytes"
                         }
                     ]
                 }
-            }
+            ]
         },
         {
-            "name": "SCResults",
-            "type": {
-                "type": "array",
-                "items": {
-                    "type": "record",
-                    "name": "SCResult",
-                    "fields": [
-                        {
-                            "name": "Hash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
+            "name": "ShardBlocks",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "record",
+                        "name": "ShardBlocks",
+                        "fields": [
+                            {
+                                "name": "Hash",
+                                "type": {
+                                    "type": "fixed",
+                                    "size": 32,
+                                    "name": "hash"
+                                }
+                            },
+                            {
+                                "name": "Nonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Round",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Shard",
+                                "type": "int"
+                            },
+                            {
+                                "name": "RootHash",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "MiniBlockHashes",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "fixed",
+                                            "size": 32,
+                                            "name": "hash"
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "StateChanges",
+                                "type": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "record",
+                                        "name": "AccountBalanceUpdate",
+                                        "fields": [
+                                            {
+                                                "name": "Address",
+                                                "type": {
+                                                    "type": "fixed",
+                                                    "size": 62,
+                                                    "name": "address"
+                                                }
+                                            },
+                                            {
+                                                "name": "Balance",
+                                                "type": "bytes"
+                                            },
+                                            {
+                                                "name": "Nonce",
+                                                "type": "long"
+                                            },
+                                            {
+                                                "name": "Tokens",
+                                                "default": null,
+                                                "type": [
+                                                    "null",
+                                                    {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "record",
+                                                            "name": "AccountTokenData",
+                                                            "fields": [
+                                                                {
+                                                                    "name": "Nonce",
+                                                                    "type": "long"
+                                                                },
+                                                                {
+                                                                    "name": "Identifier",
+                                                                    "type": "string"
+                                                                },
+                                                                {
+                                                                    "name": "Balance",
+                                                                    "type": "bytes"
+                                                                },
+                                                                {
+                                                                    "name": "Properties",
+                                                                    "type": "string"
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
                             }
-                        },
-                        {
-                            "name": "Nonce",
-                            "type": "long"
-                        },
-                        {
-                            "name": "GasLimit",
-                            "type": "long"
-                        },
-                        {
-                            "name": "GasPrice",
-                            "type": "long"
-                        },
-                        {
-                            "name": "Value",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Sender",
-                            "type": {
-                                "type": "fixed",
-                                "size": 62,
-                                "name": "address"
-                            }
-                        },
-                        {
-                            "name": "Receiver",
-                            "type": {
-                                "type": "fixed",
-                                "size": 62,
-                                "name": "address"
-                            }
-                        },
-                        {
-                            "name": "RelayerAddr",
-                            "default": null,
-                            "type": [
-                                "null",
-                                {
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Transactions",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "record",
+                        "name": "Transaction",
+                        "fields": [
+                            {
+                                "name": "Type",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessingTypeOnSource",
+                                "type": "string"
+                            },
+                            {
+                                "name": "ProcessingTypeOnDestination",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Hash",
+                                "type": {
+                                    "type": "fixed",
+                                    "size": 32,
+                                    "name": "hash"
+                                }
+                            },
+                            {
+                                "name": "Nonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Round",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Epoch",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Value",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "Receiver",
+                                "type": {
                                     "type": "fixed",
                                     "size": 62,
                                     "name": "address"
                                 }
-                            ]
-                        },
-                        {
-                            "name": "RelayedValue",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Code",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Data",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "PrevTxHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
+                            },
+                            {
+                                "name": "Sender",
+                                "type": {
+                                    "type": "fixed",
+                                    "size": 62,
+                                    "name": "address"
+                                }
+                            },
+                            {
+                                "name": "SenderUserName",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "ReceiverUserName",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "GasPrice",
+                                "type": "long"
+                            },
+                            {
+                                "name": "GasLimit",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Data",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "CodeMetadata",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "Code",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "PreviousTransactionHash",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "OriginalTransactionHash",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "ReturnMessage",
+                                "type": "string"
+                            },
+                            {
+                                "name": "OriginalSender",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 62,
+                                        "name": "address"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Signature",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 64,
+                                        "name": "signature"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "SourceShard",
+                                "type": "int"
+                            },
+                            {
+                                "name": "DestinationShard",
+                                "type": "int"
+                            },
+                            {
+                                "name": "BlockNonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "BlockHash",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "NotarizedAtSourceInMetaNonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "NotarizedAtSourceInMetaHash",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "NotarizedAtDestinationInMetaNonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "NotarizedAtDestinationInMetaHash",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "MiniBlockType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "MiniBlockHash",
+                                "type": {
+                                    "type": "fixed",
+                                    "size": 32,
+                                    "name": "hash"
+                                }
+                            },
+                            {
+                                "name": "HyperBlockNonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "HyperBlockHash",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 32,
+                                        "name": "hash"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Timestamp",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Receipt",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "record",
+                                        "name": "Receipt",
+                                        "fields": [
+                                            {
+                                                "name": "TxHash",
+                                                "type": {
+                                                    "type": "fixed",
+                                                    "size": 32,
+                                                    "name": "hash"
+                                                }
+                                            },
+                                            {
+                                                "name": "Value",
+                                                "type": "bytes"
+                                            },
+                                            {
+                                                "name": "Sender",
+                                                "type": {
+                                                    "type": "fixed",
+                                                    "size": 62,
+                                                    "name": "address"
+                                                }
+                                            },
+                                            {
+                                                "name": "Data",
+                                                "type": "bytes"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Log",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "record",
+                                        "name": "Log",
+                                        "fields": [
+                                            {
+                                                "name": "Address",
+                                                "default": null,
+                                                "type": [
+                                                    "null",
+                                                    {
+                                                        "type": "fixed",
+                                                        "size": 62,
+                                                        "name": "address"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "name": "Events",
+                                                "type": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "record",
+                                                        "name": "Event",
+                                                        "fields": [
+                                                            {
+                                                                "name": "Address",
+                                                                "default": null,
+                                                                "type": [
+                                                                    "null",
+                                                                    {
+                                                                        "type": "fixed",
+                                                                        "size": 62,
+                                                                        "name": "address"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "name": "Identifier",
+                                                                "type": "bytes"
+                                                            },
+                                                            {
+                                                                "name": "Topics",
+                                                                "type": {
+                                                                    "type": "array",
+                                                                    "items": "bytes"
+                                                                }
+                                                            },
+                                                            {
+                                                                "name": "Data",
+                                                                "type": "bytes"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Status",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Tokens",
+                                "type": {
+                                    "type": "array",
+                                    "items": "string"
+                                }
+                            },
+                            {
+                                "name": "ESDTValues",
+                                "type": {
+                                    "type": "array",
+                                    "items": "bytes"
+                                }
+                            },
+                            {
+                                "name": "Receivers",
+                                "type": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "fixed",
+                                        "size": 62,
+                                        "name": "address"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "ReceiversShardIDs",
+                                "type": {
+                                    "type": "array",
+                                    "items": "int"
+                                }
+                            },
+                            {
+                                "name": "Operation",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Function",
+                                "type": "string"
+                            },
+                            {
+                                "name": "InitiallyPaidFee",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "IsRelayed",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "IsRefund",
+                                "type": "boolean"
+                            },
+                            {
+                                "name": "CallType",
+                                "type": "string"
+                            },
+                            {
+                                "name": "RelayerAddress",
+                                "default": null,
+                                "type": [
+                                    "null",
+                                    {
+                                        "type": "fixed",
+                                        "size": 62,
+                                        "name": "address"
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "RelayedValue",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "ChainID",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Version",
+                                "type": "int"
+                            },
+                            {
+                                "name": "Options",
+                                "type": "int"
                             }
-                        },
-                        {
-                            "name": "OriginalTxHash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
-                            "name": "CallType",
-                            "type": "int"
-                        },
-                        {
-                            "name": "CodeMetadata",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "ReturnMessage",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Timestamp",
-                            "type": "long"
-                        }
-                    ]
+                        ]
+                    }
                 }
+            ]
+        },
+        {
+            "name": "Status",
+            "type": "string"
+        }
+    ]
+}`)
+
+// Generated by codegen. Please do not modify.
+var _EpochStartInfo_schema, _EpochStartInfo_schema_err = avro.ParseSchema(`{
+    "type": "record",
+    "name": "EpochStartInfo",
+    "fields": [
+        {
+            "name": "TotalSupply",
+            "type": "bytes"
+        },
+        {
+            "name": "TotalToDistribute",
+            "type": "bytes"
+        },
+        {
+            "name": "TotalNewlyMinted",
+            "type": "bytes"
+        },
+        {
+            "name": "RewardsPerBlock",
+            "type": "bytes"
+        },
+        {
+            "name": "RewardsForProtocolSustainability",
+            "type": "bytes"
+        },
+        {
+            "name": "NodePrice",
+            "type": "bytes"
+        },
+        {
+            "name": "PrevEpochStartRound",
+            "type": "long"
+        },
+        {
+            "name": "PrevEpochStartHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        }
+    ]
+}`)
+
+// Generated by codegen. Please do not modify.
+var _ShardBlocks_schema, _ShardBlocks_schema_err = avro.ParseSchema(`{
+    "type": "record",
+    "name": "ShardBlocks",
+    "fields": [
+        {
+            "name": "Hash",
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
             }
         },
         {
-            "name": "Receipts",
+            "name": "Nonce",
+            "type": "long"
+        },
+        {
+            "name": "Round",
+            "type": "long"
+        },
+        {
+            "name": "Shard",
+            "type": "int"
+        },
+        {
+            "name": "RootHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "MiniBlockHashes",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "fixed",
+                        "size": 32,
+                        "name": "hash"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "StateChanges",
             "type": {
                 "type": "array",
                 "items": {
                     "type": "record",
-                    "name": "Receipt",
+                    "name": "AccountBalanceUpdate",
                     "fields": [
                         {
-                            "name": "Hash",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
-                        {
-                            "name": "Value",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Sender",
+                            "name": "Address",
                             "type": {
                                 "type": "fixed",
                                 "size": 62,
@@ -751,9 +1078,366 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                             }
                         },
                         {
-                            "name": "Data",
+                            "name": "Balance",
                             "type": "bytes"
                         },
+                        {
+                            "name": "Nonce",
+                            "type": "long"
+                        },
+                        {
+                            "name": "Tokens",
+                            "default": null,
+                            "type": [
+                                "null",
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "record",
+                                        "name": "AccountTokenData",
+                                        "fields": [
+                                            {
+                                                "name": "Nonce",
+                                                "type": "long"
+                                            },
+                                            {
+                                                "name": "Identifier",
+                                                "type": "string"
+                                            },
+                                            {
+                                                "name": "Balance",
+                                                "type": "bytes"
+                                            },
+                                            {
+                                                "name": "Properties",
+                                                "type": "string"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}`)
+
+// Generated by codegen. Please do not modify.
+var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseSchema(`{
+    "type": "record",
+    "name": "AccountBalanceUpdate",
+    "fields": [
+        {
+            "name": "Address",
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
+        },
+        {
+            "name": "Balance",
+            "type": "bytes"
+        },
+        {
+            "name": "Nonce",
+            "type": "long"
+        },
+        {
+            "name": "Tokens",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "record",
+                        "name": "AccountTokenData",
+                        "fields": [
+                            {
+                                "name": "Nonce",
+                                "type": "long"
+                            },
+                            {
+                                "name": "Identifier",
+                                "type": "string"
+                            },
+                            {
+                                "name": "Balance",
+                                "type": "bytes"
+                            },
+                            {
+                                "name": "Properties",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}`)
+
+// Generated by codegen. Please do not modify.
+var _AccountTokenData_schema, _AccountTokenData_schema_err = avro.ParseSchema(`{
+    "type": "record",
+    "name": "AccountTokenData",
+    "fields": [
+        {
+            "name": "Nonce",
+            "type": "long"
+        },
+        {
+            "name": "Identifier",
+            "type": "string"
+        },
+        {
+            "name": "Balance",
+            "type": "bytes"
+        },
+        {
+            "name": "Properties",
+            "type": "string"
+        }
+    ]
+}`)
+
+// Generated by codegen. Please do not modify.
+var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
+    "type": "record",
+    "name": "Transaction",
+    "fields": [
+        {
+            "name": "Type",
+            "type": "string"
+        },
+        {
+            "name": "ProcessingTypeOnSource",
+            "type": "string"
+        },
+        {
+            "name": "ProcessingTypeOnDestination",
+            "type": "string"
+        },
+        {
+            "name": "Hash",
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
+        },
+        {
+            "name": "Nonce",
+            "type": "long"
+        },
+        {
+            "name": "Round",
+            "type": "long"
+        },
+        {
+            "name": "Epoch",
+            "type": "int"
+        },
+        {
+            "name": "Value",
+            "type": "bytes"
+        },
+        {
+            "name": "Receiver",
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
+        },
+        {
+            "name": "Sender",
+            "type": {
+                "type": "fixed",
+                "size": 62,
+                "name": "address"
+            }
+        },
+        {
+            "name": "SenderUserName",
+            "type": "bytes"
+        },
+        {
+            "name": "ReceiverUserName",
+            "type": "bytes"
+        },
+        {
+            "name": "GasPrice",
+            "type": "long"
+        },
+        {
+            "name": "GasLimit",
+            "type": "long"
+        },
+        {
+            "name": "Data",
+            "type": "bytes"
+        },
+        {
+            "name": "CodeMetadata",
+            "type": "bytes"
+        },
+        {
+            "name": "Code",
+            "type": "bytes"
+        },
+        {
+            "name": "PreviousTransactionHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "OriginalTransactionHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "ReturnMessage",
+            "type": "string"
+        },
+        {
+            "name": "OriginalSender",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 62,
+                    "name": "address"
+                }
+            ]
+        },
+        {
+            "name": "Signature",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 64,
+                    "name": "signature"
+                }
+            ]
+        },
+        {
+            "name": "SourceShard",
+            "type": "int"
+        },
+        {
+            "name": "DestinationShard",
+            "type": "int"
+        },
+        {
+            "name": "BlockNonce",
+            "type": "long"
+        },
+        {
+            "name": "BlockHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "NotarizedAtSourceInMetaNonce",
+            "type": "long"
+        },
+        {
+            "name": "NotarizedAtSourceInMetaHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "NotarizedAtDestinationInMetaNonce",
+            "type": "long"
+        },
+        {
+            "name": "NotarizedAtDestinationInMetaHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "MiniBlockType",
+            "type": "string"
+        },
+        {
+            "name": "MiniBlockHash",
+            "type": {
+                "type": "fixed",
+                "size": 32,
+                "name": "hash"
+            }
+        },
+        {
+            "name": "HyperBlockNonce",
+            "type": "long"
+        },
+        {
+            "name": "HyperBlockHash",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "fixed",
+                    "size": 32,
+                    "name": "hash"
+                }
+            ]
+        },
+        {
+            "name": "Timestamp",
+            "type": "long"
+        },
+        {
+            "name": "Receipt",
+            "default": null,
+            "type": [
+                "null",
+                {
+                    "type": "record",
+                    "name": "Receipt",
+                    "fields": [
                         {
                             "name": "TxHash",
                             "type": {
@@ -763,29 +1447,34 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                             }
                         },
                         {
-                            "name": "Timestamp",
-                            "type": "long"
+                            "name": "Value",
+                            "type": "bytes"
+                        },
+                        {
+                            "name": "Sender",
+                            "type": {
+                                "type": "fixed",
+                                "size": 62,
+                                "name": "address"
+                            }
+                        },
+                        {
+                            "name": "Data",
+                            "type": "bytes"
                         }
                     ]
                 }
-            }
+            ]
         },
         {
-            "name": "Logs",
-            "type": {
-                "type": "array",
-                "items": {
+            "name": "Log",
+            "default": null,
+            "type": [
+                "null",
+                {
                     "type": "record",
                     "name": "Log",
                     "fields": [
-                        {
-                            "name": "ID",
-                            "type": {
-                                "type": "fixed",
-                                "size": 32,
-                                "name": "hash"
-                            }
-                        },
                         {
                             "name": "Address",
                             "default": null,
@@ -839,483 +1528,70 @@ var _BlockResult_schema, _BlockResult_schema_err = avro.ParseSchema(`{
                         }
                     ]
                 }
-            }
+            ]
         },
         {
-            "name": "StateChanges",
+            "name": "Status",
+            "type": "string"
+        },
+        {
+            "name": "Tokens",
             "type": {
                 "type": "array",
-                "items": {
-                    "type": "record",
-                    "name": "AccountBalanceUpdate",
-                    "fields": [
-                        {
-                            "name": "Address",
-                            "type": {
-                                "type": "fixed",
-                                "size": 62,
-                                "name": "address"
-                            }
-                        },
-                        {
-                            "name": "Balance",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "Nonce",
-                            "type": "long"
-                        }
-                    ]
-                }
-            }
-        }
-    ]
-}`)
-
-// Generated by codegen. Please do not modify.
-var _Block_schema, _Block_schema_err = avro.ParseSchema(`{
-    "type": "record",
-    "name": "Block",
-    "fields": [
-        {
-            "name": "Nonce",
-            "type": "long"
-        },
-        {
-            "name": "Round",
-            "type": "long"
-        },
-        {
-            "name": "Epoch",
-            "type": "int"
-        },
-        {
-            "name": "Hash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
+                "items": "string"
             }
         },
         {
-            "name": "MiniBlocks",
-            "default": null,
-            "type": [
-                "null",
-                {
-                    "type": "array",
-                    "items": {
-                        "type": "record",
-                        "name": "MiniBlock",
-                        "fields": [
-                            {
-                                "name": "Hash",
-                                "type": {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
-                            },
-                            {
-                                "name": "SenderShardID",
-                                "type": "int"
-                            },
-                            {
-                                "name": "ReceiverShardID",
-                                "type": "int"
-                            },
-                            {
-                                "name": "Type",
-                                "type": "int"
-                            },
-                            {
-                                "name": "Timestamp",
-                                "type": "long"
-                            },
-                            {
-                                "name": "TxHashes",
-                                "type": {
-                                    "type": "array",
-                                    "items": "bytes"
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "name": "NotarizedBlocksHashes",
-            "default": null,
-            "type": [
-                "null",
-                {
-                    "type": "array",
-                    "items": {
-                        "type": "fixed",
-                        "size": 32,
-                        "name": "hash"
-                    }
-                }
-            ]
-        },
-        {
-            "name": "Proposer",
-            "type": "long"
-        },
-        {
-            "name": "Validators",
-            "type": {
-                "type": "array",
-                "items": "long"
-            }
-        },
-        {
-            "name": "PubKeysBitmap",
-            "type": "bytes"
-        },
-        {
-            "name": "Size",
-            "type": "long"
-        },
-        {
-            "name": "Timestamp",
-            "type": "long"
-        },
-        {
-            "name": "StateRootHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "PrevHash",
-            "default": null,
-            "type": [
-                "null",
-                {
-                    "type": "fixed",
-                    "size": 32,
-                    "name": "hash"
-                }
-            ]
-        },
-        {
-            "name": "ShardID",
-            "type": "int"
-        },
-        {
-            "name": "TxCount",
-            "type": "int"
-        },
-        {
-            "name": "AccumulatedFees",
-            "type": "bytes"
-        },
-        {
-            "name": "DeveloperFees",
-            "type": "bytes"
-        },
-        {
-            "name": "EpochStartBlock",
-            "type": "boolean"
-        },
-        {
-            "name": "EpochStartInfo",
-            "default": null,
-            "type": [
-                "null",
-                {
-                    "type": "record",
-                    "name": "EpochStartInfo",
-                    "fields": [
-                        {
-                            "name": "TotalSupply",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "TotalToDistribute",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "TotalNewlyMinted",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "RewardsPerBlock",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "RewardsForProtocolSustainability",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "NodePrice",
-                            "type": "bytes"
-                        },
-                        {
-                            "name": "PrevEpochStartRound",
-                            "type": "int"
-                        },
-                        {
-                            "name": "PrevEpochStartHash",
-                            "default": null,
-                            "type": [
-                                "null",
-                                {
-                                    "type": "fixed",
-                                    "size": 32,
-                                    "name": "hash"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-}`)
-
-// Generated by codegen. Please do not modify.
-var _MiniBlock_schema, _MiniBlock_schema_err = avro.ParseSchema(`{
-    "type": "record",
-    "name": "MiniBlock",
-    "fields": [
-        {
-            "name": "Hash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "SenderShardID",
-            "type": "int"
-        },
-        {
-            "name": "ReceiverShardID",
-            "type": "int"
-        },
-        {
-            "name": "Type",
-            "type": "int"
-        },
-        {
-            "name": "Timestamp",
-            "type": "long"
-        },
-        {
-            "name": "TxHashes",
+            "name": "ESDTValues",
             "type": {
                 "type": "array",
                 "items": "bytes"
             }
-        }
-    ]
-}`)
-
-// Generated by codegen. Please do not modify.
-var _EpochStartInfo_schema, _EpochStartInfo_schema_err = avro.ParseSchema(`{
-    "type": "record",
-    "name": "EpochStartInfo",
-    "fields": [
-        {
-            "name": "TotalSupply",
-            "type": "bytes"
         },
         {
-            "name": "TotalToDistribute",
-            "type": "bytes"
-        },
-        {
-            "name": "TotalNewlyMinted",
-            "type": "bytes"
-        },
-        {
-            "name": "RewardsPerBlock",
-            "type": "bytes"
-        },
-        {
-            "name": "RewardsForProtocolSustainability",
-            "type": "bytes"
-        },
-        {
-            "name": "NodePrice",
-            "type": "bytes"
-        },
-        {
-            "name": "PrevEpochStartRound",
-            "type": "int"
-        },
-        {
-            "name": "PrevEpochStartHash",
-            "default": null,
-            "type": [
-                "null",
-                {
+            "name": "Receivers",
+            "type": {
+                "type": "array",
+                "items": {
                     "type": "fixed",
-                    "size": 32,
-                    "name": "hash"
+                    "size": 62,
+                    "name": "address"
                 }
-            ]
-        }
-    ]
-}`)
-
-// Generated by codegen. Please do not modify.
-var _Transaction_schema, _Transaction_schema_err = avro.ParseSchema(`{
-    "type": "record",
-    "name": "Transaction",
-    "fields": [
-        {
-            "name": "Hash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
             }
         },
         {
-            "name": "MiniBlockHash",
+            "name": "ReceiversShardIDs",
             "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
+                "type": "array",
+                "items": "int"
             }
         },
         {
-            "name": "BlockHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
+            "name": "Operation",
+            "type": "string"
         },
         {
-            "name": "Nonce",
-            "type": "long"
+            "name": "Function",
+            "type": "string"
         },
         {
-            "name": "Round",
-            "type": "long"
-        },
-        {
-            "name": "Value",
+            "name": "InitiallyPaidFee",
             "type": "bytes"
         },
         {
-            "name": "Receiver",
-            "type": {
-                "type": "fixed",
-                "size": 62,
-                "name": "address"
-            }
+            "name": "IsRelayed",
+            "type": "boolean"
         },
         {
-            "name": "Sender",
-            "type": {
-                "type": "fixed",
-                "size": 62,
-                "name": "address"
-            }
+            "name": "IsRefund",
+            "type": "boolean"
         },
         {
-            "name": "ReceiverShard",
-            "type": "int"
+            "name": "CallType",
+            "type": "string"
         },
         {
-            "name": "SenderShard",
-            "type": "int"
-        },
-        {
-            "name": "GasPrice",
-            "type": "long"
-        },
-        {
-            "name": "GasLimit",
-            "type": "long"
-        },
-        {
-            "name": "Data",
-            "type": "bytes"
-        },
-        {
-            "name": "Signature",
-            "default": null,
-            "type": [
-                "null",
-                {
-                    "type": "fixed",
-                    "size": 64,
-                    "name": "signature"
-                }
-            ]
-        },
-        {
-            "name": "Timestamp",
-            "type": "long"
-        },
-        {
-            "name": "SenderUserName",
-            "type": "bytes"
-        },
-        {
-            "name": "ReceiverUserName",
-            "type": "bytes"
-        }
-    ]
-}`)
-
-// Generated by codegen. Please do not modify.
-var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
-    "type": "record",
-    "name": "SCResult",
-    "fields": [
-        {
-            "name": "Hash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "Nonce",
-            "type": "long"
-        },
-        {
-            "name": "GasLimit",
-            "type": "long"
-        },
-        {
-            "name": "GasPrice",
-            "type": "long"
-        },
-        {
-            "name": "Value",
-            "type": "bytes"
-        },
-        {
-            "name": "Sender",
-            "type": {
-                "type": "fixed",
-                "size": 62,
-                "name": "address"
-            }
-        },
-        {
-            "name": "Receiver",
-            "type": {
-                "type": "fixed",
-                "size": 62,
-                "name": "address"
-            }
-        },
-        {
-            "name": "RelayerAddr",
+            "name": "RelayerAddress",
             "default": null,
             "type": [
                 "null",
@@ -1331,44 +1607,16 @@ var _SCResult_schema, _SCResult_schema_err = avro.ParseSchema(`{
             "type": "bytes"
         },
         {
-            "name": "Code",
-            "type": "bytes"
+            "name": "ChainID",
+            "type": "string"
         },
         {
-            "name": "Data",
-            "type": "bytes"
-        },
-        {
-            "name": "PrevTxHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "OriginalTxHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "CallType",
+            "name": "Version",
             "type": "int"
         },
         {
-            "name": "CodeMetadata",
-            "type": "bytes"
-        },
-        {
-            "name": "ReturnMessage",
-            "type": "bytes"
-        },
-        {
-            "name": "Timestamp",
-            "type": "long"
+            "name": "Options",
+            "type": "int"
         }
     ]
 }`)
@@ -1379,7 +1627,7 @@ var _Receipt_schema, _Receipt_schema_err = avro.ParseSchema(`{
     "name": "Receipt",
     "fields": [
         {
-            "name": "Hash",
+            "name": "TxHash",
             "type": {
                 "type": "fixed",
                 "size": 32,
@@ -1401,18 +1649,6 @@ var _Receipt_schema, _Receipt_schema_err = avro.ParseSchema(`{
         {
             "name": "Data",
             "type": "bytes"
-        },
-        {
-            "name": "TxHash",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
-        {
-            "name": "Timestamp",
-            "type": "long"
         }
     ]
 }`)
@@ -1422,14 +1658,6 @@ var _Log_schema, _Log_schema_err = avro.ParseSchema(`{
     "type": "record",
     "name": "Log",
     "fields": [
-        {
-            "name": "ID",
-            "type": {
-                "type": "fixed",
-                "size": 32,
-                "name": "hash"
-            }
-        },
         {
             "name": "Address",
             "default": null,
@@ -1515,30 +1743,6 @@ var _Event_schema, _Event_schema_err = avro.ParseSchema(`{
         {
             "name": "Data",
             "type": "bytes"
-        }
-    ]
-}`)
-
-// Generated by codegen. Please do not modify.
-var _AccountBalanceUpdate_schema, _AccountBalanceUpdate_schema_err = avro.ParseSchema(`{
-    "type": "record",
-    "name": "AccountBalanceUpdate",
-    "fields": [
-        {
-            "name": "Address",
-            "type": {
-                "type": "fixed",
-                "size": 62,
-                "name": "address"
-            }
-        },
-        {
-            "name": "Balance",
-            "type": "bytes"
-        },
-        {
-            "name": "Nonce",
-            "type": "long"
         }
     ]
 }`)

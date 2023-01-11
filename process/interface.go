@@ -1,65 +1,38 @@
 package process
 
 import (
-	"io"
-
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/indexer"
+	"github.com/ElrondNetwork/elrond-go-core/data/api"
+	"github.com/ElrondNetwork/elrond-go-core/data/outport"
+	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 )
-
-// BlockHandler defines what a block processor shall do
-type BlockHandler interface {
-	ProcessBlock(args *indexer.ArgsSaveBlockData) (*schema.Block, error)
-}
-
-// MiniBlockHandler defines what a mini blocks processor shall do
-type MiniBlockHandler interface {
-	ProcessMiniBlocks(header data.HeaderHandler, body data.BodyHandler) ([]*schema.MiniBlock, error)
-}
 
 // TransactionHandler defines what a transaction processor shall do
 type TransactionHandler interface {
-	ProcessTransactions(
-		header data.HeaderHandler,
-		headerHash []byte,
-		bodyHandler data.BodyHandler,
-		pool *indexer.Pool) ([]*schema.Transaction, error)
-}
-
-// SCResultsHandler defines what a smart contract processor shall do
-type SCResultsHandler interface {
-	ProcessSCRs(transactions map[string]data.TransactionHandler, timeStamp uint64) []*schema.SCResult
+	ProcessTransactions(apiTransactions []*transaction.ApiTransactionResult) ([]*schema.Transaction, error)
 }
 
 // ReceiptHandler defines what a receipt processor shall do
 type ReceiptHandler interface {
-	ProcessReceipts(receipts map[string]data.TransactionHandler, timeStamp uint64) []*schema.Receipt
+	ProcessReceipt(apiReceipt *transaction.ApiReceipt) (*schema.Receipt, error)
 }
 
 // LogHandler defines what a log processor shall do
 type LogHandler interface {
-	ProcessLogs(logs []*data.LogData) []*schema.Log
+	ProcessLog(log *transaction.ApiLogs) *schema.Log
 }
 
-// AccountsHandler defines what an account processor shall do
-type AccountsHandler interface {
-	ProcessAccounts(
-		processedTxs []*schema.Transaction,
-		processedSCRs []*schema.SCResult,
-		processedReceipts []*schema.Receipt) []*schema.AccountBalanceUpdate
+// ShardBlocksHandler defines what shard blocks processor shall do
+type ShardBlocksHandler interface {
+	ProcessShardBlocks(apiBlocks []*api.NotarizedBlock) ([]*schema.ShardBlocks, error)
 }
 
-// ShardCoordinator defines what a shard coordinator shall do
-type ShardCoordinator interface {
-	SelfId() uint32
-	ComputeId(address []byte) uint32
-	IsInterfaceNil() bool
+// EpochStartInfoHandler defines what epoch start info processor shall do
+type EpochStartInfoHandler interface {
+	ProcessEpochStartInfo(apiEpochInfo *api.EpochStartInfo) (*schema.EpochStartInfo, error)
 }
 
-// WSConn defines what a websocket shall do
-type WSConn interface {
-	io.Closer
-	ReadMessage() (messageType int, p []byte, err error)
-	WriteMessage(messageType int, data []byte) error
+// AlteredAccountsHandler defines what an account processor shall do
+type AlteredAccountsHandler interface {
+	ProcessAccounts(apiAlteredAccounts []*outport.AlteredAccount) ([]*schema.AccountBalanceUpdate, error)
 }

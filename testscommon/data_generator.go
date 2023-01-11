@@ -1,6 +1,7 @@
 package testscommon
 
 import (
+	"encoding/hex"
 	"math/big"
 	"math/rand"
 	"strconv"
@@ -25,4 +26,10 @@ func GenerateRandomBytes() []byte {
 // GenerateRandomBigInt generates a random big.Int
 func GenerateRandomBigInt() *big.Int {
 	return big.NewInt(rand.Int63())
+}
+
+// GenerateRandHexString generates a random valid hex string
+func GenerateRandHexString() string {
+	randBytes := GenerateRandomFixedBytes(32)
+	return hex.EncodeToString(randBytes)
 }

@@ -1,43 +1,29 @@
 package utility
 
 import (
-	"bytes"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 
 	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/elodina/go-avro"
 )
-
-// HexSliceToByteSlice outputs a decoded byte slice representation of a hex string encoded slice input
-func HexSliceToByteSlice(in []string) ([][]byte, error) {
-	if in == nil {
-		return nil, nil
-	}
-	out := make([][]byte, len(in))
-
-	for i := range in {
-		tmp, err := hex.DecodeString(in[i])
-		if err != nil {
-			return nil, err
-		}
-		out[i] = tmp
-	}
-
-	return out, nil
-}
 
 // UIntSliceToIntSlice outputs the int64 slice representation of a uint64 slice input
 func UIntSliceToIntSlice(in []uint64) []int64 {
-	if in == nil {
-		return nil
-	}
-
 	out := make([]int64, len(in))
 
 	for i := range in {
 		out[i] = int64(in[i])
+	}
+
+	return out
+}
+
+// UInt32SliceToInt32Slice outputs the int32 slice representation of a uint32 slice input
+func UInt32SliceToInt32Slice(in []uint32) []int32 {
+	out := make([]int32, len(in))
+
+	for i := range in {
+		out[i] = int32(in[i])
 	}
 
 	return out
@@ -52,35 +38,55 @@ func GetBytes(val *big.Int) []byte {
 	return big.NewInt(0).Bytes()
 }
 
-// EncodePubKey returns a byte slice of the encoded pubKey input, using a pub key converter
-func EncodePubKey(pubKeyConverter core.PubkeyConverter, pubKey []byte) []byte {
-	return []byte(pubKeyConverter.Encode(pubKey))
-}
-
-// Encode returns a byte slice representing the binary encoding of the input avro record
-func Encode(record avro.AvroRecord) ([]byte, error) {
-	writer := avro.NewSpecificDatumWriter()
-	writer.SetSchema(record.Schema())
-
-	buffer := new(bytes.Buffer)
-	encoder := avro.NewBinaryEncoder(buffer)
-
-	err := writer.Write(record, encoder)
-	if err != nil {
-		return nil, err
+// GetBigIntBytesFromStr returns the big int bytes representation of a string input if not empty, otherwise returns []byte{}
+func GetBigIntBytesFromStr(val string) ([]byte, error) {
+	if len(val) == 0 {
+		return big.NewInt(0).Bytes(), nil
 	}
 
-	return buffer.Bytes(), nil
+	valBI, ok := big.NewInt(0).SetString(val, 10)
+	if !ok {
+		return nil, fmt.Errorf("%w: %s", errInvalidValueInBase10, val)
+	}
+
+	return valBI.Bytes(), nil
 }
 
-// Decode tries to decode a data buffer, read it and store it on the input record.
-// If successfully, the record is filled with data from the buffer, otherwise an error might be returned
-func Decode(record avro.AvroRecord, buffer []byte) error {
-	reader := avro.NewSpecificDatumReader()
-	reader.SetSchema(record.Schema())
+// StringSliceToByteSlice converts the input string slice to a byte slice
+func StringSliceToByteSlice(in []string) [][]byte {
+	out := make([][]byte, len(in))
 
-	decoder := avro.NewBinaryDecoder(buffer)
-	return reader.Read(record, decoder)
+	for idx, elem := range in {
+		out[idx] = []byte(elem)
+	}
+
+	return out
+}
+
+// GetBigIntBytesSliceFromStringSlice converts the input string slice in a big int byte array slice
+func GetBigIntBytesSliceFromStringSlice(in []string) ([][]byte, error) {
+	out := make([][]byte, len(in))
+
+	for idx, elem := range in {
+		bigIntBytes, err := GetBigIntBytesFromStr(elem)
+		if err != nil {
+			return nil, err
+		}
+
+		out[idx] = bigIntBytes
+	}
+
+	return out, nil
+}
+
+// GetAddressOrMetachainAddr checks if the corresponding address is metachain. This func should only be used for sender addresses.
+// If so, it returns a 62 byte array address(by padding with zeros), otherwise converts the address string to byte slice.
+func GetAddressOrMetachainAddr(address string) []byte {
+	if address != MetachainShardName {
+		return []byte(address)
+	}
+
+	return MetaChainShardAddress()
 }
 
 // MetaChainShardAddress returns core.MetachainShardId as a 62 byte array address(by padding with zeros).
