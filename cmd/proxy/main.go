@@ -8,11 +8,11 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	"github.com/ElrondNetwork/covalent-indexer-go/facade"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/factory"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
+	"github.com/multiversx/mx-chain-covalent-go/api"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
+	"github.com/multiversx/mx-chain-covalent-go/facade"
+	"github.com/multiversx/mx-chain-covalent-go/process/factory"
+	"github.com/multiversx/mx-chain-covalent-go/process/utility"
 	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli"
 )

@@ -1,6 +1,6 @@
 package apiMocks
 
-import "github.com/ElrondNetwork/covalent-indexer-go/api"
+import "github.com/multiversx/mx-chain-covalent-go/api"
 
 // ElrondHyperBlockEndPointStub -
 type ElrondHyperBlockEndPointStub struct {

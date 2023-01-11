@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/multiversx/mx-chain-covalent-go"
+	"github.com/multiversx/mx-chain-covalent-go/api"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
+	logger "github.com/multiversx/mx-chain-logger-go"
 )
 
 const hyperBlockPathByNonce = "/hyperblock/by-nonce"

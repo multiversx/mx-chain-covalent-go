@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/api"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
+	"github.com/multiversx/mx-chain-core-go/data/api"
 	"github.com/stretchr/testify/require"
 )
 

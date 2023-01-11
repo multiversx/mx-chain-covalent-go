@@ -1,14 +1,14 @@
 package factory
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go"
-	"github.com/ElrondNetwork/covalent-indexer-go/process"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/accounts"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/epochStart"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/logs"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/shardBlocks"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/transactions"
+	"github.com/multiversx/mx-chain-covalent-go"
+	"github.com/multiversx/mx-chain-covalent-go/process"
+	"github.com/multiversx/mx-chain-covalent-go/process/accounts"
+	"github.com/multiversx/mx-chain-covalent-go/process/epochStart"
+	"github.com/multiversx/mx-chain-covalent-go/process/logs"
+	"github.com/multiversx/mx-chain-covalent-go/process/receipts"
+	"github.com/multiversx/mx-chain-covalent-go/process/shardBlocks"
+	"github.com/multiversx/mx-chain-covalent-go/process/transactions"
 )
 
 // CreateHyperBlockProcessor creates a new hyper block processor handler

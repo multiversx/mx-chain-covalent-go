@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
 	"github.com/gin-gonic/gin"
 )
 

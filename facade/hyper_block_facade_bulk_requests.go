@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	"github.com/ElrondNetwork/elrond-go-core/core"
+	"github.com/multiversx/mx-chain-covalent-go/api"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
+	"github.com/multiversx/mx-chain-core-go/core"
 )
 
 const (

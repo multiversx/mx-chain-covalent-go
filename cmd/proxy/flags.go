@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
+	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/urfave/cli"
 )
 

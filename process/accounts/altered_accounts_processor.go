@@ -1,9 +1,9 @@
 package accounts
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/outport"
+	"github.com/multiversx/mx-chain-covalent-go/process/utility"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
+	"github.com/multiversx/mx-chain-core-go/data/outport"
 )
 
 type alteredAccountsProcessor struct {

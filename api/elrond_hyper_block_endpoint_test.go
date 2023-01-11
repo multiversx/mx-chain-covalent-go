@@ -11,8 +11,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
+	"github.com/multiversx/mx-chain-covalent-go/hyperBlock"
+	"github.com/multiversx/mx-chain-covalent-go/testscommon/mock"
 	"github.com/stretchr/testify/require"
 )
 

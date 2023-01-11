@@ -8,12 +8,12 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
-	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock/apiMocks"
+	"github.com/multiversx/mx-chain-covalent-go/api"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
+	"github.com/multiversx/mx-chain-covalent-go/hyperBlock"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
+	"github.com/multiversx/mx-chain-covalent-go/testscommon/mock"
+	"github.com/multiversx/mx-chain-covalent-go/testscommon/mock/apiMocks"
 	"github.com/elodina/go-avro"
 	"github.com/stretchr/testify/require"
 )

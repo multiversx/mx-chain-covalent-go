@@ -3,9 +3,9 @@ package shardBlocks
 import (
 	"encoding/hex"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/process"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/api"
+	"github.com/multiversx/mx-chain-covalent-go/process"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
+	"github.com/multiversx/mx-chain-core-go/data/api"
 )
 
 type shardBlocksProcessor struct {

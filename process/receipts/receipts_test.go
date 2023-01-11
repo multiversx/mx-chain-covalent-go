@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
-	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
+	"github.com/multiversx/mx-chain-covalent-go/process/receipts"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
+	"github.com/multiversx/mx-chain-covalent-go/testscommon"
+	"github.com/multiversx/mx-chain-core-go/data/transaction"
 	"github.com/stretchr/testify/require"
 )
 

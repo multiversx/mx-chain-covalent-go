@@ -1,10 +1,10 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/ElrondNetwork/elrond-go-core v1.0.0/go.mod h1:FQMem7fFF4+8pQ6lVsBZq6yO+smD0nV23P4bJpmPjTo=
-github.com/ElrondNetwork/elrond-go-core v1.1.25 h1:jfO2TsV161bPMLbocjdNR+iy0lNKpfYwA4t5lNAFoK8=
-github.com/ElrondNetwork/elrond-go-core v1.1.25/go.mod h1:UcZAiUqKBv3M3U6pJkYqIAx4OKubLYIc0QBVN+bY29g=
-github.com/ElrondNetwork/elrond-go-logger v1.0.4/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
-github.com/ElrondNetwork/elrond-go-logger v1.0.9 h1:RByDnVHgSN4zy3bwmvQarsnCd/gDmZ+zwVI+b6i4Plc=
-github.com/ElrondNetwork/elrond-go-logger v1.0.9/go.mod h1:86lz/Y9D1sMAZiukCYxCsETLl1zuI23qj37ct3KUT6A=
+github.com/multiversx/mx-chain-core-go v1.0.0/go.mod h1:FQMem7fFF4+8pQ6lVsBZq6yO+smD0nV23P4bJpmPjTo=
+github.com/multiversx/mx-chain-core-go v1.1.25 h1:jfO2TsV161bPMLbocjdNR+iy0lNKpfYwA4t5lNAFoK8=
+github.com/multiversx/mx-chain-core-go v1.1.25/go.mod h1:UcZAiUqKBv3M3U6pJkYqIAx4OKubLYIc0QBVN+bY29g=
+github.com/multiversx/mx-chain-logger-go v1.0.4/go.mod h1:e5D+c97lKUfFdAzFX7rrI2Igl/z4Y0RkKYKWyzprTGk=
+github.com/multiversx/mx-chain-logger-go v1.0.9 h1:RByDnVHgSN4zy3bwmvQarsnCd/gDmZ+zwVI+b6i4Plc=
+github.com/multiversx/mx-chain-logger-go v1.0.9/go.mod h1:86lz/Y9D1sMAZiukCYxCsETLl1zuI23qj37ct3KUT6A=
 github.com/ElrondNetwork/elrond-vm-common v1.1.0/go.mod h1:w3i6f8uiuRkE68Ie/gebRcLgTuHqvruJSYrFyZWuLrE=
 github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
 github.com/aead/siphash v1.0.1/go.mod h1:Nywa3cDsYNNK3gaciGTWPwHt0wlpNV15vwmswBAUSII=

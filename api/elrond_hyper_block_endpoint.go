@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
+	logger "github.com/multiversx/mx-chain-logger-go"
 )
 
 var log = logger.GetOrCreate("api")

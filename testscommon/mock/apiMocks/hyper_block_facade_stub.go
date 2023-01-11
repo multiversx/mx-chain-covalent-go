@@ -1,8 +1,8 @@
 package apiMocks
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/api"
-	"github.com/ElrondNetwork/covalent-indexer-go/cmd/proxy/config"
+	"github.com/multiversx/mx-chain-covalent-go/api"
+	"github.com/multiversx/mx-chain-covalent-go/cmd/proxy/config"
 )
 
 // HyperBlockFacadeStub -

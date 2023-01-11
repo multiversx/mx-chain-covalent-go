@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	logger "github.com/ElrondNetwork/elrond-go-logger"
 	"github.com/elodina/go-avro"
+	logger "github.com/multiversx/mx-chain-logger-go"
 	"github.com/urfave/cli"
 )
 

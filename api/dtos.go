@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/ElrondNetwork/covalent-indexer-go/hyperBlock"
+	"github.com/multiversx/mx-chain-covalent-go/hyperBlock"
 )
 
 // ReturnCode identifies api return codes

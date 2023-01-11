@@ -3,10 +3,10 @@ package transactions
 import (
 	"encoding/hex"
 
-	"github.com/ElrondNetwork/covalent-indexer-go/process"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
-	"github.com/ElrondNetwork/covalent-indexer-go/schema"
-	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
+	"github.com/multiversx/mx-chain-covalent-go/process"
+	"github.com/multiversx/mx-chain-covalent-go/process/utility"
+	"github.com/multiversx/mx-chain-covalent-go/schema"
+	"github.com/multiversx/mx-chain-core-go/data/transaction"
 )
 
 type transactionProcessor struct {
