@@ -1,94 +1,62 @@
 package receipts_test
 
 import (
+	"encoding/hex"
+	"strings"
 	"testing"
 
-	"github.com/ElrondNetwork/covalent-indexer-go"
 	"github.com/ElrondNetwork/covalent-indexer-go/process/receipts"
-	"github.com/ElrondNetwork/covalent-indexer-go/process/utility"
 	"github.com/ElrondNetwork/covalent-indexer-go/schema"
 	"github.com/ElrondNetwork/covalent-indexer-go/testscommon"
-	"github.com/ElrondNetwork/covalent-indexer-go/testscommon/mock"
-	"github.com/ElrondNetwork/elrond-go-core/core"
-	"github.com/ElrondNetwork/elrond-go-core/data"
-	"github.com/ElrondNetwork/elrond-go-core/data/receipt"
 	"github.com/ElrondNetwork/elrond-go-core/data/transaction"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewReceiptsProcessor(t *testing.T) {
+func TestReceiptsProcessor_ProcessReceipt(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		args        func() core.PubkeyConverter
-		expectedErr error
-	}{
-		{
-			args: func() core.PubkeyConverter {
-				return nil
-			},
-			expectedErr: covalent.ErrNilPubKeyConverter,
-		},
-		{
-			args: func() core.PubkeyConverter {
-				return &mock.PubKeyConverterStub{}
-			},
-			expectedErr: nil,
-		},
-	}
-
-	for _, currTest := range tests {
-		_, err := receipts.NewReceiptsProcessor(currTest.args())
-		require.Equal(t, currTest.expectedErr, err)
-	}
-}
-
-func generateRandomReceipt() *receipt.Receipt {
-	return &receipt.Receipt{
+	rp := receipts.NewReceiptsProcessor()
+	receipt := &transaction.ApiReceipt{
 		Value:   testscommon.GenerateRandomBigInt(),
-		SndAddr: testscommon.GenerateRandomBytes(),
-		Data:    testscommon.GenerateRandomBytes(),
-		TxHash:  testscommon.GenerateRandomBytes(),
-	}
-}
-
-func TestReceiptsProcessor_ProcessReceipts_TwoReceipts_OneNormalTx_ExpectTwoProcessedReceipts(t *testing.T) {
-	pubKeyConverter := &mock.PubKeyConverterStub{}
-	rp, _ := receipts.NewReceiptsProcessor(pubKeyConverter)
-
-	receipt1 := generateRandomReceipt()
-	receipt2 := generateRandomReceipt()
-
-	txPool := map[string]data.TransactionHandler{
-		"hash1": receipt1,
-		"hash2": receipt2,
-		"hash3": &transaction.Transaction{},
+		SndAddr: "erd1qqq",
+		Data:    "ESDTTransfer@555344432d633736663166@1061ed82",
+		TxHash:  "975ca52570",
 	}
 
-	timeStamp := uint64(123)
-	processedReceipts := rp.ProcessReceipts(txPool, timeStamp)
+	t.Run("nil receipt, should return empty receipt", func(t *testing.T) {
+		t.Parallel()
 
-	require.Len(t, processedReceipts, 2)
-	requireProcessedReceiptsContains(t, processedReceipts, receipt1, "hash1", timeStamp, pubKeyConverter)
-	requireProcessedReceiptsContains(t, processedReceipts, receipt2, "hash2", timeStamp, pubKeyConverter)
-}
+		processedReceipt, err := rp.ProcessReceipt(nil)
+		require.Nil(t, err)
+		require.Equal(t, schema.NewReceipt(), processedReceipt)
+	})
 
-func requireProcessedReceiptsContains(
-	t *testing.T,
-	processedReceipts []*schema.Receipt,
-	receipt *receipt.Receipt,
-	receiptHash string,
-	timestamp uint64,
-	pubKeyConverter core.PubkeyConverter,
-) {
-	expectedReceipt := &schema.Receipt{
-		Hash:      []byte(receiptHash),
-		Value:     receipt.GetValue().Bytes(),
-		Sender:    utility.EncodePubKey(pubKeyConverter, receipt.GetSndAddr()),
-		Data:      receipt.GetData(),
-		TxHash:    receipt.GetTxHash(),
-		Timestamp: int64(timestamp),
-	}
+	t.Run("should work", func(t *testing.T) {
+		t.Parallel()
 
-	require.Contains(t, processedReceipts, expectedReceipt)
+		processedReceipt, err := rp.ProcessReceipt(receipt)
+		require.Nil(t, err)
+
+		hashBytes, err := hex.DecodeString(receipt.TxHash)
+		require.Nil(t, err)
+
+		require.Equal(t, &schema.Receipt{
+			TxHash: hashBytes,
+			Value:  receipt.Value.Bytes(),
+			Sender: []byte(receipt.SndAddr),
+			Data:   []byte(receipt.Data),
+		}, processedReceipt)
+	})
+
+	t.Run("invalid hash, should return error", func(t *testing.T) {
+		t.Parallel()
+
+		receiptCopy := *receipt
+		receiptCopy.TxHash = "rr"
+		processedReceipt, err := rp.ProcessReceipt(&receiptCopy)
+
+		require.Nil(t, processedReceipt)
+		require.NotNil(t, err)
+		require.True(t, strings.Contains(err.Error(), receiptCopy.TxHash))
+	})
 }
